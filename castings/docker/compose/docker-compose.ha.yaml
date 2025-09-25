@@ -83,7 +83,7 @@ services:
         mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile
     restart: on-failure
     volumes:
-      - ../common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ./configs/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
   zookeeper-1:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-1
@@ -140,13 +140,13 @@ services:
     #   - "8123:8123"
     #   - "9181:9181"
     volumes:
-      - ../common/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ../common/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ../common/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ../common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - ../common/clickhouse/cluster.ha.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - ./configs/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ./configs/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ./configs/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ./configs/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ./configs/clickhouse/cluster.ha.xml:/etc/clickhouse-server/config.d/cluster.xml
       - clickhouse:/var/lib/clickhouse/
-      # - ../common/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
+      # - ./configs/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
   clickhouse-2:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse-2
@@ -155,13 +155,13 @@ services:
     #   - "8124:8123"
     #   - "9182:9181"
     volumes:
-      - ../common/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ../common/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ../common/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ../common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - ../common/clickhouse/cluster.ha.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - ./configs/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ./configs/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ./configs/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ./configs/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ./configs/clickhouse/cluster.ha.xml:/etc/clickhouse-server/config.d/cluster.xml
       - clickhouse-2:/var/lib/clickhouse/
-      # - ../common/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
+      # - ./configs/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
   clickhouse-3:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse-3
@@ -170,13 +170,13 @@ services:
     #   - "8125:8123"
     #   - "9183:9181"
     volumes:
-      - ../common/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ../common/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ../common/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ../common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - ../common/clickhouse/cluster.ha.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - ./configs/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ./configs/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ./configs/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ./configs/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ./configs/clickhouse/cluster.ha.xml:/etc/clickhouse-server/config.d/cluster.xml
       - clickhouse-3:/var/lib/clickhouse/
-      # - ../common/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
+      # - ./configs/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
   signoz:
     !!merge <<: *db-depend
     image: signoz/signoz:${VERSION:-v0.94.1}
@@ -216,7 +216,7 @@ services:
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ../common/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+      - ./configs/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false

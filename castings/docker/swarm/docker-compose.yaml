@@ -79,7 +79,7 @@ services:
       restart_policy:
         condition: on-failure
     volumes:
-      - ../common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ./configs/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
   zookeeper-1:
     !!merge <<: *zookeeper-defaults
     # ports:
@@ -113,9 +113,9 @@ services:
       - source: clickhouse-cluster
         target: /etc/clickhouse-server/config.d/cluster.xml
     volumes:
-      - ../common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ./configs/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse:/var/lib/clickhouse/
-      # - ../common/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
+      # - ./configs/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
   signoz:
     !!merge <<: *db-depend
     image: signoz/signoz:v0.94.1
@@ -194,20 +194,20 @@ volumes:
     name: signoz-zookeeper-1
 configs:
   clickhouse-config:
-    file: ../common/clickhouse/config.xml
+    file: ./configs/clickhouse/config.xml
   clickhouse-users:
-    file: ../common/clickhouse/users.xml
+    file: ./configs/clickhouse/users.xml
   clickhouse-custom-function:
-    file: ../common/clickhouse/custom-function.xml
+    file: ./configs/clickhouse/custom-function.xml
   clickhouse-cluster:
-    file: ../common/clickhouse/cluster.xml
+    file: ./configs/clickhouse/cluster.xml
   # If you have multiple dashboard files, you can list them individually:
   # dashboard-foo:
-  #   file: ../common/dashboards/foo.json
+  #   file: ./configs/dashboards/foo.json
   # dashboard-bar:
-  #   file: ../common/dashboards/bar.json
+  #   file: ./configs/dashboards/bar.json
 
   otel-collector-config:
     file: ./otel-collector-config.yaml
   otel-manager-config:
-    file: ../common/signoz/otel-collector-opamp-config.yaml
+    file: ./configs/signoz/otel-collector-opamp-config.yaml
