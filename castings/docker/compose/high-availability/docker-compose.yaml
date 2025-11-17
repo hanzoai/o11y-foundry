@@ -4,16 +4,16 @@ services:
       service: clickhouse-1
       file: ../generic/docker-compose.yaml
     volumes:
+      - ./configs/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
       - clickhouse-1:/var/lib/clickhouse/
-      - ./configs/clickhouse/cluster.ha.xml:/etc/clickhouse-server/config.d/cluster.xml
   clickhouse-2:
     container_name: signoz-clickhouse-2
     extends:
       service: clickhouse-1
       file: ../generic/docker-compose.yaml
     volumes:
+      - ./configs/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
       - clickhouse-2:/var/lib/clickhouse/
-      - ./configs/clickhouse/cluster.ha.xml:/etc/clickhouse-server/config.d/cluster.xml
 
   clickhouse-3:
     container_name: signoz-clickhouse-3
@@ -21,8 +21,26 @@ services:
       service: clickhouse-1
       file: ../generic/docker-compose.yaml
     volumes:
+      - ./configs/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
       - clickhouse-3:/var/lib/clickhouse/
-      - ./configs/clickhouse/cluster.ha.xml:/etc/clickhouse-server/config.d/cluster.xml
+  zookeeper-1:
+    extends:
+      service: zookeeper-1
+      file: ../generic/docker-compose.yaml
+    container_name: signoz-zookeeper-1
+    # ports:
+    #   - "2182:2181"
+    #   - "2889:2888"
+    #   - "3889:3888"
+    volumes:
+      - zookeeper-1:/bitnami/zookeeper
+    environment:
+      - ZOO_SERVER_ID=1
+      - ZOO_SERVERS=0.0.0.0:2888:3888,zookeeper-2:2888:3888,zookeeper-3:2888:3888
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_AUTOPURGE_INTERVAL=1
+      - ZOO_ENABLE_PROMETHEUS_METRICS=yes
+      - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
   zookeeper-2:
     extends:
       service: zookeeper-1
