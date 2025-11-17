@@ -136,7 +136,7 @@ services:
       timeout: 5s
       retries: 3
   schema-migrator-sync:
-    image: signoz/signoz-schema-migrator:v0.129.8
+    image: signoz/signoz-schema-migrator:v0.129.9
     container_name: schema-migrator-sync
     command:
       - sync
@@ -149,7 +149,7 @@ services:
         condition: service_healthy
     restart: on-failure
   otel-collector:
-    image: signoz/signoz-otel-collector:v0.129.6
+    image: signoz/signoz-otel-collector:v0.129.9
     container_name: signoz-otel-collector-dev
     command:
       - --config=/etc/otel-collector-config.yaml
