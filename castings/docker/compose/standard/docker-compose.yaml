@@ -55,7 +55,7 @@ x-zookeeper-defaults: &zookeeper-defaults
 x-db-depend: &db-depend
   !!merge <<: *common
   depends_on:
-    clickhouse-1:
+    clickhouse:
       condition: service_healthy
     schema-migrator-sync:
       condition: service_completed_successfully
@@ -78,7 +78,7 @@ services:
         mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile
     restart: on-failure
     volumes:
-      - ./configs/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ../../../configs/docker/compose/standard/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
   zookeeper-1:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-1
@@ -95,21 +95,21 @@ services:
       - ZOO_AUTOPURGE_INTERVAL=1
       - ZOO_ENABLE_PROMETHEUS_METRICS=yes
       - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
-  clickhouse-1:
-    container_name: signoz-clickhouse-1
+  clickhouse:
+    container_name: signoz-clickhouse
     !!merge <<: *clickhouse-defaults
     # ports:
     #   - "9000:9000"
     #   - "8123:8123"
     #   - "9181:9181"
     volumes:
-      - ./configs/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ./configs/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ./configs/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ./configs/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - ./configs/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
-      - clickhouse-1:/var/lib/clickhouse/
-      # - ./configs/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
+      - ../../../configs/docker/compose/standard/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ../../../configs/docker/compose/standard/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ../../../configs/docker/compose/standard/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ../../../configs/docker/compose/standard/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ../../../configs/docker/compose/standard/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - clickhouse:/var/lib/clickhouse/
+      # - ../../../configs/docker/compose/standard/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
   signoz:
     !!merge <<: *db-depend
     image: signoz/signoz:${VERSION:-v0.101.0}
@@ -121,11 +121,10 @@ services:
       - sqlite:/var/lib/signoz/
     environment:
       - SIGNOZ_ALERTMANAGER_PROVIDER=signoz
-      - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://clickhouse-1:9000
+      - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://clickhouse:9000
       - SIGNOZ_SQLSTORE_SQLITE_PATH=/var/lib/signoz/signoz.db
       - SIGNOZ_TELEMETRYSTORE_PROVIDER=clickhouse
       - SIGNOZ_STATSREPORTER_ENABLED=true
-      - DOT_METRICS_ENABLED=true
       - SIGNOZ_JWT_SECRET=secret
     healthcheck:
       test:
@@ -148,7 +147,7 @@ services:
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ./configs/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+      - ../../../configs/docker/compose/standard/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false
@@ -157,7 +156,7 @@ services:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP HTTP receiver
     depends_on:
-      clickhouse-1:
+      clickhouse:
         condition: service_healthy
       schema-migrator-sync:
         condition: service_completed_successfully
@@ -169,10 +168,10 @@ services:
     container_name: schema-migrator-sync
     command:
       - sync
-      - --dsn=tcp://clickhouse-1:9000
+      - --dsn=tcp://clickhouse:9000
       - --up=
     depends_on:
-      clickhouse-1:
+      clickhouse:
         condition: service_healthy
     restart: on-failure
   schema-migrator-async:
@@ -181,14 +180,14 @@ services:
     container_name: schema-migrator-async
     command:
       - async
-      - --dsn=tcp://clickhouse-1:9000
+      - --dsn=tcp://clickhouse:9000
       - --up=
     restart: on-failure
 networks:
   signoz-net:
     name: signoz-net
 volumes:
-  clickhouse-1:
+  clickhouse:
     name: signoz-clickhouse
   sqlite:
     name: signoz-sqlite
