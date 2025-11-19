@@ -78,7 +78,7 @@ services:
         mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile
     restart: on-failure
     volumes:
-      - ../../../configs/docker/compose/standard/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
   zookeeper-1:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-1
@@ -103,13 +103,11 @@ services:
     #   - "8123:8123"
     #   - "9181:9181"
     volumes:
-      - ../../../configs/docker/compose/standard/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ../../../configs/docker/compose/standard/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ../../../configs/docker/compose/standard/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ../../../configs/docker/compose/standard/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - ../../../configs/docker/compose/standard/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse:/var/lib/clickhouse/
-      # - ../../../configs/docker/compose/standard/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
   signoz:
     !!merge <<: *db-depend
     image: signoz/signoz:${VERSION:-v0.101.0}
@@ -146,8 +144,8 @@ services:
       - --copy-path=/var/tmp/collector-config.yaml
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ../../../configs/docker/compose/standard/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+      - ${STANDARD_CASTING_CONFIGS}/otel-collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ${STANDARD_CASTING_CONFIGS}/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false

@@ -102,10 +102,6 @@ services:
   zookeeper-2:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-2
-    # ports:
-    #   - "2182:2181"
-    #   - "2889:2888"
-    #   - "3889:3888"
     volumes:
       - zookeeper-2:/bitnami/zookeeper
     environment:
@@ -118,10 +114,6 @@ services:
   zookeeper-3:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-3
-    # ports:
-    #   - "2183:2181"
-    #   - "2890:2888"
-    #   - "3890:3888"
     volumes:
       - zookeeper-3:/bitnami/zookeeper
     environment:
@@ -134,48 +126,30 @@ services:
   clickhouse:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse
-    # ports:
-    #   - "9000:9000"
-    #   - "8123:8123"
-    #   - "9181:9181"
     volumes:
-      - ../../../configs/docker/compose/standard/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ../../../configs/docker/compose/standard/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ../../../configs/docker/compose/standard/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ../../../configs/docker/compose/standard/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - ../../../configs/docker/compose/with-ha/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - ${WITH_HA_CASTING_CONFIGS}/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse:/var/lib/clickhouse/
-      # - ../configs/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
   clickhouse-2:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse-2
-    # ports:
-    #   - "9001:9000"
-    #   - "8124:8123"
-    #   - "9182:9181"
     volumes:
-      - ../../../configs/docker/compose/standard/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ../../../configs/docker/compose/standard/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ../../../configs/docker/compose/standard/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ../../../configs/docker/compose/standard/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - ../../../configs/docker/compose/with-ha/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - ${WITH_HA_CASTING_CONFIGS}/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse-2:/var/lib/clickhouse/
-      # - ../configs/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
   clickhouse-3:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse-3
-    # ports:
-    #   - "9002:9000"
-    #   - "8125:8123"
-    #   - "9183:9181"
     volumes:
-      - ../../../configs/docker/compose/standard/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ../../../configs/docker/compose/standard/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ../../../configs/docker/compose/standard/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ../../../configs/docker/compose/standard/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - ../../../configs/docker/compose/with-ha/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - ${WITH_HA_CASTING_CONFIGS}/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${STANDARD_CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse-3:/var/lib/clickhouse/
-      # - ../configs/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
   signoz:
     !!merge <<: *db-depend
     image: signoz/signoz:${VERSION:-v0.101.0}
@@ -212,8 +186,8 @@ services:
       - --copy-path=/var/tmp/collector-config.yaml
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ../../../configs/docker/compose/standard/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+      - ${STANDARD_CASTING_CONFIGS}/otel-collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ${STANDARD_CASTING_CONFIGS}/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false
