@@ -82,10 +82,6 @@ services:
   zookeeper-1:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-1
-    # ports:
-    #   - "2181:2181"
-    #   - "2888:2888"
-    #   - "3888:3888"
     volumes:
       - zookeeper-1:/bitnami/zookeeper
     environment:
@@ -98,10 +94,6 @@ services:
   clickhouse:
     container_name: signoz-clickhouse
     !!merge <<: *clickhouse-defaults
-    # ports:
-    #   - "9000:9000"
-    #   - "8123:8123"
-    #   - "9181:9181"
     volumes:
       - ${STANDARD_CASTING_CONFIGS}/clickhouse/config.xml:/etc/clickhouse-server/config.xml
       - ${STANDARD_CASTING_CONFIGS}/clickhouse/users.xml:/etc/clickhouse-server/users.xml
@@ -114,7 +106,6 @@ services:
     container_name: signoz
     ports:
       - "8080:8080" # signoz port
-    #   - "6060:6060"     # pprof port
     volumes:
       - sqlite:/var/lib/signoz/
     environment:
@@ -150,7 +141,6 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false
     ports:
-      # - "1777:1777"     # pprof extension
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP HTTP receiver
     depends_on:
