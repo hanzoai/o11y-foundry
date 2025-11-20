@@ -51,14 +51,10 @@
             <host>zookeeper-1</host>
             <port>2181</port>
         </node>
-    </zookeeper>
-    <zookeeper>
         <node>
             <host>zookeeper-2</host>
             <port>2181</port>
         </node>
-    </zookeeper>
-    <zookeeper>
         <node>
             <host>zookeeper-3</host>
             <port>2181</port>
