@@ -123,7 +123,7 @@ services:
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
       - ${CASTING_CONFIGS}/otel-collector/standard/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ${CASTING_CONFIGS}/signoz/standard/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+      - ${CASTING_CONFIGS}/otel-collector/standard/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
     env_file: ${CASTING_CONFIGS}/otel-collector/standard/.env
     ports:
       - "4317:4317" # OTLP gRPC receiver

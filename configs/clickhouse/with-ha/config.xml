@@ -28,7 +28,19 @@
         <cluster>
             <shard>
                 <replica>
-                    <host>clickhouse</host>
+                    <host>clickhouse-1</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <replica>
+                    <host>clickhouse-2</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <replica>
+                    <host>clickhouse-3</host>
                     <port>9000</port>
                 </replica>
             </shard>
@@ -37,6 +49,18 @@
     <zookeeper>
         <node>
             <host>zookeeper-1</host>
+            <port>2181</port>
+        </node>
+    </zookeeper>
+    <zookeeper>
+        <node>
+            <host>zookeeper-2</host>
+            <port>2181</port>
+        </node>
+    </zookeeper>
+    <zookeeper>
+        <node>
+            <host>zookeeper-3</host>
             <port>2181</port>
         </node>
     </zookeeper>
