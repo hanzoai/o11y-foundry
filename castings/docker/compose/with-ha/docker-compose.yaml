@@ -39,7 +39,7 @@ x-clickhouse-defaults: &clickhouse-defaults
     nofile:
       soft: 262144
       hard: 262144
-  env_file: ${CASTING_CONFIGS}/clickhouse/with-ha/.env
+  env_file: ${CLICKHOUSE_HA_CONFIGS}/.env
 x-zookeeper-defaults: &zookeeper-defaults
   !!merge <<: *common
   image: signoz/zookeeper:3.7.1
@@ -81,54 +81,54 @@ services:
         mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile
     restart: on-failure
     volumes:
-      - ${CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ${CLICKHOUSE_HA_CONFIGS}/user_scripts:/var/lib/clickhouse/user_scripts/
   zookeeper-1:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-1
     volumes:
       - zookeeper-1:/bitnami/zookeeper
-    env_file: ${CASTING_CONFIGS}/zookeeper/with-ha/zookeeper-1.env
+    env_file: ${ZOOKEEPER_HA_CONFIGS}/zookeeper-1.env
 
   zookeeper-2:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-2
     volumes:
       - zookeeper-2:/bitnami/zookeeper
-    env_file: ${CASTING_CONFIGS}/zookeeper/with-ha/zookeeper-2.env
+    env_file: ${ZOOKEEPER_HA_CONFIGS}/zookeeper-2.env
 
   zookeeper-3:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-3
     volumes:
       - zookeeper-3:/bitnami/zookeeper
-    env_file: ${CASTING_CONFIGS}/zookeeper/with-ha/zookeeper-3.env
+    env_file: ${ZOOKEEPER_HA_CONFIGS}/zookeeper-3.env
 
   clickhouse-1:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse
     volumes:
-      - ${CASTING_CONFIGS}/clickhouse/with-ha/config.xml:/etc/clickhouse-server/config.xml
-      - ${CASTING_CONFIGS}/clickhouse/standard/users.xml:/etc/clickhouse-server/users.xml
-      - ${CASTING_CONFIGS}/clickhouse/standard/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ${CASTING_CONFIGS}/clickhouse/standard/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ${CLICKHOUSE_HA_CONFIGS}/config.xml:/etc/clickhouse-server/config.xml
+      - ${CLICKHOUSE_STANDARD_CONFIGS}/users.xml:/etc/clickhouse-server/users.xml
+      - ${CLICKHOUSE_STANDARD_CONFIGS}/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${CLICKHOUSE_STANDARD_CONFIGS}/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse-1:/var/lib/clickhouse/
   clickhouse-2:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse-2
     volumes:
-      - ${CASTING_CONFIGS}/clickhouse/with-ha/config.xml:/etc/clickhouse-server/config.xml
-      - ${CASTING_CONFIGS}/clickhouse/standard/users.xml:/etc/clickhouse-server/users.xml
-      - ${CASTING_CONFIGS}/clickhouse/standard/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ${CASTING_CONFIGS}/clickhouse/standard/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ${CLICKHOUSE_HA_CONFIGS}/config.xml:/etc/clickhouse-server/config.xml
+      - ${CLICKHOUSE_STANDARD_CONFIGS}/users.xml:/etc/clickhouse-server/users.xml
+      - ${CLICKHOUSE_STANDARD_CONFIGS}/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${CLICKHOUSE_STANDARD_CONFIGS}/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse-2:/var/lib/clickhouse/
   clickhouse-3:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse-3
     volumes:
-      - ${CASTING_CONFIGS}/clickhouse/with-ha/config.xml:/etc/clickhouse-server/config.xml
-      - ${CASTING_CONFIGS}/clickhouse/standard/users.xml:/etc/clickhouse-server/users.xml
-      - ${CASTING_CONFIGS}/clickhouse/standard/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ${CASTING_CONFIGS}/clickhouse/standard/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ${CLICKHOUSE_HA_CONFIGS}/config.xml:/etc/clickhouse-server/config.xml
+      - ${CLICKHOUSE_STANDARD_CONFIGS}/users.xml:/etc/clickhouse-server/users.xml
+      - ${CLICKHOUSE_STANDARD_CONFIGS}/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${CLICKHOUSE_STANDARD_CONFIGS}/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse-3:/var/lib/clickhouse/
   signoz:
     !!merge <<: *db-depend
@@ -138,7 +138,7 @@ services:
       - "8080:8080" # signoz port
     volumes:
       - sqlite:/var/lib/signoz/
-    env_file: ${CASTING_CONFIGS}/signoz/with-ha/.env
+    env_file: ${SIGNOZ_HA_CONFIGS}/.env
     healthcheck:
       test:
         - CMD
@@ -159,9 +159,9 @@ services:
       - --copy-path=/var/tmp/collector-config.yaml
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
-      - ${CASTING_CONFIGS}/otel-collector/with-ha/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ${CASTING_CONFIGS}/otel-collector/standard/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
-    env_file: ${CASTING_CONFIGS}/otel-collector/with-ha/.env
+      - ${OTEL_COLLECTOR_HA_CONFIGS}/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ${OTEL_COLLECTOR_STANDARD_CONFIGS}/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+    env_file: ${OTEL_COLLECTOR_HA_CONFIGS}/.env
     ports:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP HTTP receiver
