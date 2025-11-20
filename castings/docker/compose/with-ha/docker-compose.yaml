@@ -39,8 +39,7 @@ x-clickhouse-defaults: &clickhouse-defaults
     nofile:
       soft: 262144
       hard: 262144
-  environment:
-    - CLICKHOUSE_SKIP_USER_SETUP=1
+  env_file: ${CASTING_CONFIGS}/clickhouse/with-ha/.env
 x-zookeeper-defaults: &zookeeper-defaults
   !!merge <<: *common
   image: signoz/zookeeper:3.7.1
@@ -82,69 +81,54 @@ services:
         mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile
     restart: on-failure
     volumes:
-      - ${WITH_HA_CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ${CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
   zookeeper-1:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-1
     volumes:
       - zookeeper-1:/bitnami/zookeeper
-    environment:
-      - ZOO_SERVER_ID=1
-      - ZOO_SERVERS=0.0.0.0:2888:3888,zookeeper-2:2888:3888,zookeeper-3:2888:3888
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - ZOO_AUTOPURGE_INTERVAL=1
-      - ZOO_ENABLE_PROMETHEUS_METRICS=yes
-      - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
+    env_file: ${CASTING_CONFIGS}/zookeeper/with-ha/zookeeper-1.env
+
   zookeeper-2:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-2
     volumes:
       - zookeeper-2:/bitnami/zookeeper
-    environment:
-      - ZOO_SERVER_ID=2
-      - ZOO_SERVERS=zookeeper-1:2888:3888,0.0.0.0:2888:3888,zookeeper-3:2888:3888
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - ZOO_AUTOPURGE_INTERVAL=1
-      - ZOO_ENABLE_PROMETHEUS_METRICS=yes
-      - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
+    env_file: ${CASTING_CONFIGS}/zookeeper/with-ha/zookeeper-2.env
+
   zookeeper-3:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-3
     volumes:
       - zookeeper-3:/bitnami/zookeeper
-    environment:
-      - ZOO_SERVER_ID=3
-      - ZOO_SERVERS=zookeeper-1:2888:3888,zookeeper-2:2888:3888,0.0.0.0:2888:3888
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - ZOO_AUTOPURGE_INTERVAL=1
-      - ZOO_ENABLE_PROMETHEUS_METRICS=yes
-      - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
+    env_file: ${CASTING_CONFIGS}/zookeeper/with-ha/zookeeper-3.env
+
   clickhouse:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse
     volumes:
-      - ${WITH_HA_CASTING_CONFIGS}/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ${STANDARD_CASTING_CONFIGS}/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ${STANDARD_CASTING_CONFIGS}/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ${STANDARD_CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ${CASTING_CONFIGS}/clickhouse/with-ha/config.xml:/etc/clickhouse-server/config.xml
+      - ${CASTING_CONFIGS}/clickhouse/standard/users.xml:/etc/clickhouse-server/users.xml
+      - ${CASTING_CONFIGS}/clickhouse/standard/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${CASTING_CONFIGS}/clickhouse/standard/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse:/var/lib/clickhouse/
   clickhouse-2:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse-2
     volumes:
-      - ${WITH_HA_CASTING_CONFIGS}/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ${STANDARD_CASTING_CONFIGS}/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ${STANDARD_CASTING_CONFIGS}/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ${STANDARD_CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ${CASTING_CONFIGS}/clickhouse/with-ha/config.xml:/etc/clickhouse-server/config.xml
+      - ${CASTING_CONFIGS}/clickhouse/standard/users.xml:/etc/clickhouse-server/users.xml
+      - ${CASTING_CONFIGS}/clickhouse/standard/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${CASTING_CONFIGS}/clickhouse/standard/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse-2:/var/lib/clickhouse/
   clickhouse-3:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse-3
     volumes:
-      - ${WITH_HA_CASTING_CONFIGS}/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ${STANDARD_CASTING_CONFIGS}/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ${STANDARD_CASTING_CONFIGS}/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ${STANDARD_CASTING_CONFIGS}/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ${CASTING_CONFIGS}/clickhouse/with-ha/config.xml:/etc/clickhouse-server/config.xml
+      - ${CASTING_CONFIGS}/clickhouse/standard/users.xml:/etc/clickhouse-server/users.xml
+      - ${CASTING_CONFIGS}/clickhouse/standard/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ${CASTING_CONFIGS}/clickhouse/standard/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse-3:/var/lib/clickhouse/
   signoz:
     !!merge <<: *db-depend
@@ -154,13 +138,7 @@ services:
       - "8080:8080" # signoz port
     volumes:
       - sqlite:/var/lib/signoz/
-    environment:
-      - SIGNOZ_ALERTMANAGER_PROVIDER=signoz
-      - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://clickhouse:9000
-      - SIGNOZ_SQLSTORE_SQLITE_PATH=/var/lib/signoz/signoz.db
-      - SIGNOZ_TELEMETRYSTORE_PROVIDER=clickhouse
-      - SIGNOZ_STATSREPORTER_ENABLED=true
-      - SIGNOZ_JWT_SECRET=secret
+    env_file: ${CASTING_CONFIGS}/signoz/with-ha/.env
     healthcheck:
       test:
         - CMD
@@ -181,11 +159,9 @@ services:
       - --copy-path=/var/tmp/collector-config.yaml
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
-      - ${STANDARD_CASTING_CONFIGS}/otel-collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ${STANDARD_CASTING_CONFIGS}/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
-    environment:
-      - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
-      - LOW_CARDINAL_EXCEPTION_GROUPING=false
+      - ${CASTING_CONFIGS}/otel-collector/with-ha/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ${CASTING_CONFIGS}/signoz/with-ha/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+    env_file: ${CASTING_CONFIGS}/otel-collector/with-ha/.env
     ports:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP HTTP receiver
