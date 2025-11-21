@@ -35,7 +35,7 @@ x-clickhouse-defaults: &clickhouse-defaults
     nofile:
       soft: 262144
       hard: 262144
-  env_file: ${CLICKHOUSE_STANDARD_CONFIGS}/.env
+  env_file: ./pours/clickhouse/.env
 x-zookeeper-defaults: &zookeeper-defaults
   !!merge <<: *common
   image: signoz/zookeeper:3.7.1
@@ -77,31 +77,31 @@ services:
         mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile
     restart: on-failure
     volumes:
-      - ${CLICKHOUSE_STANDARD_CONFIGS}/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ./pours/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
   zookeeper-1:
     !!merge <<: *zookeeper-defaults
     container_name: signoz-zookeeper-1
     volumes:
       - zookeeper-1:/bitnami/zookeeper
-    env_file: ${ZOOKEEPER_STANDARD_CONFIGS}/.env
+    env_file: ./pours/zookeeper/.env
   clickhouse:
     container_name: signoz-clickhouse
     !!merge <<: *clickhouse-defaults
     volumes:
-      - ${CLICKHOUSE_STANDARD_CONFIGS}/config.xml:/etc/clickhouse-server/config.xml
-      - ${CLICKHOUSE_STANDARD_CONFIGS}/users.xml:/etc/clickhouse-server/users.xml
-      - ${CLICKHOUSE_STANDARD_CONFIGS}/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ${CLICKHOUSE_STANDARD_CONFIGS}/user_scripts:/var/lib/clickhouse/user_scripts/
+      - ./pours/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ./pours/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ./pours/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ./pours/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
       - clickhouse:/var/lib/clickhouse/
   signoz:
     !!merge <<: *db-depend
     image: signoz/signoz:${VERSION:-v0.101.0}
     container_name: signoz
     ports:
-      - "8080:8080" # signoz port
+      - "8080:8080"
     volumes:
       - sqlite:/var/lib/signoz/
-    env_file: ${SIGNOZ_STANDARD_CONFIGS}/.env
+    env_file: ./pours/signoz/.env
     healthcheck:
       test:
         - CMD
@@ -122,12 +122,12 @@ services:
       - --copy-path=/var/tmp/collector-config.yaml
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
-      - ${OTEL_COLLECTOR_STANDARD_CONFIGS}/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ${OTEL_COLLECTOR_STANDARD_CONFIGS}/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
-    env_file: ${OTEL_COLLECTOR_STANDARD_CONFIGS}/.env
+      - ./pours/otel-collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./pours/otel-collector/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+    env_file: ./pours/otel-collector/.env
     ports:
-      - "4317:4317" # OTLP gRPC receiver
-      - "4318:4318" # OTLP HTTP receiver
+      - "4317:4317"
+      - "4318:4318"
     depends_on:
       clickhouse:
         condition: service_healthy

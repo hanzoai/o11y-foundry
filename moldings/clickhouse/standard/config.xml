@@ -28,16 +28,16 @@
         <cluster>
             <shard>
                 <replica>
-                    <host>clickhouse</host>
-                    <port>9000</port>
+                    <host>${CLICKHOUSE_HOST}</host>
+                    <port>${CLICKHOUSE_PORT}</port>
                 </replica>
             </shard>
         </cluster>
     </remote_servers>
     <zookeeper>
         <node>
-            <host>zookeeper-1</host>
-            <port>2181</port>
+            <host>${ZOOKEEPER_HOST}</host>
+            <port>${ZOOKEEPER_PORT}</port>
         </node>
     </zookeeper>
     <macros>
