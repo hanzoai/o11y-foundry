@@ -1,0 +1,22 @@
+schemaVersion: v1
+platform: linux
+components:
+  signoz:
+    enabled: true
+    replicas: 3 # HA configuration
+    version: "0.39.2"
+    env:
+      - key: CLICKHOUSE_HOST
+        value: localhost:9000
+  clickhouse:
+    enabled: true
+    replicas: 3 # HA configuration
+    version: "24.8"
+  zookeeper:
+    enabled: true
+    replicas: 1 # Single instance
+    version: "3.7"
+  signoz-collector:
+    enabled: true
+    replicas: 2 # HA configuration
+    version: "0.39.2"
