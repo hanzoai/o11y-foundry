@@ -15,21 +15,16 @@ package clickhouse
 	// If false: keeper runs embedded in clickhouse-server, no zookeeper config
 	keeper?: {
 		enabled: *false | bool
-		if enabled == true{
+		config?: {
+			[string]: _
+		}
+		if enabled == true {
 			replicas: int
 			version?: string
-			config?: {
-				[string]: _
-			}
 		}
 	}
 	// File: config.yaml (main ClickHouse configuration)
 	serverConfig?: {
-		[string]: _
-	}
-
-	// File: users.yaml (users, profiles, quotas)
-	usersConfig?: {
 		[string]: _
 	}
 
