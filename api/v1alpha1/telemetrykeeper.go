@@ -15,6 +15,13 @@ var (
 	TelemetryKeeperKindClickhouseKeeper TelemetryKeeperKind = TelemetryKeeperKind{s: "clickhousekeeper"}
 )
 
+var (
+	// TelemetryKeeperRaftAddresses is the key for inter-keeper consensus coordination.
+	TelemetryKeeperRaftAddresses string = "raft"
+	// TelemetryKeeperClientAddresses is the key for client connections.
+	TelemetryKeeperClientAddresses string = "client"
+)
+
 type TelemetryKeeperKind struct {
 	s string
 }
