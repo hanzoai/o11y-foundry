@@ -1,21 +1,21 @@
 package telemetrykeepermolding
 
 import (
-	"github.com/signoz/foundry/api/v1alpha1"
+	"embed"
+
 	"github.com/signoz/foundry/internal/types"
 )
 
-func Default() *v1alpha1.TelemetryKeeper {
-	return &v1alpha1.TelemetryKeeper{
-		Kind: v1alpha1.TelemetryKeeperKindClickhouseKeeper,
-		Spec: v1alpha1.MoldingSpec{
-			Enabled: true,
-			Cluster: v1alpha1.TypeCluster{
-				Replicas: types.NewIntPtr(1),
-			},
-			Version: "25.5.6",
-			Image:   "clickhouse/clickhouse-keeper:25.5.6",
-			Env:     map[string]string{},
-		},
-	}
+//go:embed templates/*.gotmpl
+var templates embed.FS
+
+var (
+	KeeperClickhousev2556YAML *types.Template = types.MustNewTemplateFromFS(templates, "templates/keeper.clickhouse.v2556.yaml.gotmpl", types.FormatYAML)
+)
+
+// Data is the template data for rendering ClickHouse Keeper configs.
+type Data struct {
+	Addresses   []types.Address
+	ServerCount int
+	ServerID    int // Current server ID for per-node config generation
 }
