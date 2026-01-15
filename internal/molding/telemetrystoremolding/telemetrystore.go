@@ -12,6 +12,12 @@ import (
 	"github.com/signoz/foundry/internal/types"
 )
 
+var (
+	telemetryStoreFunctionsFileFormat   = fmt.Sprintf("%%s-%s-%%s-functions.%%s", v1alpha1.MoldingKindTelemetryStore.String())
+	telemetryStorePerInstanceFileFormat = fmt.Sprintf("%%s-%s-%%s-%%d-%%d.%%s", v1alpha1.MoldingKindTelemetryStore.String())
+	telemetryStoreSharedFileFormat      = fmt.Sprintf("%%s-%s-%%s.%%s", v1alpha1.MoldingKindTelemetryStore.String())
+)
+
 var _ molding.Molding = (*telemetrystore)(nil)
 
 type telemetrystore struct {
@@ -35,16 +41,60 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 		return err
 	}
 
-	configBuf := bytes.NewBuffer(nil)
-	if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
-		return fmt.Errorf("failed to execute config template: %w", err)
+	metaDataName := config.Metadata.Name
+	storeKind := config.Spec.TelemetryStore.Kind
+
+	// Check if ports differ across addresses - if so, need per-instance config
+	requiresPerInstanceConfig := hasDistinctPorts(data.StoreAddresses)
+
+	configData := make(map[string]string)
+
+	// Generate functions file (shared across all instances)
+	functionBuf := bytes.NewBuffer(nil)
+	if err := FunctionsClickhousev2556YAML.Execute(functionBuf, data); err != nil {
+		return fmt.Errorf("failed to execute function template: %w", err)
+	}
+	configData[fmt.Sprintf(telemetryStoreFunctionsFileFormat, metaDataName, storeKind, FunctionsClickhousev2556YAML.Extension())] = functionBuf.String()
+
+	if requiresPerInstanceConfig {
+		// Per-instance config: generate separate config for each shard/replica
+		for shard := 0; shard < data.ShardCount; shard++ {
+			for replica := 0; replica < data.ReplicaCount; replica++ {
+				data.ServerID = shard*data.ReplicaCount + replica
+
+				configBuf := bytes.NewBuffer(nil)
+				if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
+					return fmt.Errorf("failed to execute config template for shard %d replica %d: %w", shard, replica, err)
+				}
+				configData[fmt.Sprintf(telemetryStorePerInstanceFileFormat, metaDataName, storeKind, shard, replica, ConfigClickhousev2556YAML.Extension())] = configBuf.String()
+			}
+		}
+	} else {
+		// Shared config: generate one config file for all instances
+		configBuf := bytes.NewBuffer(nil)
+		if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
+			return fmt.Errorf("failed to execute config template: %w", err)
+		}
+		configData[fmt.Sprintf(telemetryStoreSharedFileFormat, metaDataName, storeKind, ConfigClickhousev2556YAML.Extension())] = configBuf.String()
 	}
 
-	config.Spec.TelemetryStore.Spec.Config.Data = map[string]string{
-		"telemetrystore.yaml": configBuf.String(),
-	}
+	config.Spec.TelemetryStore.Spec.Config.Data = configData
 
 	return nil
+}
+
+// hasDistinctPorts returns true if addresses have different ports.
+func hasDistinctPorts(addresses []types.Address) bool {
+	if len(addresses) <= 1 {
+		return false
+	}
+	firstPort := addresses[0].Port()
+	for _, addr := range addresses[1:] {
+		if addr.Port() != firstPort {
+			return true
+		}
+	}
+	return false
 }
 
 func (molding *telemetrystore) getData(config *v1alpha1.Casting) (Data, error) {
@@ -56,7 +106,7 @@ func (molding *telemetrystore) getData(config *v1alpha1.Casting) (Data, error) {
 	cluster := config.Spec.TelemetryStore.Spec.Cluster
 
 	shardCount := max(*cluster.Shards, 1)
-	replicaCount := max(*cluster.Replicas, 1)
+	replicaCount := max(*cluster.Replicas+1, 1)
 
 	expectedNodes := shardCount * replicaCount
 	if len(storeAddresses) < expectedNodes {

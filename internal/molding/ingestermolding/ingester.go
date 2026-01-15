@@ -12,6 +12,11 @@ import (
 	"github.com/signoz/foundry/internal/molding"
 )
 
+var (
+	ingesterConfigFileFormat = fmt.Sprintf("%%s-%s-config.%%s", v1alpha1.MoldingKindIngester.String())
+	ingesterOpampFileFormat  = fmt.Sprintf("%%s-%s-opamp.%%s", v1alpha1.MoldingKindIngester.String())
+)
+
 var _ molding.Molding = (*ingester)(nil)
 
 type ingester struct {
@@ -46,11 +51,11 @@ func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Cast
 		return err
 	}
 
+	metaDataName := config.Metadata.Name
 	config.Spec.Ingester.Spec.Config.Data = map[string]string{
-		"ingester.yaml": configBuf.String(),
-		"opamp.yaml":    opampBuf.String(),
+		fmt.Sprintf(ingesterConfigFileFormat, metaDataName, ConfigV0129xTemplate.Extension()): configBuf.String(),
+		fmt.Sprintf(ingesterOpampFileFormat, metaDataName, OpampV0129xTemplate.Extension()):   opampBuf.String(),
 	}
-
 	return nil
 }
 
