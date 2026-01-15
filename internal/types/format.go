@@ -7,3 +7,7 @@ var (
 )
 
 type Format struct{ s string }
+
+func (f *Format) Name() string {
+	return f.s
+}

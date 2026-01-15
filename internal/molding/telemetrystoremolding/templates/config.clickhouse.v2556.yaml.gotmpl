@@ -48,7 +48,7 @@ zookeeper:
         host: {{ $addr.Host }}
         port: {{ $addr.Port }}
 {{- end }}
-tcp_port: 9000
+tcp_port: {{ (index .StoreAddresses .ServerID).Port }}
 user_defined_executable_functions_config: '*function.yaml'
 user_scripts_path: /var/lib/clickhouse/user_scripts/
 users:

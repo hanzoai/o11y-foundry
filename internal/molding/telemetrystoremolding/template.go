@@ -20,4 +20,7 @@ type Data struct {
 	KeeperAddresses []types.Address
 	ShardCount      int
 	ReplicaCount    int
+
+	// ServerID is the index into StoreAddresses (for per-instance config)
+	ServerID int
 }

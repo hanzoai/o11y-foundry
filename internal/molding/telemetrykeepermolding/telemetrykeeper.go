@@ -12,6 +12,10 @@ import (
 	"github.com/signoz/foundry/internal/types"
 )
 
+var (
+	telemetryKeeperFileFormat = fmt.Sprintf("%%s-%s-%%s-%%d.%%s", v1alpha1.MoldingKindTelemetryKeeper.String())
+)
+
 var _ molding.Molding = (*telemetrykeeper)(nil)
 
 type telemetrykeeper struct {
@@ -34,7 +38,8 @@ func (molding *telemetrykeeper) MoldV1Alpha1(ctx context.Context, config *v1alph
 		molding.logger.ErrorContext(ctx, "failed to get data", foundryerrors.LogAttr(err))
 		return err
 	}
-
+	metaDataName := config.Metadata.Name
+	kind := config.Spec.TelemetryKeeper.Kind.String()
 	// Generate per-server configs (each keeper node needs its own server_id)
 	configs := make(map[string]string, data.ServerCount)
 	for i := 0; i < data.ServerCount; i++ {
@@ -44,7 +49,7 @@ func (molding *telemetrykeeper) MoldV1Alpha1(ctx context.Context, config *v1alph
 		if err := KeeperClickhousev2556YAML.Execute(configBuf, data); err != nil {
 			return fmt.Errorf("failed to execute keeper template for server %d: %w", data.ServerID, err)
 		}
-		configs[fmt.Sprintf("keeper-%d.yaml", data.ServerID)] = configBuf.String()
+		configs[fmt.Sprintf(telemetryKeeperFileFormat, metaDataName, kind, i, KeeperClickhousev2556YAML.Extension())] = configBuf.String()
 	}
 
 	config.Spec.TelemetryKeeper.Spec.Config.Data = configs
