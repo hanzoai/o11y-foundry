@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	telemetryKeeperFileFormat = fmt.Sprintf("%%s-%s-%%s-%%d.%%s", v1alpha1.MoldingKindTelemetryKeeper.String())
+	TelemetryKeeperFileFormat = fmt.Sprintf("%%s-%s-%%s-%%d.%%s", v1alpha1.MoldingKindTelemetryKeeper.String())
 )
 
 var _ molding.Molding = (*telemetrykeeper)(nil)
@@ -49,7 +49,7 @@ func (molding *telemetrykeeper) MoldV1Alpha1(ctx context.Context, config *v1alph
 		if err := KeeperClickhousev2556YAML.Execute(configBuf, data); err != nil {
 			return fmt.Errorf("failed to execute keeper template for server %d: %w", data.ServerID, err)
 		}
-		configs[fmt.Sprintf(telemetryKeeperFileFormat, metaDataName, kind, i, KeeperClickhousev2556YAML.Extension())] = configBuf.String()
+		configs[fmt.Sprintf(TelemetryKeeperFileFormat, metaDataName, kind, i, KeeperClickhousev2556YAML.String())] = configBuf.String()
 	}
 
 	config.Spec.TelemetryKeeper.Spec.Config.Data = configs

@@ -8,6 +8,6 @@ var (
 
 type Format struct{ s string }
 
-func (f *Format) Name() string {
+func (f *Format) String() string {
 	return f.s
 }
