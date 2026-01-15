@@ -2,7 +2,10 @@ package telemetrykeepermolding
 
 import (
 	"embed"
+	"fmt"
 
+	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/internal/molding"
 	"github.com/signoz/foundry/internal/types"
 )
 
@@ -22,4 +25,11 @@ type Data struct {
 	// CreatePerInstance indicates if per-instance resources should be created (e.g., numbered paths, instance-specific configs)
 	// This is set by the casting's MoldingEnricher when needed by the template
 	CreatePerInstance bool
+}
+
+// KeeperConfigFileName generates the filename for a keeper config file.
+// Pattern: {metaName}-{moldingKind}-{kind}-{instance}.yaml.
+// Example: signoz-telemetrykeeper-clickhousekeeper-0.yaml.
+func KeeperConfigFileName(metaName, kind string, instance int) string {
+	return molding.FormatFileName([]string{metaName, v1alpha1.MoldingKindTelemetryKeeper.String(), kind, fmt.Sprintf("%d", instance)}, "yaml")
 }

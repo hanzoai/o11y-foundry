@@ -2,7 +2,10 @@ package telemetrystoremolding
 
 import (
 	"embed"
+	"fmt"
 
+	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/internal/molding"
 	"github.com/signoz/foundry/internal/types"
 )
 
@@ -26,4 +29,20 @@ type Data struct {
 	// CreatePerInstance indicates if per-instance resources should be created (e.g., numbered paths, instance-specific configs)
 	// This is set by the casting's MoldingEnricher when needed by the template
 	CreatePerInstance bool
+}
+
+// StoreFunctionsFileName generates the filename for the telemetry store functions file.
+// Pattern: {metaName}-{moldingKind}-{storeKind}-functions.yaml.
+// Example: signoz-telemetrystore-clickhouse-functions.yaml.
+func StoreFunctionsFileName(metaName, kind string, instance int) string {
+	return molding.FormatFileName([]string{metaName, v1alpha1.MoldingKindTelemetryStore.String(), kind, "functions"}, "yaml")
+}
+
+// StoreInstanceConfigFileName generates the filename for a per-instance telemetry store config file.
+// Pattern: {metaName}-{moldingKind}-{storeKind}-cluster-{shard}-{replica}.yaml.
+// Example: signoz-telemetrystore-clickhouse-cluster-0-1.yaml.
+func StoreInstanceConfigFileName(metaName, kind string, instance, replicaCount int) string {
+	shard := instance / replicaCount
+	replica := instance % replicaCount
+	return molding.FormatFileName([]string{metaName, v1alpha1.MoldingKindTelemetryStore.String(), kind, fmt.Sprintf("cluster-%d-%d", shard, replica)}, "yaml")
 }
