@@ -1,3 +1,5 @@
+{{- $shardId := div .ServerID .ReplicaCount }}
+{{- $replicaId := mod .ServerID .ReplicaCount }}
 dictionaries_config: '*_dictionary.xml'
 display_name: cluster
 distributed_ddl:
@@ -7,15 +9,15 @@ interserver_http_port: 9009
 listen_host: 0.0.0.0
 logger:
     count: 10
-    errorlog: /var/log/clickhouse-server/clickhouse-server.err.log
+    errorlog: /var/log/clickhouse-server{{- if .CreatePerInstance}}-{{ $shardId }}-{{ $replicaId }}{{end}}/clickhouse-server.err.log
     formatting:
         type: console
     level: information
-    log: /var/log/clickhouse-server/clickhouse-server.log
+    log: /var/log/clickhouse-server{{- if .CreatePerInstance}}-{{ $shardId }}-{{ $replicaId }}{{end}}/clickhouse-server.log
     size: 1000M
 macros:
-    replica: "01"
-    shard: "01"
+  shard: "{{ printf "%02d" (add $shardId 1) }}"
+  replica: "{{ printf "%02d" (add $replicaId 1) }}"
 profiles:
     default:
         load_balancing: random

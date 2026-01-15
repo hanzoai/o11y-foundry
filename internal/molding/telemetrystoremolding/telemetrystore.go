@@ -14,7 +14,7 @@ import (
 
 var (
 	TelemetryStoreFunctionsFileFormat = "%s-%s-%s-functions.%s"
-	// metdataName-moldingKind-telemetrystoreKind-cluster-shard-replica.yaml
+	// metdataName-moldingKind-telemetrystoreKind-cluster-shard-replica.
 	TelemetryStorePerInstanceFileFormat = "%s-%s-%s-cluster-%d-%d.%s"
 )
 
@@ -77,7 +77,7 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 		if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
 			return fmt.Errorf("failed to execute config template: %w", err)
 		}
-		configData[fmt.Sprintf(TelemetryStorePerInstanceFileFormat, metaDataName, v1alpha1.MoldingKindTelemetryStore, storeKind, 0, 0,ConfigClickhousev2556YAML.String())] = configBuf.String()
+		configData[fmt.Sprintf(TelemetryStorePerInstanceFileFormat, metaDataName, v1alpha1.MoldingKindTelemetryStore, storeKind, 0, 0, ConfigClickhousev2556YAML.String())] = configBuf.String()
 	}
 
 	config.Spec.TelemetryStore.Spec.Config.Data = configData
@@ -133,10 +133,19 @@ func (molding *telemetrystore) getData(config *v1alpha1.Casting) (Data, error) {
 		return Data{}, fmt.Errorf("failed to parse addresses: %w", err)
 	}
 
+	// Check if CreatePerInstance flag should be set (when key exists in Extras)
+	createPerInstance := false
+	if config.Spec.TelemetryStore.Status.Extras != nil {
+		if val, ok := config.Spec.TelemetryStore.Status.Extras["CreatePerInstance"]; ok && val == "true" {
+			createPerInstance = true
+		}
+	}
+
 	return Data{
-		StoreAddresses:  newStoreAddrs,
-		KeeperAddresses: newKeeperAddrs,
-		ShardCount:      shardCount,
-		ReplicaCount:    replicaCount,
+		StoreAddresses:    newStoreAddrs,
+		KeeperAddresses:   newKeeperAddrs,
+		ShardCount:        shardCount,
+		ReplicaCount:      replicaCount,
+		CreatePerInstance: createPerInstance,
 	}, nil
 }

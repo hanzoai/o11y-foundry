@@ -19,4 +19,7 @@ type Data struct {
 	ClientAddresses []types.Address // Client-facing addresses
 	ServerCount     int
 	ServerID        int // Current server ID for per-node config generation
+	// CreatePerInstance indicates if per-instance resources should be created (e.g., numbered paths, instance-specific configs)
+	// This is set by the casting's MoldingEnricher when needed by the template
+	CreatePerInstance bool
 }

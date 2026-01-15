@@ -58,12 +58,21 @@ func (molding *telemetrykeeper) MoldV1Alpha1(ctx context.Context, config *v1alph
 
 func (molding *telemetrykeeper) getData(config *v1alpha1.Casting) (Data, error) {
 	// Get server count from cluster spec
+	var data Data
 	serverCount := max(*config.Spec.TelemetryKeeper.Spec.Cluster.Replicas, 1)
+	data.ServerCount = serverCount
 
 	// Extract addresses from status
 	raftAddresses := config.Spec.TelemetryKeeper.Status.Addresses[v1alpha1.TelemetryKeeperRaftAddresses]
 	clientAddresses := config.Spec.TelemetryKeeper.Status.Addresses[v1alpha1.TelemetryKeeperClientAddresses]
 
+	// Check if CreatePerInstance flag should be set (when key exists in Extras)
+	data.CreatePerInstance = false
+	if config.Spec.TelemetryKeeper.Status.Extras != nil {
+		if val, ok := config.Spec.TelemetryKeeper.Status.Extras["CreatePerInstance"]; ok && val == "true" {
+			data.CreatePerInstance = true
+		}
+	}
 	// Validate sufficient addresses for server count
 	if len(raftAddresses) < serverCount {
 		return Data{}, fmt.Errorf(
@@ -83,15 +92,13 @@ func (molding *telemetrykeeper) getData(config *v1alpha1.Casting) (Data, error) 
 	if err != nil {
 		return Data{}, fmt.Errorf("failed to parse raft addresses: %w", err)
 	}
+	data.RaftAddresses = newRaftAddrs
 
 	newClientAddrs, err := types.NewAddresses(clientAddresses[:serverCount])
 	if err != nil {
 		return Data{}, fmt.Errorf("failed to parse client addresses: %w", err)
 	}
+	data.ClientAddresses = newClientAddrs
 
-	return Data{
-		RaftAddresses:   newRaftAddrs,
-		ClientAddresses: newClientAddrs,
-		ServerCount:     serverCount,
-	}, nil
+	return data, nil
 }
