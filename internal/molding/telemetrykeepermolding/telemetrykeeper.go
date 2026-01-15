@@ -12,10 +12,6 @@ import (
 	"github.com/signoz/foundry/internal/types"
 )
 
-var (
-	TelemetryKeeperFileFormat = fmt.Sprintf("%%s-%s-%%s-%%d.%%s", v1alpha1.MoldingKindTelemetryKeeper.String())
-)
-
 var _ molding.Molding = (*telemetrykeeper)(nil)
 
 type telemetrykeeper struct {
@@ -49,7 +45,7 @@ func (molding *telemetrykeeper) MoldV1Alpha1(ctx context.Context, config *v1alph
 		if err := KeeperClickhousev2556YAML.Execute(configBuf, data); err != nil {
 			return fmt.Errorf("failed to execute keeper template for server %d: %w", data.ServerID, err)
 		}
-		configs[fmt.Sprintf(TelemetryKeeperFileFormat, metaDataName, kind, i, KeeperClickhousev2556YAML.String())] = configBuf.String()
+		configs[KeeperConfigFileName(metaDataName, kind, i)] = configBuf.String()
 	}
 
 	config.Spec.TelemetryKeeper.Spec.Config.Data = configs
@@ -69,7 +65,7 @@ func (molding *telemetrykeeper) getData(config *v1alpha1.Casting) (Data, error) 
 	// Check if CreatePerInstance flag should be set (when key exists in Extras)
 	data.CreatePerInstance = false
 	if config.Spec.TelemetryKeeper.Status.Extras != nil {
-		if val, ok := config.Spec.TelemetryKeeper.Status.Extras["CreatePerInstance"]; ok && val == "true" {
+		if val, ok := config.Spec.TelemetryKeeper.Status.Extras[v1alpha1.CreatePerInstanceKey]; ok && val == "true" {
 			data.CreatePerInstance = true
 		}
 	}
