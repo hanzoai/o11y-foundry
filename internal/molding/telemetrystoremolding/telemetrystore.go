@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	telemetryStoreFunctionsFileFormat   = fmt.Sprintf("%%s-%s-%%s-functions.%%s", v1alpha1.MoldingKindTelemetryStore.String())
-	telemetryStorePerInstanceFileFormat = fmt.Sprintf("%%s-%s-%%s-%%d-%%d.%%s", v1alpha1.MoldingKindTelemetryStore.String())
-	telemetryStoreSharedFileFormat      = fmt.Sprintf("%%s-%s-%%s.%%s", v1alpha1.MoldingKindTelemetryStore.String())
+	TelemetryStoreFunctionsFileFormat = "%s-%s-%s-functions.%s"
+	// metdataName-moldingKind-telemetrystoreKind-cluster-shard-replica.yaml
+	TelemetryStorePerInstanceFileFormat = "%s-%s-%s-cluster-%d-%d.%s"
 )
 
 var _ molding.Molding = (*telemetrystore)(nil)
@@ -42,9 +42,10 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 	}
 
 	metaDataName := config.Metadata.Name
-	storeKind := config.Spec.TelemetryStore.Kind
+	storeKind := config.Spec.TelemetryStore.Kind.String()
 
 	// Check if ports differ across addresses - if so, need per-instance config
+	// Also generate per-instance config if we have multiple nodes (shards * replicas > 1)
 	requiresPerInstanceConfig := hasDistinctPorts(data.StoreAddresses)
 
 	configData := make(map[string]string)
@@ -54,7 +55,7 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 	if err := FunctionsClickhousev2556YAML.Execute(functionBuf, data); err != nil {
 		return fmt.Errorf("failed to execute function template: %w", err)
 	}
-	configData[fmt.Sprintf(telemetryStoreFunctionsFileFormat, metaDataName, storeKind, FunctionsClickhousev2556YAML.Extension())] = functionBuf.String()
+	configData[fmt.Sprintf(TelemetryStoreFunctionsFileFormat, metaDataName, molding.Kind().String(), storeKind, FunctionsClickhousev2556YAML.String())] = functionBuf.String()
 
 	if requiresPerInstanceConfig {
 		// Per-instance config: generate separate config for each shard/replica
@@ -66,7 +67,8 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 				if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
 					return fmt.Errorf("failed to execute config template for shard %d replica %d: %w", shard, replica, err)
 				}
-				configData[fmt.Sprintf(telemetryStorePerInstanceFileFormat, metaDataName, storeKind, shard, replica, ConfigClickhousev2556YAML.Extension())] = configBuf.String()
+				// metdataName-moldingKind-telemetrystoreKind-cluster-shard-replica.yaml
+				configData[fmt.Sprintf(TelemetryStorePerInstanceFileFormat, metaDataName, molding.Kind().String(), storeKind, shard, replica, ConfigClickhousev2556YAML.String())] = configBuf.String()
 			}
 		}
 	} else {
@@ -75,7 +77,7 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 		if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
 			return fmt.Errorf("failed to execute config template: %w", err)
 		}
-		configData[fmt.Sprintf(telemetryStoreSharedFileFormat, metaDataName, storeKind, ConfigClickhousev2556YAML.Extension())] = configBuf.String()
+		configData[fmt.Sprintf(TelemetryStorePerInstanceFileFormat, metaDataName, v1alpha1.MoldingKindTelemetryStore, storeKind, 0, 0,ConfigClickhousev2556YAML.String())] = configBuf.String()
 	}
 
 	config.Spec.TelemetryStore.Spec.Config.Data = configData

@@ -61,6 +61,6 @@ func (t *Template) Execute(w io.Writer, data any) error {
 	return newtmpl.ExecuteTemplate(w, t.name, data)
 }
 
-func (t *Template) Extension() string {
-	return t.format.Name()
+func (t *Template) String() string {
+	return t.format.String()
 }
