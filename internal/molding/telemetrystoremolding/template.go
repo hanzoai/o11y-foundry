@@ -23,4 +23,7 @@ type Data struct {
 
 	// ServerID is the index into StoreAddresses (for per-instance config)
 	ServerID int
+	// CreatePerInstance indicates if per-instance resources should be created (e.g., numbered paths, instance-specific configs)
+	// This is set by the casting's MoldingEnricher when needed by the template
+	CreatePerInstance bool
 }

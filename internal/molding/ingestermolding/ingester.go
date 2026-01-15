@@ -54,7 +54,7 @@ func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Cast
 	metaDataName := config.Metadata.Name
 	config.Spec.Ingester.Spec.Config.Data = map[string]string{
 		fmt.Sprintf(IngesterConfigFileFormat, molding.Kind().String(), metaDataName, ConfigV0129xTemplate.String()): configBuf.String(),
-		fmt.Sprintf(IngesterOpampFileFormat,  molding.Kind().String(),metaDataName, OpampV0129xTemplate.String()):   opampBuf.String(),
+		fmt.Sprintf(IngesterOpampFileFormat, molding.Kind().String(), metaDataName, OpampV0129xTemplate.String()):   opampBuf.String(),
 	}
 	return nil
 }

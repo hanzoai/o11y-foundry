@@ -3,15 +3,15 @@ keeper_server:
         operation_timeout_ms: 10000
         raft_logs_level: warning
         session_timeout_ms: 30000
-    log_storage_path: /var/lib/clickhouse/coordination/log
+    log_storage_path: /var/lib/clickhouse/coordination{{- if .CreatePerInstance}}-{{.ServerID}}{{end}}/log
     raft_configuration:
-    {{- range $i := until .ServerCount }}
-        {{- $addr := index $.RaftAddresses $i }}
-        - server:
-            hostname: {{ $addr.Host }}
-            port: {{ $addr.Port }}
-            id: {{ $i }}
-    {{- end }}
+      server:
+      {{- range $i := until .ServerCount }}
+          {{- $addr := index $.RaftAddresses $i }}
+            - hostname: {{ $addr.Host }}
+              port: {{ $addr.Port }}
+              id: {{ $i }}
+      {{- end }}
     server_id: {{ .ServerID }}
-    snapshot_storage_path: /var/lib/clickhouse/coordination/snapshots
+    snapshot_storage_path: /var/lib/clickhouse/coordination{{- if .CreatePerInstance}}-{{.ServerID}}{{end}}/snapshots
     tcp_port: {{ (index .ClientAddresses .ServerID).Port }}
