@@ -49,7 +49,7 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 	if err := FunctionsClickhousev2556YAML.Execute(functionBuf, data); err != nil {
 		return fmt.Errorf("failed to execute function template: %w", err)
 	}
-	configData[StoreFunctionsFileName(metaDataName, storeKind, 0)] = functionBuf.String()
+	configData[StoreFunctionsFileName(metaDataName, storeKind)] = functionBuf.String()
 
 	if requiresPerInstanceConfig {
 		// Per-instance config: generate separate config for each shard/replica
@@ -61,8 +61,7 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 				if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
 					return fmt.Errorf("failed to execute config template for shard %d replica %d: %w", shard, replica, err)
 				}
-				instanceID := shard*data.ReplicaCount + replica
-				configData[StoreInstanceConfigFileName(metaDataName, storeKind, instanceID, data.ReplicaCount)] = configBuf.String()
+				configData[StoreInstanceConfigFileName(metaDataName, storeKind, shard, replica)] = configBuf.String()
 			}
 		}
 	} else {
@@ -71,7 +70,7 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 		if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
 			return fmt.Errorf("failed to execute config template: %w", err)
 		}
-		configData[StoreInstanceConfigFileName(metaDataName, storeKind, 0, data.ReplicaCount)] = configBuf.String()
+		configData[StoreInstanceConfigFileName(metaDataName, storeKind, 0, 0)] = configBuf.String()
 	}
 
 	config.Spec.TelemetryStore.Spec.Config.Data = configData

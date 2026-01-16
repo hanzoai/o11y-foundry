@@ -34,15 +34,13 @@ type Data struct {
 // StoreFunctionsFileName generates the filename for the telemetry store functions file.
 // Pattern: {metaName}-{moldingKind}-{storeKind}-functions.yaml.
 // Example: signoz-telemetrystore-clickhouse-functions.yaml.
-func StoreFunctionsFileName(metaName, kind string, instance int) string {
+func StoreFunctionsFileName(metaName, kind string) string {
 	return molding.FormatFileName([]string{metaName, v1alpha1.MoldingKindTelemetryStore.String(), kind, "functions"}, "yaml")
 }
 
 // StoreInstanceConfigFileName generates the filename for a per-instance telemetry store config file.
 // Pattern: {metaName}-{moldingKind}-{storeKind}-cluster-{shard}-{replica}.yaml.
 // Example: signoz-telemetrystore-clickhouse-cluster-0-1.yaml.
-func StoreInstanceConfigFileName(metaName, kind string, instance, replicaCount int) string {
-	shard := instance / replicaCount
-	replica := instance % replicaCount
+func StoreInstanceConfigFileName(metaName, kind string, shard int, replica int) string {
 	return molding.FormatFileName([]string{metaName, v1alpha1.MoldingKindTelemetryStore.String(), kind, fmt.Sprintf("cluster-%d-%d", shard, replica)}, "yaml")
 }
