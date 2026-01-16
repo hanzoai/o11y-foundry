@@ -37,11 +37,6 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 
 	metaDataName := config.Metadata.Name
 	storeKind := config.Spec.TelemetryStore.Kind.String()
-
-	// Check if ports differ across addresses - if so, need per-instance config
-	// Also generate per-instance config if we have multiple nodes (shards * replicas > 1)
-	requiresPerInstanceConfig := hasDistinctPorts(data.StoreAddresses)
-
 	configData := make(map[string]string)
 
 	// Generate functions file (shared across all instances)
@@ -51,7 +46,7 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 	}
 	configData[StoreFunctionsFileName(metaDataName, storeKind)] = functionBuf.String()
 
-	if requiresPerInstanceConfig {
+	if data.CreatePerInstance {
 		// Per-instance config: generate separate config for each shard/replica
 		for shard := 0; shard < data.ShardCount; shard++ {
 			for replica := 0; replica < data.ReplicaCount; replica++ {
@@ -76,20 +71,6 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 	config.Spec.TelemetryStore.Spec.Config.Data = configData
 
 	return nil
-}
-
-// hasDistinctPorts returns true if addresses have different ports.
-func hasDistinctPorts(addresses []types.Address) bool {
-	if len(addresses) <= 1 {
-		return false
-	}
-	firstPort := addresses[0].Port()
-	for _, addr := range addresses[1:] {
-		if addr.Port() != firstPort {
-			return true
-		}
-	}
-	return false
 }
 
 func (molding *telemetrystore) getData(config *v1alpha1.Casting) (Data, error) {
