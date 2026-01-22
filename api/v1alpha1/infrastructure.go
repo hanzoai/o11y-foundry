@@ -18,7 +18,7 @@ type Infrastructure struct {
 	Provider InfrastructureProvider `json:"provider,omitempty" yaml:"provider,omitempty"`
 }
 
-// DefaultInfrastructure returns the default Infrastructure configuration
+// DefaultInfrastructure returns the default Infrastructure configuration.
 func DefaultInfrastructure() Infrastructure {
 	return Infrastructure{
 		Enabled:  false,

@@ -10,19 +10,19 @@ import (
 	"github.com/signoz/foundry/internal/types"
 )
 
-// TerraformGenerator generates Terraform manifests for infrastructure deployment
+// TerraformGenerator generates Terraform manifests for infrastructure deployment.
 type TerraformGenerator struct {
 	logger *slog.Logger
 }
 
-// NewGenerator creates a new TerraformGenerator
+// NewGenerator creates a new TerraformGenerator.
 func NewGenerator(logger *slog.Logger) *TerraformGenerator {
 	return &TerraformGenerator{
 		logger: logger,
 	}
 }
 
-// Generate creates Terraform manifests based on the casting configuration and infrastructure provider
+// Generate creates Terraform manifests based on the casting configuration and infrastructure provider.
 func (g *TerraformGenerator) Generate(ctx context.Context, config v1alpha1.Casting) ([]types.Material, error) {
 	if !config.Spec.Infrastructure.Enabled {
 		return nil, nil
@@ -86,7 +86,7 @@ func (g *TerraformGenerator) Generate(ctx context.Context, config v1alpha1.Casti
 	return materials, nil
 }
 
-// getTemplatesForProvider returns the appropriate templates for the given infrastructure provider
+// getTemplatesForProvider returns the appropriate templates for the given infrastructure provider.
 func (g *TerraformGenerator) getTemplatesForProvider(provider v1alpha1.InfrastructureProvider) (main, vars, outputs *types.Template, err error) {
 	switch provider {
 	case v1alpha1.InfrastructureProviderAWS:
