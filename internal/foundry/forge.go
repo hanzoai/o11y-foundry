@@ -81,14 +81,34 @@ func (foundry *Foundry) Forge(ctx context.Context, config v1alpha1.Casting, writ
 
 	if len(materials) == 0 {
 		foundry.Logger.WarnContext(ctx, "casting did not generate any materials for writing")
-		return nil
+	} else {
+		// Writing the materials
+		foundry.Logger.InfoContext(ctx, "writing materials", slog.String("casting.metadata.name", config.Metadata.Name))
+		err = writer.WriteMany(ctx, materials...)
+		if err != nil {
+			return err
+		}
 	}
 
-	// Writing the materials
-	foundry.Logger.InfoContext(ctx, "writing materials", slog.String("casting.metadata.name", config.Metadata.Name))
-	err = writer.WriteMany(ctx, materials...)
-	if err != nil {
-		return err
+	// Generate Terraform manifests if infrastructure is enabled
+	if config.Spec.Infrastructure.Enabled {
+		foundry.Logger.InfoContext(ctx, "generating terraform manifests",
+			slog.String("casting.metadata.name", config.Metadata.Name),
+			slog.String("infrastructure.provider", string(config.Spec.Infrastructure.Provider)))
+
+		terraformMaterials, err := foundry.TerraformGenerator.Generate(ctx, config)
+		if err != nil {
+			foundry.Logger.ErrorContext(ctx, "failed to generate terraform manifests", foundryerrors.LogAttr(err))
+			return fmt.Errorf("failed to generate terraform manifests: %w", err)
+		}
+
+		if len(terraformMaterials) > 0 {
+			foundry.Logger.InfoContext(ctx, "writing terraform materials", slog.Int("count", len(terraformMaterials)))
+			err = writer.WriteMany(ctx, terraformMaterials...)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

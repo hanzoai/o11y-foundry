@@ -14,6 +14,9 @@ type CastingSpec struct {
 	// Mode platform in which the platform will run.
 	Deployment TypeDeployment `json:"deployment,omitempty" yaml:"deployment,omitempty"`
 
+	// Infrastructure configuration for generating infrastructure manifests (e.g., Terraform).
+	Infrastructure Infrastructure `json:"infrastructure,omitempty" yaml:"infrastructure,omitempty"`
+
 	// The configuration for the signoz molding.
 	Signoz SigNoz `json:"signoz,omitempty" yaml:"signoz,omitempty"`
 
@@ -63,6 +66,7 @@ func DefaultCasting() Casting {
 			Name: "signoz",
 		},
 		Spec: CastingSpec{
+			Infrastructure:  DefaultInfrastructure(),
 			Signoz:          DefaultSigNoz(),
 			TelemetryStore:  DefaultTelemetryStore(),
 			TelemetryKeeper: DefaultTelemetryKeeper(),

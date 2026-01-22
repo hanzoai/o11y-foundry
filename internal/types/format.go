@@ -4,6 +4,7 @@ var (
 	FormatYAML Format = Format{s: "yaml"}
 	FormatJSON Format = Format{s: "json"}
 	FormatINI  Format = Format{s: "ini"}
+	FormatHCL  Format = Format{s: "hcl"}
 )
 
 type Format struct{ s string }

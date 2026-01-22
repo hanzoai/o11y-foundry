@@ -8,6 +8,7 @@ import (
 	"github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/casting/dockercomposecasting"
 	"github.com/signoz/foundry/internal/casting/systemdcasting"
+	"github.com/signoz/foundry/internal/casting/terraformcasting"
 	"github.com/signoz/foundry/internal/loader"
 	"github.com/signoz/foundry/internal/loader/yamlloader"
 	"github.com/signoz/foundry/internal/molding"
@@ -19,6 +20,7 @@ import (
 	"github.com/signoz/foundry/internal/tooler"
 	"github.com/signoz/foundry/internal/tooler/dockercomposetooler"
 	"github.com/signoz/foundry/internal/tooler/dockertooler"
+	"github.com/signoz/foundry/internal/tooler/terraformtooler"
 )
 
 type Foundry struct {
@@ -36,6 +38,9 @@ type Foundry struct {
 
 	// Moldings for the different molding kinds.
 	Moldings map[v1alpha1.MoldingKind]molding.Molding
+
+	// TerraformGenerator for generating infrastructure manifests.
+	TerraformGenerator *terraformcasting.TerraformGenerator
 }
 
 func New(logger *slog.Logger) (*Foundry, error) {
@@ -45,11 +50,12 @@ func New(logger *slog.Logger) (*Foundry, error) {
 		Loader: yamlLoader,
 		Logger: logger,
 		Castings: map[string]casting.Casting{
-			"docker": dockercomposecasting.New(logger),
+			"docker":  dockercomposecasting.New(logger),
 			"systemd": systemdcasting.New(logger),
 		},
 		Toolers: map[string][]tooler.Tooler{
-			"docker": {dockertooler.New(), dockercomposetooler.New()},
+			"docker":    {dockertooler.New(), dockercomposetooler.New()},
+			"terraform": {terraformtooler.New()},
 		},
 		Moldings: map[v1alpha1.MoldingKind]molding.Molding{
 			v1alpha1.MoldingKindTelemetryStore:  telemetrystoremolding.New(logger),
@@ -58,6 +64,7 @@ func New(logger *slog.Logger) (*Foundry, error) {
 			v1alpha1.MoldingKindSignoz:          signozmolding.New(logger),
 			v1alpha1.MoldingKindIngester:        ingestermolding.New(logger),
 		},
+		TerraformGenerator: terraformcasting.NewGenerator(logger),
 	}, nil
 }
 
