@@ -49,6 +49,14 @@ func NewINIMaterial(contents []byte, path string) (Material, error) {
 	}, nil
 }
 
+func NewHCLMaterial(contents []byte, path string) (Material, error) {
+	return Material{
+		contents: contents,
+		path:     path,
+		format:   FormatHCL,
+	}, nil
+}
+
 func (m Material) Contents() []byte {
 	return m.contents
 }
@@ -68,6 +76,9 @@ func (m Material) FmtContents() []byte {
 			return nil
 		}
 		return fmtContents
+	case FormatHCL:
+		// HCL is stored as plain text, return as-is
+		return m.contents
 	default:
 		return m.contents
 	}
