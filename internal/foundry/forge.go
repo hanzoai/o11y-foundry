@@ -8,11 +8,10 @@ import (
 	"github.com/signoz/foundry/api/v1alpha1"
 	foundryerrors "github.com/signoz/foundry/internal/errors"
 	"github.com/signoz/foundry/internal/molding"
-	"github.com/signoz/foundry/internal/types"
 	"github.com/signoz/foundry/internal/writer"
 )
 
-func (foundry *Foundry) Forge(ctx context.Context, config v1alpha1.Casting, writerOpts *writer.Options) error {
+func (foundry *Foundry) Forge(ctx context.Context, config v1alpha1.Casting, path string, poursWriterOpts *writer.Options) error {
 	foundry.Logger.InfoContext(ctx, "starting forging pipeline", slog.String("casting.metadata.name", config.Metadata.Name))
 
 	// Get the casting for the deployment mode
@@ -57,39 +56,28 @@ func (foundry *Foundry) Forge(ctx context.Context, config v1alpha1.Casting, writ
 
 	// Forging the configuration
 	foundry.Logger.InfoContext(ctx, "forging configuration with the merged spec and generating materials", slog.String("casting.metadata.name", config.Metadata.Name))
-	materials, err := casting.Forge(ctx, config)
+	materials, err := casting.Forge(ctx, config, poursWriterOpts.TargetDirectory)
 	if err != nil {
 		return err
 	}
 
 	// writing the merged config to the config file
-	foundry.Logger.InfoContext(ctx, "writing merged config to the config file", slog.String("casting.metadata.name", config.Metadata.Name))
-	writer, err := writer.New(foundry.Logger, writerOpts)
-	if err != nil {
-		return err
-	}
+	foundry.Logger.InfoContext(ctx, "writing lock file", slog.String("casting.metadata.name", config.Metadata.Name))
 
-	configMaterial, err := types.NewMaterial(config, "casting.yaml.lock", types.FormatYAML)
-	if err != nil {
-		return err
-	}
-
-	err = writer.Write(ctx, configMaterial)
+	err = foundry.Config.CreateV1Alpha1Lock(ctx, config, path)
 	if err != nil {
 		return err
 	}
 
 	if len(materials) == 0 {
 		foundry.Logger.WarnContext(ctx, "casting did not generate any materials for writing")
-	} else {
-		// Writing the materials
-		foundry.Logger.InfoContext(ctx, "writing materials", slog.String("casting.metadata.name", config.Metadata.Name))
-		err = writer.WriteMany(ctx, materials...)
-		if err != nil {
-			return err
-		}
+		return nil
 	}
 
+	poursWriter, err := writer.New(foundry.Logger, poursWriterOpts)
+	if err != nil {
+		return err
+	}
 	// Generate Terraform manifests if infrastructure is enabled
 	if config.Spec.Infrastructure.Enabled {
 		foundry.Logger.InfoContext(ctx, "generating terraform manifests",
@@ -104,11 +92,18 @@ func (foundry *Foundry) Forge(ctx context.Context, config v1alpha1.Casting, writ
 
 		if len(terraformMaterials) > 0 {
 			foundry.Logger.InfoContext(ctx, "writing terraform materials", slog.Int("count", len(terraformMaterials)))
-			err = writer.WriteMany(ctx, terraformMaterials...)
+			err = poursWriter.WriteMany(ctx, terraformMaterials...)
 			if err != nil {
 				return err
 			}
 		}
+	}
+
+	// Writing the materials
+	foundry.Logger.InfoContext(ctx, "writing materials", slog.String("casting.metadata.name", config.Metadata.Name))
+	err = poursWriter.WriteMany(ctx, materials...)
+	if err != nil {
+		return err
 	}
 
 	return nil

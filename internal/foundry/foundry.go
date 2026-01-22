@@ -9,8 +9,8 @@ import (
 	"github.com/signoz/foundry/internal/casting/dockercomposecasting"
 	"github.com/signoz/foundry/internal/casting/systemdcasting"
 	"github.com/signoz/foundry/internal/casting/terraformcasting"
-	"github.com/signoz/foundry/internal/loader"
-	"github.com/signoz/foundry/internal/loader/yamlloader"
+	"github.com/signoz/foundry/internal/config"
+	"github.com/signoz/foundry/internal/config/yamlconfig"
 	"github.com/signoz/foundry/internal/molding"
 	"github.com/signoz/foundry/internal/molding/ingestermolding"
 	"github.com/signoz/foundry/internal/molding/metastoremolding"
@@ -18,14 +18,18 @@ import (
 	"github.com/signoz/foundry/internal/molding/telemetrykeepermolding"
 	"github.com/signoz/foundry/internal/molding/telemetrystoremolding"
 	"github.com/signoz/foundry/internal/tooler"
+	"github.com/signoz/foundry/internal/tooler/clickhousekeepertooler"
+	"github.com/signoz/foundry/internal/tooler/clickhousetooler"
 	"github.com/signoz/foundry/internal/tooler/dockercomposetooler"
 	"github.com/signoz/foundry/internal/tooler/dockertooler"
+	"github.com/signoz/foundry/internal/tooler/postgrestooler"
+	"github.com/signoz/foundry/internal/tooler/systemdtooler"
 	"github.com/signoz/foundry/internal/tooler/terraformtooler"
 )
 
 type Foundry struct {
-	// Loader for loading the casting configuration.
-	Loader loader.Loader
+	// Config for loading the casting configuration.
+	Config config.Config
 
 	// Logger for logging.
 	Logger *slog.Logger
@@ -44,18 +48,24 @@ type Foundry struct {
 }
 
 func New(logger *slog.Logger) (*Foundry, error) {
-	yamlLoader := yamlloader.New()
+	yamlConfig := yamlconfig.New()
 
 	return &Foundry{
-		Loader: yamlLoader,
+		Config: yamlConfig,
 		Logger: logger,
 		Castings: map[string]casting.Casting{
 			"docker":  dockercomposecasting.New(logger),
 			"systemd": systemdcasting.New(logger),
 		},
 		Toolers: map[string][]tooler.Tooler{
-			"docker":    {dockertooler.New(), dockercomposetooler.New()},
 			"terraform": {terraformtooler.New()},
+			"docker":    {dockertooler.New(), dockercomposetooler.New()},
+			"systemd": {
+				systemdtooler.New(),
+				clickhousekeepertooler.New(),
+				clickhousetooler.New(),
+				postgrestooler.New(),
+			},
 		},
 		Moldings: map[v1alpha1.MoldingKind]molding.Molding{
 			v1alpha1.MoldingKindTelemetryStore:  telemetrystoremolding.New(logger),
