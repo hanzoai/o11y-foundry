@@ -1,6 +1,6 @@
 package v1alpha1
 
-// InfrastructureProvider represents the cloud provider for infrastructure deployment
+// InfrastructureProvider represents the cloud provider for infrastructure deployment.
 type InfrastructureProvider string
 
 const (
@@ -9,7 +9,7 @@ const (
 	InfrastructureProviderAzure InfrastructureProvider = "azure"
 )
 
-// Infrastructure holds the configuration for infrastructure manifest generation (e.g., Terraform)
+// Infrastructure holds the configuration for infrastructure manifest generation (e.g., Terraform).
 type Infrastructure struct {
 	// Whether infrastructure manifest generation is enabled
 	Enabled bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`

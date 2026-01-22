@@ -15,7 +15,7 @@ type Template struct {
 	tmpl   *template.Template
 }
 
-// customFuncMap returns a template.FuncMap with custom functions merged with sprig functions
+// customFuncMap returns a template.FuncMap with custom functions merged with sprig functions.
 func customFuncMap() template.FuncMap {
 	funcMap := sprig.FuncMap()
 
