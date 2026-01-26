@@ -1,7 +1,6 @@
 package foundry
 
 import (
-	"fmt"
 	"log/slog"
 
 	"github.com/signoz/foundry/api/v1alpha1"
@@ -34,11 +33,8 @@ type Foundry struct {
 	// Logger for logging.
 	Logger *slog.Logger
 
-	// Castings for the different deployment modes.
-	Castings map[string]casting.Casting
-
-	// Toolers for the different deployment modes.
-	Toolers map[string][]tooler.Tooler
+	// Registry for the different deployments.
+	Registry *Registry
 
 	// Moldings for the different molding kinds.
 	Moldings map[v1alpha1.MoldingKind]molding.Molding
@@ -49,6 +45,11 @@ type Foundry struct {
 
 func New(logger *slog.Logger) (*Foundry, error) {
 	yamlConfig := yamlconfig.New()
+
+	registry, err := NewRegistry(logger)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Foundry{
 		Config: yamlConfig,
@@ -76,22 +77,4 @@ func New(logger *slog.Logger) (*Foundry, error) {
 		},
 		TerraformGenerator: terraformcasting.NewGenerator(logger),
 	}, nil
-}
-
-func (foundry *Foundry) CastingByDeploymentMode(deploymentMode string) (casting.Casting, error) {
-	casting, ok := foundry.Castings[deploymentMode]
-	if !ok {
-		return nil, fmt.Errorf("deployment mode '%s' is not supported, raise an issue at https://github.com/signoz/foundry/issues to request support for this mode", deploymentMode)
-	}
-
-	return casting, nil
-}
-
-func (foundry *Foundry) ToolersByDeploymentMode(deploymentMode string) ([]tooler.Tooler, error) {
-	toolers, ok := foundry.Toolers[deploymentMode]
-	if !ok {
-		return nil, fmt.Errorf("deployment mode '%s' is not supported, raise an issue at https://github.com/signoz/foundry/issues to request support for this mode", deploymentMode)
-	}
-
-	return toolers, nil
 }

@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
+
 	"github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/molding"
-	"log/slog"
 
 	"net"
 	"os"
@@ -243,8 +244,8 @@ func (c *systemdCasting) forgeTelemetryStore(tmpl *types.Template, cfg *v1alpha1
 	spec.Status.Extras["cfgPath"] = filepath.Join("/etc/clickhouse-server/", filepath.Base(mats[0].Path()))
 
 	// Create service materials for each shard/replica
-	for s := 0; s < shards; s++ {
-		for r := 0; r < reps; r++ {
+	for s := range shards {
+		for r := range reps {
 			svcName := fmt.Sprintf("%s-telemetrystore-%s-%d-%d%s", cfg.Metadata.Name, kind, s, r, svcSuffix)
 			svcMat, err := c.renderTemplate(tmpl, cfg, svcName)
 			if err != nil {
@@ -283,7 +284,7 @@ func (c *systemdCasting) forgeTelemetryKeeper(tmpl *types.Template, cfg *v1alpha
 	spec.Status.Extras["cfgPath"] = filepath.Join("/etc/clickhouse-keeper/", filepath.Base(mats[0].Path()))
 
 	// Create service materials for each replica
-	for r := 0; r < reps; r++ {
+	for r := range reps {
 		svcName := fmt.Sprintf("%s-telemetrykeeper-%s-%d%s", cfg.Metadata.Name, kind, r, svcSuffix)
 		svcMat, err := c.renderTemplate(tmpl, cfg, svcName)
 		if err != nil {
@@ -560,17 +561,13 @@ func (c *systemdCasting) waitForServices(ctx context.Context, services []string)
 
 // waitForClickHouse waits for ClickHouse to accept TCP connections.
 func (c *systemdCasting) waitForClickHouse(ctx context.Context, config *v1alpha1.Casting) error {
-	addrs := config.Spec.TelemetryStore.Status.Addresses
-	if addrs == nil {
+	addrs := config.Spec.TelemetryStore.Status.Addresses.TCP
+	if len(addrs) == 0 {
 		return fmt.Errorf("no clickhouse addresses configured")
-	}
-	addresses, ok := addrs[v1alpha1.TelemetryStoreClusterAddresses]
-	if !ok || len(addresses) == 0 {
-		return fmt.Errorf("no clickhouse cluster addresses found")
 	}
 
 	// Extract host:port from the address (format: tcp://host:port)
-	addr := addresses[0]
+	addr := addrs[0]
 	addr = strings.TrimPrefix(addr, "tcp://")
 
 	c.logger.DebugContext(ctx, "Waiting for ClickHouse to be ready", slog.String("address", addr))
@@ -621,10 +618,8 @@ func (c *systemdCasting) runMigrator(ctx context.Context, config *v1alpha1.Casti
 
 	// Get DSN
 	var dsn string
-	if addrs := config.Spec.TelemetryStore.Status.Addresses; addrs != nil {
-		if a, ok := addrs[v1alpha1.TelemetryStoreClusterAddresses]; ok && len(a) > 0 {
-			dsn = a[0]
-		}
+	if addrs := config.Spec.TelemetryStore.Status.Addresses.TCP; len(addrs) > 0 {
+		dsn = addrs[0]
 	}
 
 	// Run migrations

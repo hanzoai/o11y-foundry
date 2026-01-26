@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"gopkg.in/ini.v1"
 )
@@ -44,30 +45,41 @@ func JSONToINI(contents []byte) ([]byte, error) {
 	ini.PrettyFormat = false
 	ini.DefaultHeader = false
 
+	var sectionKeys []string
+	var flatKeys []string
+
 	for key, value := range data {
 		// Check if the value is a nested map (a Section)
 		// or a simple value (a flat key for DEFAULT)
-		if sectionMap, ok := value.(map[string]any); ok {
-			// It's a Section (e.g., "Service": {...})
-			sec, _ := cfg.NewSection(key)
-			for k, v := range sectionMap {
-				if _, err := sec.NewKey(k, fmt.Sprint(v)); err != nil {
-					return nil, err
-				}
-			}
-		} else if sectionMapStr, ok := value.(map[string]string); ok {
-			// Handle case where it might be map[string]string
-			sec, _ := cfg.NewSection(key)
-			for k, v := range sectionMapStr {
-				if _, err := sec.NewKey(k, v); err != nil {
-					return nil, err
-				}
-			}
+		if _, ok := value.(map[string]any); ok {
+			sectionKeys = append(sectionKeys, key)
 		} else {
-			// It's a flat key (e.g., "PORT": "8080"), put in DEFAULT section
-			if _, err := cfg.Section("").NewKey(key, fmt.Sprint(value)); err != nil {
+			flatKeys = append(flatKeys, key)
+		}
+	}
+
+	sort.Strings(sectionKeys)
+	for _, k := range sectionKeys {
+		sec, _ := cfg.NewSection(k)
+
+		m := data[k].(map[string]any)
+		keys := make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+
+		sort.Strings(keys)
+		for _, k := range keys {
+			if _, err := sec.NewKey(k, fmt.Sprint(m[k])); err != nil {
 				return nil, err
 			}
+		}
+	}
+
+	sort.Strings(flatKeys)
+	for _, k := range flatKeys {
+		if _, err := cfg.Section("").NewKey(k, fmt.Sprint(data[k])); err != nil {
+			return nil, err
 		}
 	}
 

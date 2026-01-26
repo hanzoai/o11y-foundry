@@ -2,15 +2,22 @@ package v1alpha1
 
 import "github.com/signoz/foundry/internal/types"
 
-var (
-	// IngesterReceiverAddresses is the key for telemetry receiver endpoint addresses.
-	IngesterReceiverAddresses string = "receiver"
-)
-
 type Ingester struct {
-	Spec MoldingSpec `json:"spec,omitempty" yaml:"spec,omitempty"`
+	// Specification for the ingester.
+	Spec MoldingSpec `json:"spec" yaml:"spec"`
 
-	Status MoldingStatus `json:"status,omitempty" yaml:"status,omitempty"`
+	// Status of the ingester.
+	Status IngesterStatus `json:"status" yaml:"status,omitempty"`
+}
+
+type IngesterStatus struct {
+	MoldingStatus `json:",inline" yaml:",inline"`
+
+	Addresses IngesterStatusAddresses `json:"addresses" yaml:"addresses,omitempty"`
+}
+
+type IngesterStatusAddresses struct {
+	OTLP []string `json:"otlp" yaml:"otlp"`
 }
 
 func DefaultIngester() Ingester {
