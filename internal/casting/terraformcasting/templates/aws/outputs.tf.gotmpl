@@ -21,101 +21,79 @@ output "public_subnet_ids" {
 }
 
 # =============================================================================
-# ECS Outputs
-# =============================================================================
-
-output "ecs_cluster_name" {
-  description = "Name of the ECS cluster"
-  value       = aws_ecs_cluster.main.name
-}
-
-output "ecs_cluster_arn" {
-  description = "ARN of the ECS cluster"
-  value       = aws_ecs_cluster.main.arn
-}
-
-# =============================================================================
-# Service Outputs
+# EC2 Instance Outputs
 # =============================================================================
 {{- if .Spec.TelemetryKeeper.Spec.Enabled }}
 
-output "telemetrykeeper_service_name" {
-  description = "Name of the TelemetryKeeper ECS service"
-  value       = aws_ecs_service.telemetrykeeper.name
+output "telemetrykeeper_instance_ids" {
+  description = "IDs of the TelemetryKeeper EC2 instances"
+  value       = aws_instance.telemetrykeeper[*].id
+}
+
+output "telemetrykeeper_private_ips" {
+  description = "Private IP addresses of the TelemetryKeeper EC2 instances"
+  value       = aws_instance.telemetrykeeper[*].private_ip
 }
 {{- end }}
 
 {{- if .Spec.TelemetryStore.Spec.Enabled }}
 
-output "telemetrystore_service_name" {
-  description = "Name of the TelemetryStore ECS service"
-  value       = aws_ecs_service.telemetrystore.name
+output "telemetrystore_instance_ids" {
+  description = "IDs of the TelemetryStore EC2 instances"
+  value       = aws_instance.telemetrystore[*].id
+}
+
+output "telemetrystore_private_ips" {
+  description = "Private IP addresses of the TelemetryStore EC2 instances"
+  value       = aws_instance.telemetrystore[*].private_ip
 }
 {{- end }}
 
 {{- if .Spec.MetaStore.Spec.Enabled }}
 
-output "metastore_service_name" {
-  description = "Name of the MetaStore ECS service"
-  value       = aws_ecs_service.metastore.name
+output "metastore_instance_ids" {
+  description = "IDs of the MetaStore EC2 instances"
+  value       = aws_instance.metastore[*].id
+}
+
+output "metastore_private_ips" {
+  description = "Private IP addresses of the MetaStore EC2 instances"
+  value       = aws_instance.metastore[*].private_ip
 }
 {{- end }}
 
 {{- if .Spec.Ingester.Spec.Enabled }}
 
-output "ingester_service_name" {
-  description = "Name of the Ingester ECS service"
-  value       = aws_ecs_service.ingester.name
+output "ingester_instance_ids" {
+  description = "IDs of the Ingester EC2 instances"
+  value       = aws_instance.ingester[*].id
+}
+
+output "ingester_public_ips" {
+  description = "Public IP addresses of the Ingester EC2 instances"
+  value       = aws_instance.ingester[*].public_ip
+}
+
+output "ingester_private_ips" {
+  description = "Private IP addresses of the Ingester EC2 instances"
+  value       = aws_instance.ingester[*].private_ip
 }
 {{- end }}
 
 {{- if .Spec.Signoz.Spec.Enabled }}
 
-output "signoz_service_name" {
-  description = "Name of the SigNoz ECS service"
-  value       = aws_ecs_service.signoz.name
+output "signoz_instance_ids" {
+  description = "IDs of the SigNoz EC2 instances"
+  value       = aws_instance.signoz[*].id
 }
-{{- end }}
 
-# =============================================================================
-# CloudWatch Log Groups
-# =============================================================================
-{{- if .Spec.TelemetryKeeper.Spec.Enabled }}
-
-output "telemetrykeeper_log_group" {
-  description = "CloudWatch log group for TelemetryKeeper"
-  value       = aws_cloudwatch_log_group.telemetrykeeper.name
+output "signoz_public_ips" {
+  description = "Public IP addresses of the SigNoz EC2 instances"
+  value       = aws_instance.signoz[*].public_ip
 }
-{{- end }}
 
-{{- if .Spec.TelemetryStore.Spec.Enabled }}
-
-output "telemetrystore_log_group" {
-  description = "CloudWatch log group for TelemetryStore"
-  value       = aws_cloudwatch_log_group.telemetrystore.name
-}
-{{- end }}
-
-{{- if .Spec.MetaStore.Spec.Enabled }}
-
-output "metastore_log_group" {
-  description = "CloudWatch log group for MetaStore"
-  value       = aws_cloudwatch_log_group.metastore.name
-}
-{{- end }}
-
-{{- if .Spec.Ingester.Spec.Enabled }}
-
-output "ingester_log_group" {
-  description = "CloudWatch log group for Ingester"
-  value       = aws_cloudwatch_log_group.ingester.name
-}
-{{- end }}
-
-{{- if .Spec.Signoz.Spec.Enabled }}
-
-output "signoz_log_group" {
-  description = "CloudWatch log group for SigNoz"
-  value       = aws_cloudwatch_log_group.signoz.name
+output "signoz_private_ips" {
+  description = "Private IP addresses of the SigNoz EC2 instances"
+  value       = aws_instance.signoz[*].private_ip
 }
 {{- end }}

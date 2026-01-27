@@ -4,9 +4,6 @@ import (
 	"log/slog"
 
 	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/casting/dockercomposecasting"
-	"github.com/signoz/foundry/internal/casting/systemdcasting"
 	"github.com/signoz/foundry/internal/casting/terraformcasting"
 	"github.com/signoz/foundry/internal/config"
 	"github.com/signoz/foundry/internal/config/yamlconfig"
@@ -16,14 +13,6 @@ import (
 	"github.com/signoz/foundry/internal/molding/signozmolding"
 	"github.com/signoz/foundry/internal/molding/telemetrykeepermolding"
 	"github.com/signoz/foundry/internal/molding/telemetrystoremolding"
-	"github.com/signoz/foundry/internal/tooler"
-	"github.com/signoz/foundry/internal/tooler/clickhousekeepertooler"
-	"github.com/signoz/foundry/internal/tooler/clickhousetooler"
-	"github.com/signoz/foundry/internal/tooler/dockercomposetooler"
-	"github.com/signoz/foundry/internal/tooler/dockertooler"
-	"github.com/signoz/foundry/internal/tooler/postgrestooler"
-	"github.com/signoz/foundry/internal/tooler/systemdtooler"
-	"github.com/signoz/foundry/internal/tooler/terraformtooler"
 )
 
 type Foundry struct {
@@ -52,22 +41,9 @@ func New(logger *slog.Logger) (*Foundry, error) {
 	}
 
 	return &Foundry{
-		Config: yamlConfig,
-		Logger: logger,
-		Castings: map[string]casting.Casting{
-			"docker":  dockercomposecasting.New(logger),
-			"systemd": systemdcasting.New(logger),
-		},
-		Toolers: map[string][]tooler.Tooler{
-			"terraform": {terraformtooler.New()},
-			"docker":    {dockertooler.New(), dockercomposetooler.New()},
-			"systemd": {
-				systemdtooler.New(),
-				clickhousekeepertooler.New(),
-				clickhousetooler.New(),
-				postgrestooler.New(),
-			},
-		},
+		Config:   yamlConfig,
+		Logger:   logger,
+		Registry: registry,
 		Moldings: map[v1alpha1.MoldingKind]molding.Molding{
 			v1alpha1.MoldingKindTelemetryStore:  telemetrystoremolding.New(logger),
 			v1alpha1.MoldingKindTelemetryKeeper: telemetrykeepermolding.New(logger),
