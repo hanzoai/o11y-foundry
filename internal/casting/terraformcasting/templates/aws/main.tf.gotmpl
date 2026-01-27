@@ -59,6 +59,27 @@ resource "aws_internet_gateway" "main" {
   })
 }
 
+resource "aws_eip" "nat" {
+  count  = var.az_count
+  domain = "vpc"
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name}-nat-eip-${count.index}"
+  })
+}
+
+resource "aws_nat_gateway" "main" {
+  count         = var.az_count
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name}-nat-${count.index}"
+  })
+
+  depends_on = [aws_internet_gateway.main]
+}
+
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -76,6 +97,26 @@ resource "aws_route_table_association" "public" {
   count          = var.az_count
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table" "private" {
+  count  = var.az_count
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main[count.index].id
+  }
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name}-private-rt-${count.index}"
+  })
+}
+
+resource "aws_route_table_association" "private" {
+  count          = var.az_count
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private[count.index].id
 }
 
 # =============================================================================
@@ -101,6 +142,14 @@ resource "aws_security_group" "telemetrykeeper" {
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
     description = "ClickHouse Keeper raft port"
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+    description = "SSH access from VPC"
   }
 
   egress {
@@ -136,6 +185,14 @@ resource "aws_security_group" "telemetrystore" {
     description = "ClickHouse HTTP port"
   }
 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+    description = "SSH access from VPC"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -159,6 +216,14 @@ resource "aws_security_group" "metastore" {
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
     description = "PostgreSQL port"
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+    description = "SSH access from VPC"
   }
 
   egress {
@@ -194,6 +259,14 @@ resource "aws_security_group" "ingester" {
     description = "OTLP HTTP port"
   }
 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+    description = "SSH access from VPC"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -227,6 +300,14 @@ resource "aws_security_group" "signoz" {
     description = "SigNoz API port"
   }
 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+    description = "SSH access from VPC"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -240,515 +321,150 @@ resource "aws_security_group" "signoz" {
 }
 
 # =============================================================================
-# ECS Cluster
+# SSH Key Pair
 # =============================================================================
 
-resource "aws_ecs_cluster" "main" {
-  name = "${local.name}-cluster"
+resource "aws_key_pair" "main" {
+  count      = var.ssh_public_key != "" ? 1 : 0
+  key_name   = "${local.name}-key"
+  public_key = var.ssh_public_key
 
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
+  tags = local.common_tags
+}
+
+# =============================================================================
+# AMI Data Source
+# =============================================================================
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 
-  tags = local.common_tags
-}
-
-resource "aws_ecs_cluster_capacity_providers" "main" {
-  cluster_name = aws_ecs_cluster.main.name
-
-  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
-
-  default_capacity_provider_strategy {
-    base              = 1
-    weight            = 100
-    capacity_provider = "FARGATE"
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 
 # =============================================================================
-# CloudWatch Log Groups
-# =============================================================================
-
-resource "aws_cloudwatch_log_group" "telemetrykeeper" {
-  name              = "/ecs/${local.name}/telemetrykeeper"
-  retention_in_days = 30
-  tags              = local.common_tags
-}
-
-resource "aws_cloudwatch_log_group" "telemetrystore" {
-  name              = "/ecs/${local.name}/telemetrystore"
-  retention_in_days = 30
-  tags              = local.common_tags
-}
-
-resource "aws_cloudwatch_log_group" "metastore" {
-  name              = "/ecs/${local.name}/metastore"
-  retention_in_days = 30
-  tags              = local.common_tags
-}
-
-resource "aws_cloudwatch_log_group" "ingester" {
-  name              = "/ecs/${local.name}/ingester"
-  retention_in_days = 30
-  tags              = local.common_tags
-}
-
-resource "aws_cloudwatch_log_group" "signoz" {
-  name              = "/ecs/${local.name}/signoz"
-  retention_in_days = 30
-  tags              = local.common_tags
-}
-
-# =============================================================================
-# IAM Roles
-# =============================================================================
-
-resource "aws_iam_role" "ecs_task_execution" {
-  name = "${local.name}-ecs-task-execution"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = local.common_tags
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
-  role       = aws_iam_role.ecs_task_execution.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-resource "aws_iam_role" "ecs_task" {
-  name = "${local.name}-ecs-task"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = local.common_tags
-}
-
-# =============================================================================
-# ECS Task Definitions
+# EC2 Instances
 # =============================================================================
 {{- if .Spec.TelemetryKeeper.Spec.Enabled }}
 
-resource "aws_ecs_task_definition" "telemetrykeeper" {
-  family                   = "${local.name}-telemetrykeeper"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 512
-  memory                   = 1024
-  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task.arn
+resource "aws_instance" "telemetrykeeper" {
+  count                  = {{ derefInt .Spec.TelemetryKeeper.Spec.Cluster.Replicas }}
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.telemetrykeeper_instance_type
+  subnet_id              = aws_subnet.private[count.index % var.az_count].id
+  vpc_security_group_ids = [aws_security_group.telemetrykeeper.id]
+  key_name               = var.ssh_public_key != "" ? aws_key_pair.main[0].key_name : null
 
-  container_definitions = jsonencode([
-    {
-      name  = "telemetrykeeper"
-      image = "docker.io/clickhouse/clickhouse-keeper:{{ .Spec.TelemetryKeeper.Spec.Version }}"
-      
-      portMappings = [
-        {
-          containerPort = 9181
-          protocol      = "tcp"
-        },
-        {
-          containerPort = 9234
-          protocol      = "tcp"
-        }
-      ]
+  root_block_device {
+    volume_size = var.telemetrykeeper_volume_size
+    volume_type = "gp3"
+    encrypted   = true
+  }
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.telemetrykeeper.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "ecs"
-        }
-      }
-
-      healthCheck = {
-        command     = ["CMD", "clickhouse-keeper-client", "-h", "localhost", "-p", "9181", "-q", "ls"]
-        interval    = 30
-        timeout     = 10
-        retries     = 3
-        startPeriod = 40
-      }
-    }
-  ])
-
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name}-telemetrykeeper-${count.index}"
+    Role = "telemetrykeeper"
+  })
 }
 {{- end }}
 
 {{- if .Spec.TelemetryStore.Spec.Enabled }}
 
-resource "aws_ecs_task_definition" "telemetrystore" {
-  family                   = "${local.name}-telemetrystore"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 2048
-  memory                   = 4096
-  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task.arn
+resource "aws_instance" "telemetrystore" {
+  count                  = {{ derefInt .Spec.TelemetryStore.Spec.Cluster.Replicas }}
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.telemetrystore_instance_type
+  subnet_id              = aws_subnet.private[count.index % var.az_count].id
+  vpc_security_group_ids = [aws_security_group.telemetrystore.id]
+  key_name               = var.ssh_public_key != "" ? aws_key_pair.main[0].key_name : null
 
-  container_definitions = jsonencode([
-    {
-      name  = "telemetrystore"
-      image = "docker.io/clickhouse/clickhouse-server:{{ .Spec.TelemetryStore.Spec.Version }}"
-      
-      environment = [
-        {
-          name  = "CLICKHOUSE_SKIP_USER_SETUP"
-          value = "1"
-        }
-      ]
+  root_block_device {
+    volume_size = var.telemetrystore_volume_size
+    volume_type = "gp3"
+    encrypted   = true
+  }
 
-      portMappings = [
-        {
-          containerPort = 9000
-          protocol      = "tcp"
-        },
-        {
-          containerPort = 8123
-          protocol      = "tcp"
-        }
-      ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.telemetrystore.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "ecs"
-        }
-      }
-
-      healthCheck = {
-        command     = ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
-        interval    = 30
-        timeout     = 10
-        retries     = 3
-        startPeriod = 40
-      }
-    }
-  ])
-
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name}-telemetrystore-${count.index}"
+    Role = "telemetrystore"
+  })
 }
 {{- end }}
 
 {{- if .Spec.MetaStore.Spec.Enabled }}
 
-resource "aws_ecs_task_definition" "metastore" {
-  family                   = "${local.name}-metastore"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 512
-  memory                   = 1024
-  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task.arn
+resource "aws_instance" "metastore" {
+  count                  = {{ derefInt .Spec.MetaStore.Spec.Cluster.Replicas }}
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.metastore_instance_type
+  subnet_id              = aws_subnet.private[count.index % var.az_count].id
+  vpc_security_group_ids = [aws_security_group.metastore.id]
+  key_name               = var.ssh_public_key != "" ? aws_key_pair.main[0].key_name : null
 
-  container_definitions = jsonencode([
-    {
-      name  = "metastore"
-      image = "docker.io/{{ .Spec.MetaStore.Kind }}:{{ .Spec.MetaStore.Spec.Version }}"
-      
-      environment = [
-        {
-          name  = "POSTGRES_USER"
-          value = "signoz"
-        },
-        {
-          name  = "POSTGRES_PASSWORD"
-          value = "signoz"
-        },
-        {
-          name  = "POSTGRES_DB"
-          value = "signoz"
-        }
-      ]
+  root_block_device {
+    volume_size = var.metastore_volume_size
+    volume_type = "gp3"
+    encrypted   = true
+  }
 
-      portMappings = [
-        {
-          containerPort = 5432
-          protocol      = "tcp"
-        }
-      ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.metastore.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "ecs"
-        }
-      }
-
-      healthCheck = {
-        command     = ["CMD-SHELL", "pg_isready -U signoz -d signoz"]
-        interval    = 30
-        timeout     = 10
-        retries     = 3
-        startPeriod = 30
-      }
-    }
-  ])
-
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name}-metastore-${count.index}"
+    Role = "metastore"
+  })
 }
 {{- end }}
 
 {{- if .Spec.Ingester.Spec.Enabled }}
 
-resource "aws_ecs_task_definition" "ingester" {
-  family                   = "${local.name}-ingester"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 1024
-  memory                   = 2048
-  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task.arn
+resource "aws_instance" "ingester" {
+  count                  = {{ derefInt .Spec.Ingester.Spec.Cluster.Replicas }}
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.ingester_instance_type
+  subnet_id              = aws_subnet.public[count.index % var.az_count].id
+  vpc_security_group_ids = [aws_security_group.ingester.id]
+  key_name               = var.ssh_public_key != "" ? aws_key_pair.main[0].key_name : null
 
-  container_definitions = jsonencode([
-    {
-      name  = "ingester"
-      image = "docker.io/signoz/signoz-otel-collector:v{{ .Spec.Ingester.Spec.Version }}"
-      
-      command = ["--config=/etc/otel-collector-config.yaml"]
+  root_block_device {
+    volume_size = var.ingester_volume_size
+    volume_type = "gp3"
+    encrypted   = true
+  }
 
-      portMappings = [
-        {
-          containerPort = 4317
-          protocol      = "tcp"
-        },
-        {
-          containerPort = 4318
-          protocol      = "tcp"
-        }
-      ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ingester.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "ecs"
-        }
-      }
-
-      healthCheck = {
-        command     = ["CMD", "wget", "--spider", "-q", "http://localhost:13133/health"]
-        interval    = 30
-        timeout     = 10
-        retries     = 3
-        startPeriod = 30
-      }
-    }
-  ])
-
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name}-ingester-${count.index}"
+    Role = "ingester"
+  })
 }
 {{- end }}
 
 {{- if .Spec.Signoz.Spec.Enabled }}
 
-resource "aws_ecs_task_definition" "signoz" {
-  family                   = "${local.name}-signoz"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 1024
-  memory                   = 2048
-  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task.arn
+resource "aws_instance" "signoz" {
+  count                  = {{ derefInt .Spec.Signoz.Spec.Cluster.Replicas }}
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.signoz_instance_type
+  subnet_id              = aws_subnet.public[count.index % var.az_count].id
+  vpc_security_group_ids = [aws_security_group.signoz.id]
+  key_name               = var.ssh_public_key != "" ? aws_key_pair.main[0].key_name : null
 
-  container_definitions = jsonencode([
-    {
-      name  = "signoz"
-      image = "docker.io/signoz/signoz:v{{ .Spec.Signoz.Spec.Version }}"
-      
-      environment = [
-        {
-          name  = "SIGNOZ_ALERTMANAGER_PROVIDER"
-          value = "signoz"
-        },
-        {
-          name  = "STORAGE"
-          value = "clickhouse"
-        },
-        {
-          name  = "GODEBUG"
-          value = "netdns=go"
-        },
-        {
-          name  = "TELEMETRY_ENABLED"
-          value = "true"
-        },
-        {
-          name  = "DEPLOYMENT_TYPE"
-          value = "terraform-aws"
-        }
-      ]
-
-      portMappings = [
-        {
-          containerPort = 8080
-          protocol      = "tcp"
-        },
-        {
-          containerPort = 3301
-          protocol      = "tcp"
-        }
-      ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.signoz.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "ecs"
-        }
-      }
-
-      healthCheck = {
-        command     = ["CMD", "wget", "--spider", "-q", "http://localhost:3301/api/v1/health"]
-        interval    = 30
-        timeout     = 10
-        retries     = 3
-        startPeriod = 60
-      }
-    }
-  ])
-
-  tags = local.common_tags
-}
-{{- end }}
-
-# =============================================================================
-# ECS Services
-# =============================================================================
-{{- if .Spec.TelemetryKeeper.Spec.Enabled }}
-
-resource "aws_ecs_service" "telemetrykeeper" {
-  name            = "${local.name}-telemetrykeeper"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.telemetrykeeper.arn
-  desired_count   = {{ derefInt .Spec.TelemetryKeeper.Spec.Cluster.Replicas }}
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = aws_subnet.private[*].id
-    security_groups  = [aws_security_group.telemetrykeeper.id]
-    assign_public_ip = false
+  root_block_device {
+    volume_size = var.signoz_volume_size
+    volume_type = "gp3"
+    encrypted   = true
   }
 
-  tags = local.common_tags
-}
-{{- end }}
-
-{{- if .Spec.TelemetryStore.Spec.Enabled }}
-
-resource "aws_ecs_service" "telemetrystore" {
-  name            = "${local.name}-telemetrystore"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.telemetrystore.arn
-  desired_count   = {{ derefInt .Spec.TelemetryStore.Spec.Cluster.Replicas }}
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = aws_subnet.private[*].id
-    security_groups  = [aws_security_group.telemetrystore.id]
-    assign_public_ip = false
-  }
-
-  {{- if .Spec.TelemetryKeeper.Spec.Enabled }}
-  depends_on = [aws_ecs_service.telemetrykeeper]
-  {{- end }}
-
-  tags = local.common_tags
-}
-{{- end }}
-
-{{- if .Spec.MetaStore.Spec.Enabled }}
-
-resource "aws_ecs_service" "metastore" {
-  name            = "${local.name}-metastore"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.metastore.arn
-  desired_count   = {{ derefInt .Spec.MetaStore.Spec.Cluster.Replicas }}
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = aws_subnet.private[*].id
-    security_groups  = [aws_security_group.metastore.id]
-    assign_public_ip = false
-  }
-
-  tags = local.common_tags
-}
-{{- end }}
-
-{{- if .Spec.Ingester.Spec.Enabled }}
-
-resource "aws_ecs_service" "ingester" {
-  name            = "${local.name}-ingester"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.ingester.arn
-  desired_count   = {{ derefInt .Spec.Ingester.Spec.Cluster.Replicas }}
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = aws_subnet.public[*].id
-    security_groups  = [aws_security_group.ingester.id]
-    assign_public_ip = true
-  }
-
-  {{- if .Spec.TelemetryStore.Spec.Enabled }}
-  depends_on = [aws_ecs_service.telemetrystore]
-  {{- end }}
-
-  tags = local.common_tags
-}
-{{- end }}
-
-{{- if .Spec.Signoz.Spec.Enabled }}
-
-resource "aws_ecs_service" "signoz" {
-  name            = "${local.name}-signoz"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.signoz.arn
-  desired_count   = {{ derefInt .Spec.Signoz.Spec.Cluster.Replicas }}
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = aws_subnet.public[*].id
-    security_groups  = [aws_security_group.signoz.id]
-    assign_public_ip = true
-  }
-
-  {{- if and .Spec.MetaStore.Spec.Enabled .Spec.TelemetryStore.Spec.Enabled }}
-  depends_on = [aws_ecs_service.metastore, aws_ecs_service.telemetrystore]
-  {{- end }}
-
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name}-signoz-${count.index}"
+    Role = "signoz"
+  })
 }
 {{- end }}

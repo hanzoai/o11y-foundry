@@ -25,142 +25,88 @@ variable "name" {
   default     = "{{ .Metadata.Name }}"
 }
 
+variable "ssh_public_key" {
+  description = "SSH public key for EC2 instance access. Leave empty to disable SSH key pair creation."
+  type        = string
+  default     = ""
+}
+
 # =============================================================================
 # TelemetryKeeper Variables
 # =============================================================================
 
-variable "telemetrykeeper_enabled" {
-  description = "Enable TelemetryKeeper (ClickHouse Keeper)"
-  type        = bool
-  default     = {{ .Spec.TelemetryKeeper.Spec.Enabled }}
-}
-
-variable "telemetrykeeper_version" {
-  description = "TelemetryKeeper version"
+variable "telemetrykeeper_instance_type" {
+  description = "EC2 instance type for TelemetryKeeper"
   type        = string
-  default     = "{{ .Spec.TelemetryKeeper.Spec.Version }}"
+  default     = "t3.small"
 }
 
-variable "telemetrykeeper_cpu" {
-  description = "CPU units for TelemetryKeeper task"
+variable "telemetrykeeper_volume_size" {
+  description = "Root volume size (GB) for TelemetryKeeper instances"
   type        = number
-  default     = 512
-}
-
-variable "telemetrykeeper_memory" {
-  description = "Memory (MB) for TelemetryKeeper task"
-  type        = number
-  default     = 1024
+  default     = 20
 }
 
 # =============================================================================
 # TelemetryStore Variables
 # =============================================================================
 
-variable "telemetrystore_enabled" {
-  description = "Enable TelemetryStore (ClickHouse)"
-  type        = bool
-  default     = {{ .Spec.TelemetryStore.Spec.Enabled }}
-}
-
-variable "telemetrystore_version" {
-  description = "TelemetryStore version"
+variable "telemetrystore_instance_type" {
+  description = "EC2 instance type for TelemetryStore"
   type        = string
-  default     = "{{ .Spec.TelemetryStore.Spec.Version }}"
+  default     = "r6i.xlarge"
 }
 
-variable "telemetrystore_cpu" {
-  description = "CPU units for TelemetryStore task"
+variable "telemetrystore_volume_size" {
+  description = "Root volume size (GB) for TelemetryStore instances"
   type        = number
-  default     = 2048
-}
-
-variable "telemetrystore_memory" {
-  description = "Memory (MB) for TelemetryStore task"
-  type        = number
-  default     = 4096
+  default     = 100
 }
 
 # =============================================================================
 # MetaStore Variables
 # =============================================================================
 
-variable "metastore_enabled" {
-  description = "Enable MetaStore (PostgreSQL)"
-  type        = bool
-  default     = {{ .Spec.MetaStore.Spec.Enabled }}
-}
-
-variable "metastore_version" {
-  description = "MetaStore version"
+variable "metastore_instance_type" {
+  description = "EC2 instance type for MetaStore"
   type        = string
-  default     = "{{ .Spec.MetaStore.Spec.Version }}"
+  default     = "t3.small"
 }
 
-variable "metastore_cpu" {
-  description = "CPU units for MetaStore task"
+variable "metastore_volume_size" {
+  description = "Root volume size (GB) for MetaStore instances"
   type        = number
-  default     = 512
-}
-
-variable "metastore_memory" {
-  description = "Memory (MB) for MetaStore task"
-  type        = number
-  default     = 1024
+  default     = 20
 }
 
 # =============================================================================
 # Ingester Variables
 # =============================================================================
 
-variable "ingester_enabled" {
-  description = "Enable Ingester (OpenTelemetry Collector)"
-  type        = bool
-  default     = {{ .Spec.Ingester.Spec.Enabled }}
-}
-
-variable "ingester_version" {
-  description = "Ingester version"
+variable "ingester_instance_type" {
+  description = "EC2 instance type for Ingester"
   type        = string
-  default     = "{{ .Spec.Ingester.Spec.Version }}"
+  default     = "t3.medium"
 }
 
-variable "ingester_cpu" {
-  description = "CPU units for Ingester task"
+variable "ingester_volume_size" {
+  description = "Root volume size (GB) for Ingester instances"
   type        = number
-  default     = 1024
-}
-
-variable "ingester_memory" {
-  description = "Memory (MB) for Ingester task"
-  type        = number
-  default     = 2048
+  default     = 50
 }
 
 # =============================================================================
 # SigNoz Variables
 # =============================================================================
 
-variable "signoz_enabled" {
-  description = "Enable SigNoz"
-  type        = bool
-  default     = {{ .Spec.Signoz.Spec.Enabled }}
-}
-
-variable "signoz_version" {
-  description = "SigNoz version"
+variable "signoz_instance_type" {
+  description = "EC2 instance type for SigNoz"
   type        = string
-  default     = "{{ .Spec.Signoz.Spec.Version }}"
+  default     = "t3.medium"
 }
 
-variable "signoz_cpu" {
-  description = "CPU units for SigNoz task"
+variable "signoz_volume_size" {
+  description = "Root volume size (GB) for SigNoz instances"
   type        = number
-  default     = 1024
-}
-
-variable "signoz_memory" {
-  description = "Memory (MB) for SigNoz task"
-  type        = number
-  default     = 2048
+  default     = 50
 }

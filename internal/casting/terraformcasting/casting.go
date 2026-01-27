@@ -5,10 +5,13 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"path/filepath"
 
 	"github.com/signoz/foundry/api/v1alpha1"
 	"github.com/signoz/foundry/internal/types"
 )
+
+const infrastructureDir = "infrastructure"
 
 // TerraformGenerator generates Terraform manifests for infrastructure deployment.
 type TerraformGenerator struct {
@@ -44,7 +47,7 @@ func (g *TerraformGenerator) Generate(ctx context.Context, config v1alpha1.Casti
 	if err := mainTemplate.Execute(mainBuf, config); err != nil {
 		return nil, fmt.Errorf("failed to execute main.tf template: %w", err)
 	}
-	mainMaterial, err := types.NewHCLMaterial(mainBuf.Bytes(), "terraform/main.tf")
+	mainMaterial, err := types.NewHCLMaterial(mainBuf.Bytes(), filepath.Join(infrastructureDir, "main.tf"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create main.tf material: %w", err)
 	}
@@ -55,7 +58,7 @@ func (g *TerraformGenerator) Generate(ctx context.Context, config v1alpha1.Casti
 	if err := varsTemplate.Execute(varsBuf, config); err != nil {
 		return nil, fmt.Errorf("failed to execute variables.tf template: %w", err)
 	}
-	varsMaterial, err := types.NewHCLMaterial(varsBuf.Bytes(), "terraform/variables.tf")
+	varsMaterial, err := types.NewHCLMaterial(varsBuf.Bytes(), filepath.Join(infrastructureDir, "variables.tf"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create variables.tf material: %w", err)
 	}
@@ -66,7 +69,7 @@ func (g *TerraformGenerator) Generate(ctx context.Context, config v1alpha1.Casti
 	if err := providersTFTemplate.Execute(providersBuf, config); err != nil {
 		return nil, fmt.Errorf("failed to execute providers.tf template: %w", err)
 	}
-	providersMaterial, err := types.NewHCLMaterial(providersBuf.Bytes(), "terraform/providers.tf")
+	providersMaterial, err := types.NewHCLMaterial(providersBuf.Bytes(), filepath.Join(infrastructureDir, "providers.tf"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create providers.tf material: %w", err)
 	}
@@ -77,7 +80,7 @@ func (g *TerraformGenerator) Generate(ctx context.Context, config v1alpha1.Casti
 	if err := outputsTemplate.Execute(outputsBuf, config); err != nil {
 		return nil, fmt.Errorf("failed to execute outputs.tf template: %w", err)
 	}
-	outputsMaterial, err := types.NewHCLMaterial(outputsBuf.Bytes(), "terraform/outputs.tf")
+	outputsMaterial, err := types.NewHCLMaterial(outputsBuf.Bytes(), filepath.Join(infrastructureDir, "outputs.tf"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create outputs.tf material: %w", err)
 	}
