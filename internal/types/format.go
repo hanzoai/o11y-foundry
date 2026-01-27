@@ -5,6 +5,7 @@ var (
 	FormatJSON Format = Format{s: "json"}
 	FormatINI  Format = Format{s: "ini"}
 	FormatHCL  Format = Format{s: "hcl"}
+	FormatText Format = Format{s: "text"}
 )
 
 type Format struct{ s string }
