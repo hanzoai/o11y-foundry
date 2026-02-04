@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/tidwall/gjson"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	kyaml "sigs.k8s.io/yaml"
@@ -75,7 +76,6 @@ func (m Material) FmtContents() []byte {
 		if err != nil {
 			return nil
 		}
-
 		return fmtContents
 	case FormatINI:
 		fmtContents, err := JSONToINI(m.contents)
@@ -85,6 +85,7 @@ func (m Material) FmtContents() []byte {
 		return fmtContents
 	case FormatHCL:
 		// HCL is stored as plain text, return as-is
+		return m.contents
 	case FormatText:
 		return m.contents
 	default:
