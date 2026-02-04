@@ -2,7 +2,7 @@ services:
   {{- range $replicaIdx := until (int $.Spec.TelemetryKeeper.Spec.Cluster.Replicas) }}
   {{ $.Metadata.Name }}-telemetrykeeper-{{ $.Spec.TelemetryKeeper.Kind }}-{{ $replicaIdx }}:
     container_name: {{ $.Metadata.Name }}-telemetrykeeper-{{ $.Spec.TelemetryKeeper.Kind }}-{{ $replicaIdx  }}
-    image: docker.io/clickhouse/clickhouse-keeper:{{ $.Spec.TelemetryKeeper.Spec.Version }}
+    image: {{ $.Spec.TelemetryKeeper.Spec.Image }}
     networks:
       - {{ $.Metadata.Name }}-network
     volumes:
@@ -37,7 +37,7 @@ services:
       {{ $.Metadata.Name }}-telemetrykeeper-{{ $.Spec.TelemetryKeeper.Kind }}-{{ $keeperIdx }}:
         condition: service_healthy
       {{- end }}
-    image: docker.io/clickhouse/clickhouse-server:{{ $.Spec.TelemetryStore.Spec.Version }}
+    image: {{ $.Spec.TelemetryStore.Spec.Image }}
     networks:
       - {{ $.Metadata.Name }}-network
     environment:
@@ -62,7 +62,7 @@ services:
   {{- end }}
   {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-user-scripts:
     container_name: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-user-scripts
-    image: docker.io/clickhouse/clickhouse-server:{{ $.Spec.TelemetryStore.Spec.Version }}
+    image: {{ $.Spec.TelemetryStore.Spec.Image }}
     networks:
       - {{ $.Metadata.Name }}-network
     volumes:
@@ -100,8 +100,8 @@ services:
       retries: 3
       start_period: 30s
   {{- end }}
-  ingester:
-    image: docker.io/signoz/signoz-otel-collector:v{{ $.Spec.Ingester.Spec.Version }}
+  {{ $.Metadata.Name }}-ingester:
+    image: {{ $.Spec.Ingester.Spec.Image }}
     networks:
       - {{ $.Metadata.Name }}-network
     depends_on:
@@ -129,10 +129,20 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    depends_on:
+      {{- range $shardIdx := $.Spec.TelemetryStore.Spec.Cluster.Shards }}
+      {{- range $replicaIdx := add $.Spec.TelemetryStore.Spec.Cluster.Replicas 1 }}
+      {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-{{ $shardIdx }}-{{ $replicaIdx }}:
+        condition: service_healthy
+      {{- end }}
+      {{- end }}
+      {{ $.Metadata.Name }}-telemetrystore-migrator:
+        condition: service_completed_successfully
     deploy:
       replicas: {{ int $.Spec.Ingester.Spec.Cluster.Replicas }}
-  signoz:
-    image: docker.io/signoz/signoz:v{{ $.Spec.Signoz.Spec.Version }}
+   {{- range $replicaIdx := until (int $.Spec.Signoz.Spec.Cluster.Replicas) }}
+  {{ $.Metadata.Name }}-signoz:
+    image: {{ $.Spec.Signoz.Spec.Image }}
     networks:
       - {{ $.Metadata.Name }}-network
     depends_on:
@@ -171,6 +181,28 @@ services:
       start_period: 60s
     deploy:
       replicas: {{ int $.Spec.Signoz.Spec.Cluster.Replicas }}
+    volumes:
+      - {{ $.Metadata.Name }}-signoz-{{ $replicaIdx }}-data:/var/lib/signoz
+  {{- end }}
+  {{ $.Metadata.Name }}-telemetrystore-migrator:
+    image: {{ $.Spec.Ingester.Spec.Image }}
+    container_name: {{ $.Metadata.Name }}-telemetrystore-migrator
+    networks:
+      - {{ $.Metadata.Name }}-network
+    entrypoint:
+    - "/bin/sh"
+    - "-c"
+    command:
+      - /signoz-otel-collector migrate bootstrap --clickhouse-dsn tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
+      - /signoz-otel-collector migrate sync up --clickhouse-dsn tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
+      - /signoz-otel-collector migrate async up --clickhouse-dsn tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
+    depends_on:
+      {{- range $shardIdx := $.Spec.TelemetryStore.Spec.Cluster.Shards }}
+      {{- range $replicaIdx := add $.Spec.TelemetryStore.Spec.Cluster.Replicas 1 }}
+      {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-{{ $shardIdx }}-{{ $replicaIdx }}:
+        condition: service_healthy
+      {{- end }}
+      {{- end }}
 networks:
   {{ $.Metadata.Name }}-network:
     name: {{ $.Metadata.Name }}-network
@@ -186,4 +218,7 @@ volumes:
   {{ $.Metadata.Name }}-telemetrystore-user-scripts:
   {{- range $replicaIdx := until (int $.Spec.MetaStore.Spec.Cluster.Replicas) }}
   {{ $.Metadata.Name }}-metastore-{{ $replicaIdx }}-data:
+  {{- end }}
+  {{- range $replicaIdx := until (int $.Spec.Signoz.Spec.Cluster.Replicas) }}
+  {{ $.Metadata.Name }}-signoz-{{ $replicaIdx }}-data:
   {{- end }}
