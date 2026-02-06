@@ -18,7 +18,7 @@ type CastingSpec struct {
 	Deployment TypeDeployment `json:"deployment" yaml:"deployment" description:"Deployment configuration for the platform"`
 
 	// Infrastructure configuration for generating infrastructure manifests (e.g., Terraform).
-	Infrastructure Infrastructure `json:"infrastructure,omitempty" yaml:"infrastructure,omitempty"`
+	Infrastructure Infrastructure `json:"infrastructure,omitzero" yaml:"infrastructure,omitzero"`
 
 	// The configuration for the signoz molding.
 	Signoz SigNoz `json:"signoz,omitzero" yaml:"signoz,omitempty" description:"The configuration for the SigNoz molding"`
