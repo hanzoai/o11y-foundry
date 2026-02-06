@@ -5,6 +5,9 @@ spec:
   deployment:
     flavor: blueprint
     platform: render
+  infrastructure:
+    enabled: false
+    provider: aws
   ingester:
     spec:
       cluster:

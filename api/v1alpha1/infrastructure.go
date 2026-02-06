@@ -12,7 +12,7 @@ const (
 // Infrastructure holds the configuration for infrastructure manifest generation (e.g., Terraform).
 type Infrastructure struct {
 	// Whether infrastructure manifest generation is enabled
-	Enabled bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Enabled bool `json:"enabled" yaml:"enabled"`
 
 	// The cloud provider to generate infrastructure manifests for (aws, gcp, azure)
 	Provider InfrastructureProvider `json:"provider,omitempty" yaml:"provider,omitempty"`
