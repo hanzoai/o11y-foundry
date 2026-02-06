@@ -4,6 +4,8 @@ definitions:
       deployment:
         $ref: '#/definitions/V1Alpha1TypeDeployment'
         description: Deployment configuration for the platform
+      infrastructure:
+        $ref: '#/definitions/V1Alpha1Infrastructure'
       ingester:
         $ref: '#/definitions/V1Alpha1Ingester'
         description: The configuration for the ingester molding
@@ -24,6 +26,13 @@ definitions:
     properties:
       checksum:
         description: Checksum of the casting file
+        type: string
+    type: object
+  V1Alpha1Infrastructure:
+    properties:
+      enabled:
+        type: boolean
+      provider:
         type: string
     type: object
   V1Alpha1Ingester:

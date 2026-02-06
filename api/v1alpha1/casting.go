@@ -92,5 +92,13 @@ func ExampleCasting() Casting {
 		Metadata: TypeMetadata{
 			Name: "signoz",
 		},
+		Spec: CastingSpec{
+			Infrastructure:  DefaultInfrastructure(),
+			Signoz:          DefaultSigNoz(),
+			TelemetryStore:  DefaultTelemetryStore(),
+			TelemetryKeeper: DefaultTelemetryKeeper(),
+			MetaStore:       DefaultMetaStore(),
+			Ingester:        DefaultIngester(),
+		},
 	}
 }
