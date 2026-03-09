@@ -7,6 +7,7 @@ import (
 	"github.com/signoz/foundry/api/v1alpha1"
 	"github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/casting/dockercomposecasting"
+	"github.com/signoz/foundry/internal/casting/kuberneteshelmcasting"
 	"github.com/signoz/foundry/internal/casting/rendercasting"
 	"github.com/signoz/foundry/internal/casting/systemdcasting"
 	"github.com/signoz/foundry/internal/tooler"
@@ -14,6 +15,7 @@ import (
 	"github.com/signoz/foundry/internal/tooler/clickhousetooler"
 	"github.com/signoz/foundry/internal/tooler/dockercomposetooler"
 	"github.com/signoz/foundry/internal/tooler/dockertooler"
+	"github.com/signoz/foundry/internal/tooler/helmtooler"
 	"github.com/signoz/foundry/internal/tooler/postgrestooler"
 	"github.com/signoz/foundry/internal/tooler/systemdtooler"
 )
@@ -54,6 +56,13 @@ func NewRegistry(logger *slog.Logger) (*Registry, error) {
 				Flavor:   "blueprint",
 			}: {
 				Casting: rendercasting.New(logger),
+			},
+			{
+				Mode:   "kubernetes",
+				Flavor: "helm",
+			}: {
+				Casting: kuberneteshelmcasting.New(logger),
+				Toolers: []tooler.Tooler{helmtooler.New()},
 			},
 		},
 	}, nil
