@@ -1,24 +1,25 @@
+{{- $name := print $.Metadata.Name "-telemetrystore-" $.Spec.TelemetryStore.Kind "-operator" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: clickhouse-operator
+  name: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
+    app.kubernetes.io/instance: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
     app.kubernetes.io/version: "0.25.3"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: clickhouse-operator
-      app.kubernetes.io/instance: clickhouse-operator
+      app.kubernetes.io/name: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
+      app.kubernetes.io/instance: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: clickhouse-operator
-        app.kubernetes.io/instance: clickhouse-operator
+        app.kubernetes.io/name: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
+        app.kubernetes.io/instance: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
         app.kubernetes.io/version: "0.25.3"
-        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/managed-by: kustomize
       annotations:
         clickhouse-operator-metrics/port: "9999"
         clickhouse-operator-metrics/scrape: "true"
@@ -32,35 +33,35 @@ spec:
         checksum/keeper-templatesd-files: a47abf45edf0f439048648e3d6d1ecede35e560a76f32d8a4aa6055e0fcf58a8
         checksum/keeper-usersd-files: 2fbf34a572990f10fe9bf11c9884c5e847a1a23a02f0728e83bac4f4f9036797
     spec:
-      serviceAccountName: clickhouse-operator
+      serviceAccountName: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
       volumes:
         - name: etc-clickhouse-operator-folder
           configMap:
-            name: clickhouse-operator-etc-files
+            name: {{ $name }}-etc-files
         - name: etc-clickhouse-operator-confd-folder
           configMap:
-            name: clickhouse-operator-etc-confd-files
+            name: {{ $name }}-etc-confd-files
         - name: etc-clickhouse-operator-configd-folder
           configMap:
-            name: clickhouse-operator-etc-configd-files
+            name: {{ $name }}-etc-configd-files
         - name: etc-clickhouse-operator-templatesd-folder
           configMap:
-            name: clickhouse-operator-etc-templatesd-files
+            name: {{ $name }}-etc-templatesd-files
         - name: etc-clickhouse-operator-usersd-folder
           configMap:
-            name: clickhouse-operator-etc-usersd-files
+            name: {{ $name }}-etc-usersd-files
         - name: etc-keeper-operator-confd-folder
           configMap:
-            name: clickhouse-operator-keeper-etc-confd-files
+            name: {{ $name }}-keeper-etc-confd-files
         - name: etc-keeper-operator-configd-folder
           configMap:
-            name: clickhouse-operator-keeper-etc-configd-files
+            name: {{ $name }}-keeper-etc-configd-files
         - name: etc-keeper-operator-templatesd-folder
           configMap:
-            name: clickhouse-operator-keeper-etc-templatesd-files
+            name: {{ $name }}-keeper-etc-templatesd-files
         - name: etc-keeper-operator-usersd-folder
           configMap:
-            name: clickhouse-operator-keeper-etc-usersd-files
+            name: {{ $name }}-keeper-etc-usersd-files
       containers:
         - name: operator
           image: altinity/clickhouse-operator:0.25.3
@@ -221,19 +222,5 @@ spec:
               memory: 256Mi
           securityContext:
             {}
-      imagePullSecrets:
-        []
       nodeSelector:
         kubernetes.io/os: "linux"
-        signoz.cloud/workload: operator
-      affinity:
-        {}
-      tolerations:
-      - effect: NoSchedule
-        key: signoz.cloud/workload
-        operator: Equal
-        value: operator
-      securityContext:
-        {}
-      topologySpreadConstraints:
-        []
