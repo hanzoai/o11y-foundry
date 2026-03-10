@@ -1,10 +1,11 @@
+{{- $name := print $.Metadata.Name "-telemetrystore-" $.Spec.TelemetryStore.Kind "-operator" -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: clickhouse-operator-etc-confd-files
+  name: {{ $name }}-etc-confd-files
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $name }}
     app.kubernetes.io/version: "0.25.3"
 data:
   null
@@ -12,10 +13,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: clickhouse-operator-etc-configd-files
+  name: {{ $name }}-etc-configd-files
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $name }}
     app.kubernetes.io/version: "0.25.3"
 data:
   01-clickhouse-01-listen.xml: |
@@ -171,10 +172,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: clickhouse-operator-etc-files
+  name: {{ $name }}-etc-files
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $name }}
     app.kubernetes.io/version: "0.25.3"
 data:
   config.yaml: |-
@@ -339,10 +340,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: clickhouse-operator-etc-templatesd-files
+  name: {{ $name }}-etc-templatesd-files
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $name }}
     app.kubernetes.io/version: "0.25.3"
 data:
   001-templates.json.example: |
@@ -430,10 +431,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: clickhouse-operator-etc-usersd-files
+  name: {{ $name }}-etc-usersd-files
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $name }}
     app.kubernetes.io/version: "0.25.3"
 data:
   01-clickhouse-user.xml: |
@@ -479,10 +480,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: clickhouse-operator-keeper-etc-confd-files
+  name: {{ $name }}-keeper-etc-confd-files
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $name }}
     app.kubernetes.io/version: "0.25.3"
 data:
   null
@@ -490,10 +491,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: clickhouse-operator-keeper-etc-configd-files
+  name: {{ $name }}-keeper-etc-configd-files
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $name }}
     app.kubernetes.io/version: "0.25.3"
 data:
   01-keeper-01-default-config.xml: |
@@ -559,10 +560,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: clickhouse-operator-keeper-etc-templatesd-files
+  name: {{ $name }}-keeper-etc-templatesd-files
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $name }}
     app.kubernetes.io/version: "0.25.3"
 data:
   readme: Templates in this folder are packaged with an operator and available via 'useTemplate'
@@ -570,10 +571,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: clickhouse-operator-keeper-etc-usersd-files
+  name: {{ $name }}-keeper-etc-usersd-files
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $name }}
     app.kubernetes.io/version: "0.25.3"
 data:
   null

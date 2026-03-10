@@ -1,10 +1,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: clickhouse-operator
+  name: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}
   labels:
-    app.kubernetes.io/name: clickhouse-operator
-    app.kubernetes.io/instance: clickhouse-operator
+    app.kubernetes.io/name: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
+    app.kubernetes.io/instance: {{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-operator
     app.kubernetes.io/version: "0.25.3"
 rules:
   #
