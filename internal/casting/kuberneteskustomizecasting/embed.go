@@ -6,7 +6,7 @@ import (
 	"github.com/signoz/foundry/internal/types"
 )
 
-//go:embed templates/*/*.gotmpl templates/*/*/*.gotmpl
+//go:embed templates/*/*.gotmpl templates/*/*/*.gotmpl templates/*.gotmpl
 var templates embed.FS
 
 var (
@@ -45,4 +45,6 @@ var (
 	telemetrystoreMigratorJob = types.MustNewTemplateFromFS(templates, "templates/telemetrystore-migrator/job.yaml.gotmpl", types.FormatYAML)
 	telemetrystoreMigratorKustomization = types.MustNewTemplateFromFS(templates, "templates/telemetrystore-migrator/kustomization.yaml.gotmpl", types.FormatYAML)
 
+	// deployment
+	deploymentKustomization = types.MustNewTemplateFromFS(templates, "templates/kustomization.yaml.gotmpl", types.FormatYAML)
 )

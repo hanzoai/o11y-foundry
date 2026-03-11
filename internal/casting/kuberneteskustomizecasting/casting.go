@@ -48,6 +48,7 @@ func New(logger *slog.Logger) *kustomizeCasting{
 			signozKustomization,
 			ingesterKustomization,
 			telemetrystoreMigratorKustomization,
+			deploymentKustomization,
 		},
 	}
 }
