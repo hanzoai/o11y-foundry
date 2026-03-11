@@ -21,7 +21,7 @@ type kustomizeCasting struct {
 	castings []*types.Template
 }
 
-func New(logger *slog.Logger) *kustomizeCasting{
+func New(logger *slog.Logger) *kustomizeCasting {
 	return &kustomizeCasting{
 		logger: logger,
 		castings: []*types.Template{

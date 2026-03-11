@@ -1,4 +1,4 @@
-{{- $name := print $.Metadata.Name "-otel-collector" -}}
+{{- $name := print $.Metadata.Name "-ingester" -}}
 {{- $signozName := print $.Metadata.Name "-signoz" -}}
 {{- $clickhouseName := print $.Metadata.Name "-clickhouse" -}}
 apiVersion: v1
@@ -8,10 +8,10 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ $name }}
     app.kubernetes.io/instance: {{ $.Metadata.Name }}
-    app.kubernetes.io/component: otel-collector
+    app.kubernetes.io/component: ingester
     app.kubernetes.io/managed-by: kustomize
 data:
-  otel-collector-config.yaml: |-
+  config.yaml: |-
     connectors:
       signozmeter:
         dimensions:
@@ -129,4 +129,4 @@ data:
       telemetry:
         logs:
           encoding: json
-  otel-collector-opamp-config.yaml: 'server_endpoint: "ws://{{ $signozName }}:4320/v1/opamp"'
+  opamp.yaml: 'server_endpoint: "ws://{{ $signozName }}:4320/v1/opamp"'
