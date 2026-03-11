@@ -134,8 +134,8 @@ spec:
     clusters:
     - name: cluster
       layout:
-        replicasCount: 1
-        shardsCount: 1
+        replicasCount: {{ int $.Spec.TelemetryStore.Spec.Cluster.Replicas }}
+        shardsCount: {{ int $.Spec.TelemetryStore.Spec.Cluster.Shards }}
     zookeeper:
       nodes:
         - host: keeper-{{ $keeperName }}
