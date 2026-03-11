@@ -1,5 +1,6 @@
 {{- $name := print $.Metadata.Name "-clickhouse" -}}
 {{- $keeperName := print $.Metadata.Name "-clickhouse-keeper" -}}
+{{- $knobs := $.Spec.TelemetryStore.Spec.Config.Knobs -}}
 apiVersion: clickhouse.altinity.com/v1
 kind: ClickHouseInstallation
 metadata:
@@ -154,6 +155,30 @@ spec:
           app.kubernetes.io/instance: {{ $.Metadata.Name }}
           app.kubernetes.io/version: {{ $.Spec.TelemetryStore.Spec.Version | quote }}
       spec:
+        {{- if and $knobs (index $knobs "imagePullSecrets") }}
+        imagePullSecrets:
+          {{- (index $knobs "imagePullSecrets") | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if and $knobs (index $knobs "tolerations") }}
+        tolerations:
+          {{- (index $knobs "tolerations") | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if and $knobs (index $knobs "nodeSelector") }}
+        nodeSelector:
+          {{- (index $knobs "nodeSelector") | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if and $knobs (index $knobs "affinity") }}
+        affinity:
+          {{- (index $knobs "affinity") | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if and $knobs (index $knobs "topologySpreadConstraints") }}
+        topologySpreadConstraints:
+          {{- (index $knobs "topologySpreadConstraints") | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if and $knobs (index $knobs "podSecurityContext") }}
+        securityContext:
+          {{- (index $knobs "podSecurityContext") | toYaml | nindent 10 }}
+        {{- end }}
         containers:
         - command:
           - /bin/bash
@@ -187,10 +212,19 @@ spec:
             periodSeconds: 3
             successThreshold: 1
             timeoutSeconds: 1
+          {{- if and $knobs (index $knobs "resources") }}
+          resources:
+            {{- (index $knobs "resources") | toYaml | nindent 12 }}
+          {{- else }}
           resources:
             requests:
               cpu: 500m
               memory: 512Mi
+          {{- end }}
+          {{- if and $knobs (index $knobs "securityContext") }}
+          securityContext:
+            {{- (index $knobs "securityContext") | toYaml | nindent 12 }}
+          {{- end }}
           startupProbe:
             failureThreshold: 30
             httpGet:
@@ -265,14 +299,20 @@ spec:
       spec:
         accessModes:
         - ReadWriteOnce
+        {{- if and $knobs (index $knobs "storageClass") }}
+        storageClassName: {{ index $knobs "storageClass" | quote }}
+        {{- end }}
         resources:
           requests:
-            storage: 25Gi
+            storage: {{ if and $knobs (index $knobs "storageSize") }}{{ index $knobs "storageSize" | quote }}{{ else }}25Gi{{ end }}
     - name: default
       reclaimPolicy: Retain
       spec:
         accessModes:
         - ReadWriteOnce
+        {{- if and $knobs (index $knobs "storageClass") }}
+        storageClassName: {{ index $knobs "storageClass" | quote }}
+        {{- end }}
         resources:
           requests:
-            storage: 10Gi
+            storage: {{ if and $knobs (index $knobs "storageSize") }}{{ index $knobs "storageSize" | quote }}{{ else }}10Gi{{ end }}

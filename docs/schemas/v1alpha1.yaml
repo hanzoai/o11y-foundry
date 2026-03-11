@@ -289,6 +289,11 @@ definitions:
           type: string
         description: Configuration data as key-value pairs
         type: object
+      knobs:
+        additionalProperties: {}
+        description: Configuration knobs such as tolerations, resources as key-value
+          pairs for a casting
+        type: object
     type: object
   V1Alpha1TypeDeployment:
     properties:
