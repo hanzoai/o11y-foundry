@@ -11,7 +11,7 @@ import (
 
 type Template struct {
 	name   string
-	path string
+	path   string
 	format Format
 	tmpl   *template.Template
 }
