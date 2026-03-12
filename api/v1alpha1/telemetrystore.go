@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/internal/types"
 )
 
 type TelemetryStore struct {
@@ -36,7 +36,7 @@ func DefaultTelemetryStore() TelemetryStore {
 				Shards:   types.NewIntPtr(1),
 			},
 			Version: "25.5.6",
-			Image:   "clickhouse/clickhouse-server:25.5.6",
+			Image:   "ghcr.io/hanzoai/datastore:25.5.6",
 		},
 	}
 }

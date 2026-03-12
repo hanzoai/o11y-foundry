@@ -1,24 +1,24 @@
 databases:
-- databaseName: signoz
+- databaseName: o11y
   ipAllowList: []
-  name: signoz-metastore-postgres
+  name: o11y-metastore-postgres
   plan: free
   postgresMajorVersion: "16"
-  user: signoz
+  user: o11y
 services:
 - disk:
     mountPath: /var/lib/clickhouse-keeper
-    name: signoz-telemetrykeeper-clickhousekeeper-0-data
+    name: o11y-telemetrykeeper-clickhousekeeper-0-data
     sizeGB: 5
   dockerContext: configs/telemetrykeeper
   dockerfilePath: configs/telemetrykeeper/Dockerfile
-  name: signoz-telemetrykeeper-clickhousekeeper-0
+  name: o11y-telemetrykeeper-clickhousekeeper-0
   plan: standard
   runtime: docker
   type: pserv
 - disk:
     mountPath: /var/lib/clickhouse
-    name: signoz-telemetrystore-clickhouse-0-0-data
+    name: o11y-telemetrystore-clickhouse-0-0-data
     sizeGB: 20
   dockerContext: configs/telemetrystore
   dockerfilePath: configs/telemetrystore/Dockerfile
@@ -28,11 +28,11 @@ services:
   - key: CLICKHOUSE_CONFIG
     value: /etc/clickhouse-server/config.yaml
   - fromService:
-      name: signoz-telemetrykeeper-clickhousekeeper-0
+      name: o11y-telemetrykeeper-clickhousekeeper-0
       property: host
       type: pserv
     key: DEPENDENCY_LINK_0
-  name: signoz-telemetrystore-clickhouse-0-0
+  name: o11y-telemetrystore-clickhouse-0-0
   plan: standard
   runtime: docker
   type: pserv
@@ -40,54 +40,54 @@ services:
   dockerfilePath: configs/ingester/Dockerfile
   envVars:
   - fromService:
-      name: signoz-telemetrystore-clickhouse-0-0
+      name: o11y-telemetrystore-clickhouse-0-0
       property: host
       type: pserv
     key: DEPENDENCY_LINK_0
-  name: signoz-ingester-0
+  name: o11y-ingester-0
   plan: standard
   runtime: docker
   type: pserv
 - envVars:
-  - key: SIGNOZ_SQLSTORE_PROVIDER
+  - key: HANZO_SQLSTORE_PROVIDER
     value: postgres
-  - key: SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN
-    value: tcp://signoz-telemetrystore-clickhouse-0-0:9000
-  - key: SIGNOZ_TELEMETRYSTORE_PROVIDER
+  - key: HANZO_TELEMETRYSTORE_CLICKHOUSE_DSN
+    value: tcp://o11y-telemetrystore-clickhouse-0-0:9000
+  - key: HANZO_TELEMETRYSTORE_PROVIDER
     value: clickhouse
   - fromDatabase:
-      name: signoz-metastore-postgres
+      name: o11y-metastore-postgres
       property: connectionString
-    key: SIGNOZ_SQLSTORE_POSTGRES_DSN
+    key: HANZO_SQLSTORE_POSTGRES_DSN
   - fromService:
-      name: signoz-telemetrystore-clickhouse-0-0
+      name: o11y-telemetrystore-clickhouse-0-0
       property: host
       type: pserv
     key: DEPENDENCY_LINK_0
   healthCheckPath: /api/v1/health
   image:
-    url: signoz/signoz:latest
-  name: signoz-signoz
+    url: ghcr.io/hanzoai/o11y:latest
+  name: o11y-o11y
   plan: standard
   runtime: image
   type: web
 - dockerCommand: |
-    /bin/sh -c /signoz-otel-collector migrate bootstrap --clickhouse-dsn=$CLICKHOUSE_DSN
-      && /signoz-otel-collector migrate sync up --clickhouse-dsn=$CLICKHOUSE_DSN
-      && /signoz-otel-collector migrate async up --clickhouse-dsn=$CLICKHOUSE_DSN
+    /bin/sh -c /o11y-otel-collector migrate bootstrap --clickhouse-dsn=$CLICKHOUSE_DSN
+      && /o11y-otel-collector migrate sync up --clickhouse-dsn=$CLICKHOUSE_DSN
+      && /o11y-otel-collector migrate async up --clickhouse-dsn=$CLICKHOUSE_DSN
   envVars:
   - key: CLICKHOUSE_DSN
-    value: tcp://signoz-telemetrystore-clickhouse-0-0:9000
+    value: tcp://o11y-telemetrystore-clickhouse-0-0:9000
   - fromService:
-      name: signoz-telemetrystore-clickhouse-0-0
+      name: o11y-telemetrystore-clickhouse-0-0
       property: host
       type: pserv
     key: DEPENDENCY_LINK_0
   image:
-    url: signoz/signoz-otel-collector:latest
-  name: signoz-schema-migrator
+    url: ghcr.io/hanzoai/otel-collector:latest
+  name: o11y-schema-migrator
   plan: standard
-  preDeployCommand: /signoz-otel-collector migrate ready --clickhouse-dsn=${CLICKHOUSE_DSN}
+  preDeployCommand: /o11y-otel-collector migrate ready --clickhouse-dsn=${CLICKHOUSE_DSN}
     --timeout 60s
   runtime: image
   type: worker

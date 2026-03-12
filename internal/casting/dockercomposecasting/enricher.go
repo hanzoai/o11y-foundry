@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	rootcasting "github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/molding"
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/api/v1alpha1"
+	rootcasting "github.com/o11y/foundry/internal/casting"
+	"github.com/o11y/foundry/internal/molding"
+	"github.com/o11y/foundry/internal/types"
 )
 
 var _ molding.MoldingEnricher = (*dockerComposeMoldingEnricher)(nil)
@@ -45,23 +45,23 @@ func (enricher *dockerComposeMoldingEnricher) EnrichStatus(ctx context.Context, 
 
 		config.Spec.TelemetryStore.Status.Addresses.TCP = telemetrystoreContainerNames
 
-	case v1alpha1.MoldingKindSignoz:
-		// Get signoz container names
+	case v1alpha1.MoldingKindO11y:
+		// Get o11y container names
 		containerNames, err := enricher.material.GetStringSlice("services|@keys")
 		if err != nil {
-			return fmt.Errorf("failed to get signoz container names: %w", err)
+			return fmt.Errorf("failed to get o11y container names: %w", err)
 		}
 
 		var apiServerAddr []string
 		var opampAddr []string
 		for _, containerName := range containerNames {
-			if strings.Contains(containerName, "-signoz") {
+			if strings.Contains(containerName, "-o11y") {
 				apiServerAddr = append(apiServerAddr, types.FormatAddress("tcp", containerName, 8080))
 				opampAddr = append(opampAddr, types.FormatAddress("ws", containerName, 4320))
 			}
 		}
-		config.Spec.Signoz.Status.Addresses.APIServer = apiServerAddr
-		config.Spec.Signoz.Status.Addresses.Opamp = opampAddr
+		config.Spec.O11y.Status.Addresses.APIServer = apiServerAddr
+		config.Spec.O11y.Status.Addresses.Opamp = opampAddr
 
 	case v1alpha1.MoldingKindTelemetryKeeper:
 		// Get telemetrykeeper container names (using service keys since they match container_name)

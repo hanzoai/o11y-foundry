@@ -3,7 +3,7 @@ package systemdtooler
 import (
 	"context"
 
-	root "github.com/signoz/foundry/internal/tooler"
+	root "github.com/o11y/foundry/internal/tooler"
 )
 
 var _ root.Tooler = (*systemdTooler)(nil)

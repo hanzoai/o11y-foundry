@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/internal/types"
 )
 
 type TelemetryKeeper struct {

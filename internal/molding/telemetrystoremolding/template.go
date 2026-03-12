@@ -3,7 +3,7 @@ package telemetrystoremolding
 import (
 	"embed"
 
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/internal/types"
 )
 
 //go:embed templates/*.gotmpl

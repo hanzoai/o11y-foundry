@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/molding"
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/api/v1alpha1"
+	"github.com/o11y/foundry/internal/molding"
+	"github.com/o11y/foundry/internal/types"
 )
 
 var _ molding.MoldingEnricher = (*renderMoldingEnricher)(nil)
@@ -50,7 +50,7 @@ func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1
 		}
 		config.Spec.TelemetryStore.Status.Extras["service_names"] = strings.Join(storeServiceNames, ",")
 
-	case v1alpha1.MoldingKindSignoz:
+	case v1alpha1.MoldingKindO11y:
 		// Get telemetrystore service names
 		serviceNames, err := enricher.material.GetStringSlice("services.#.name")
 		if err != nil {
@@ -60,13 +60,13 @@ func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1
 		var apiServerAddr []string
 		var opampAddr []string
 		for _, serviceName := range serviceNames {
-			if strings.Contains(serviceName, "-signoz") {
+			if strings.Contains(serviceName, "-o11y") {
 				apiServerAddr = append(apiServerAddr, types.FormatAddress("tcp", serviceName, 8080))
 				opampAddr = append(opampAddr, types.FormatAddress("ws", serviceName, 4320))
 			}
 		}
-		config.Spec.Signoz.Status.Addresses.APIServer = apiServerAddr
-		config.Spec.Signoz.Status.Addresses.Opamp = opampAddr
+		config.Spec.O11y.Status.Addresses.APIServer = apiServerAddr
+		config.Spec.O11y.Status.Addresses.Opamp = opampAddr
 
 	case v1alpha1.MoldingKindTelemetryKeeper:
 		// Get telemetrykeeper service names

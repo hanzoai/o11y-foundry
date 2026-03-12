@@ -1,7 +1,7 @@
 ARG DISTROLESS_SHA="pass-a-valid-docker-sha-otherwise-this-will-fail"
 
 FROM gcr.io/distroless/base@sha256:${DISTROLESS_SHA}
-LABEL maintainer="signoz"
+LABEL maintainer="o11y"
 WORKDIR /usr/local/foundryctl
 
 ARG OS="linux"

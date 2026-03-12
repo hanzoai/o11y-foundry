@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	rootcasting "github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/molding"
+	rootcasting "github.com/o11y/foundry/internal/casting"
+	"github.com/o11y/foundry/internal/molding"
 
 	"os"
 	"os/exec"
@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/api/v1alpha1"
+	"github.com/o11y/foundry/internal/types"
 )
 
 const svcSuffix = ".service"
@@ -40,7 +40,7 @@ func New(logger *slog.Logger) *systemdCasting {
 			telemetryKeeperServiceTemplate,
 			telemetryStoreServiceTemplate,
 			metaStoreServiceTemplate,
-			signozServiceTemplate,
+			o11yServiceTemplate,
 			ingesterServiceTemplate,
 			telemetryStoreMigratorServiceTemplate,
 		},
@@ -101,8 +101,8 @@ func (c *systemdCasting) Cast(ctx context.Context, config v1alpha1.Casting, pour
 
 func (c *systemdCasting) forgeCasting(tmpl *types.Template, cfg *v1alpha1.Casting, poursPath string) ([]types.Material, error) {
 	switch tmpl {
-	case signozServiceTemplate:
-		return c.forgeSignoz(tmpl, cfg)
+	case o11yServiceTemplate:
+		return c.forgeO11y(tmpl, cfg)
 	case metaStoreServiceTemplate:
 		return c.forgeMetaStore(tmpl, cfg, poursPath)
 	case ingesterServiceTemplate:
@@ -153,8 +153,8 @@ func (c *systemdCasting) forgeIngester(tmpl *types.Template, cfg *v1alpha1.Casti
 	return append(mats, svcMat), nil
 }
 
-func (c *systemdCasting) forgeSignoz(tmpl *types.Template, cfg *v1alpha1.Casting) ([]types.Material, error) {
-	spec := &cfg.Spec.Signoz
+func (c *systemdCasting) forgeO11y(tmpl *types.Template, cfg *v1alpha1.Casting) ([]types.Material, error) {
+	spec := &cfg.Spec.O11y
 	if !spec.Spec.Enabled {
 		return nil, nil
 	}
@@ -165,9 +165,9 @@ func (c *systemdCasting) forgeSignoz(tmpl *types.Template, cfg *v1alpha1.Casting
 	}
 
 	// Create env material
-	prefix := cfg.Metadata.Name + "-signoz"
+	prefix := cfg.Metadata.Name + "-o11y"
 
-	spec.Status.Extras["workingDir"] = "/opt/signoz"
+	spec.Status.Extras["workingDir"] = "/opt/o11y"
 
 	// Create service material
 	svcMat, err := c.renderTemplate(tmpl, cfg, prefix+svcSuffix)
@@ -327,7 +327,7 @@ func (c *systemdCasting) discoverAndPrepareServices(ctx context.Context, poursPa
 		return nil, fmt.Errorf("failed to read directory %s: %w", deploymentPath, err)
 	}
 
-	serviceMap := map[string][]string{"keeper": {}, "store": {}, "postgres": {}, "signoz": {}, "ingester": {}, "migrator": {}}
+	serviceMap := map[string][]string{"keeper": {}, "store": {}, "postgres": {}, "o11y": {}, "ingester": {}, "migrator": {}}
 
 	for _, entry := range entries {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".service") {
@@ -345,8 +345,8 @@ func (c *systemdCasting) discoverAndPrepareServices(ctx context.Context, poursPa
 			serviceMap["store"] = append(serviceMap["store"], servicePath)
 		case strings.Contains(baseName, "-metastore-postgres"):
 			serviceMap["postgres"] = append(serviceMap["postgres"], servicePath)
-		case strings.HasSuffix(baseName, "-signoz"):
-			serviceMap["signoz"] = append(serviceMap["signoz"], servicePath)
+		case strings.HasSuffix(baseName, "-o11y"):
+			serviceMap["o11y"] = append(serviceMap["o11y"], servicePath)
 		case strings.HasSuffix(baseName, "-ingester"):
 			serviceMap["ingester"] = append(serviceMap["ingester"], servicePath)
 		default:
@@ -375,13 +375,13 @@ func (c *systemdCasting) discoverAndPrepareServices(ctx context.Context, poursPa
 	return serviceMap, nil
 }
 
-// setupSystemEnvironment creates signoz user, directories, copies configs, and validates binaries.
+// setupSystemEnvironment creates o11y user, directories, copies configs, and validates binaries.
 func (c *systemdCasting) setupSystemEnvironment(ctx context.Context, config *v1alpha1.Casting, poursPath string) error {
-	// Create signoz user if needed
-	if _, err := user.Lookup("signoz"); err != nil {
-		c.logger.InfoContext(ctx, "Creating user: signoz")
-		if err := c.execCommand(ctx, "useradd", "-d", poursPath, "signoz"); err != nil {
-			return fmt.Errorf("failed to create signoz user: %w", err)
+	// Create o11y user if needed
+	if _, err := user.Lookup("o11y"); err != nil {
+		c.logger.InfoContext(ctx, "Creating user: o11y")
+		if err := c.execCommand(ctx, "useradd", "-d", poursPath, "o11y"); err != nil {
+			return fmt.Errorf("failed to create o11y user: %w", err)
 		}
 	}
 
@@ -389,8 +389,8 @@ func (c *systemdCasting) setupSystemEnvironment(ctx context.Context, config *v1a
 	if err := os.MkdirAll(poursPath, 0755); err != nil {
 		return fmt.Errorf("failed to create working directory %s: %w", poursPath, err)
 	}
-	_ = c.execCommand(ctx, "chown", "-R", "signoz:signoz", poursPath)      // best effort
-	_ = c.execCommand(ctx, "chown", "-R", "signoz:signoz", "/opt/signoz/") // best effort
+	_ = c.execCommand(ctx, "chown", "-R", "o11y:o11y", poursPath)      // best effort
+	_ = c.execCommand(ctx, "chown", "-R", "o11y:o11y", "/opt/o11y/") // best effort
 
 	// Copy clickhouse configs to standard locations
 	if config.Spec.TelemetryStore.Spec.Enabled {
@@ -442,15 +442,15 @@ func (c *systemdCasting) validateBinaries(config *v1alpha1.Casting) error {
 
 	var missing []string
 
-	// Check signoz binary if annotation is set
-	if signozPath := annotations["foundry.signoz.io/signoz-binary-path"]; signozPath != "" {
-		if _, err := os.Stat(signozPath); os.IsNotExist(err) {
-			missing = append(missing, fmt.Sprintf("signoz binary (at %s)", signozPath))
+	// Check o11y binary if annotation is set
+	if o11yPath := annotations["foundry.o11y.hanzo.ai/o11y-binary-path"]; o11yPath != "" {
+		if _, err := os.Stat(o11yPath); os.IsNotExist(err) {
+			missing = append(missing, fmt.Sprintf("o11y binary (at %s)", o11yPath))
 		}
 	}
 
 	// Check ingester binary if annotation is set
-	if ingesterPath := annotations["foundry.signoz.io/ingester-binary-path"]; ingesterPath != "" {
+	if ingesterPath := annotations["foundry.o11y.hanzo.ai/ingester-binary-path"]; ingesterPath != "" {
 		if _, err := os.Stat(ingesterPath); os.IsNotExist(err) {
 			missing = append(missing, fmt.Sprintf("ingester binary (at %s)", ingesterPath))
 		}
@@ -543,7 +543,7 @@ func (c *systemdCasting) initializePostgres(ctx context.Context, config *v1alpha
 	_ = c.execCommand(ctx, "chown", "postgres:postgres", pwfile)
 
 	// Get postgres binary path from config to determine bin directory
-	postgresBin := config.Metadata.Annotations["foundry.signoz.io/metastore-postgres-binary-path"]
+	postgresBin := config.Metadata.Annotations["foundry.o11y.hanzo.ai/metastore-postgres-binary-path"]
 
 	if postgresBin == "" {
 		return fmt.Errorf("metastore postgres binary is missing in annotations")

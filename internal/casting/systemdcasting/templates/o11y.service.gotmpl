@@ -1,0 +1,29 @@
+[Unit]
+Description=Hanzo O11y
+Documentation=https://o11y.io/docs
+After={{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0 {{ $.Metadata.Name }}-metastore-{{ $.Spec.MetaStore.Kind }}{{ if $.Spec.TelemetryStore.Spec.Enabled }} {{ $.Metadata.Name }}-telemetrystore-migrator{{ end }}
+{{ if $.Spec.TelemetryStore.Spec.Enabled }}
+Requires={{ $.Metadata.Name }}-telemetrystore-migrator
+{{ end }}
+
+[Service]
+User=o11y
+Group=o11y
+Type=simple
+KillMode=mixed
+Restart=on-failure
+WorkingDirectory=/opt/o11y
+{{- if and $.Metadata.Annotations (index $.Metadata.Annotations "foundry.o11y.io/o11y-binary-path") }}
+{{- $o11yBinaryPath := index $.Metadata.Annotations "foundry.o11y.io/o11y-binary-path" }}
+ExecStart={{ $o11yBinaryPath }} server
+{{- end }}
+Environment=HANZO_WEB_DIRECTORY=/opt/o11y/web
+{{ if $.Spec.O11y.Spec.Env }}
+{{ range $key, $value := $.Spec.O11y.Spec.Env }}
+Environment={{ $key }}={{ $value }}
+{{ end }}
+{{ end }}
+{{ if and $.Spec.O11y.Status.Extras (index $.Spec.O11y.Status.Extras "envPath") }}
+{{ end }}
+[Install]
+WantedBy=multi-user.target

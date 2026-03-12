@@ -72,23 +72,23 @@ services:
   {{ end }}
   {{ end }}
 
-  {{ if $.Spec.Signoz.Spec.Enabled }}
-  - name: {{ $.Metadata.Name }}-signoz
+  {{ if $.Spec.O11y.Spec.Enabled }}
+  - name: {{ $.Metadata.Name }}-o11y
     type: web
     plan: standard
     runtime: image
     image:
-      url: {{ $.Spec.Signoz.Spec.Image }}
+      url: {{ $.Spec.O11y.Spec.Image }}
     healthCheckPath: /api/v1/health
     envVars:
-    {{ if $.Spec.Signoz.Spec.Env }}
-      {{ range $key, $value := $.Spec.Signoz.Spec.Env }}
+    {{ if $.Spec.O11y.Spec.Env }}
+      {{ range $key, $value := $.Spec.O11y.Spec.Env }}
       - key: {{ $key }}
         value: {{ $value }}
       {{ end }}
     {{ end }}
     {{ if and $.Spec.MetaStore.Spec.Enabled (eq ($.Spec.MetaStore.Kind.String) "postgres") }}
-      - key: SIGNOZ_SQLSTORE_POSTGRES_DSN
+      - key: HANZO_SQLSTORE_POSTGRES_DSN
         fromDatabase:
           name: {{ $.Metadata.Name }}-metastore-{{ $.Spec.MetaStore.Kind }}
           property: connectionString
@@ -112,9 +112,9 @@ services:
     image:
       url: {{ $.Spec.Ingester.Spec.Image }}
     envVars:
-      {{ if index $.Spec.Signoz.Spec.Env "SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN" }}
+      {{ if index $.Spec.O11y.Spec.Env "HANZO_TELEMETRYSTORE_CLICKHOUSE_DSN" }}
       - key: CLICKHOUSE_DSN
-        value: {{ index $.Spec.Signoz.Spec.Env "SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN" }}
+        value: {{ index $.Spec.O11y.Spec.Env "HANZO_TELEMETRYSTORE_CLICKHOUSE_DSN" }}
       {{ end }}
       {{ if index $.Spec.TelemetryStore.Status.Extras "service_names" }}
       {{ range $index, $serviceName := splitList "," (index $.Spec.TelemetryStore.Status.Extras "service_names") }}
@@ -125,11 +125,11 @@ services:
           property: host
       {{ end }}
       {{ end }}
-    preDeployCommand: /signoz-otel-collector migrate ready --clickhouse-dsn=${CLICKHOUSE_DSN} --timeout 60s
+    preDeployCommand: /o11y-otel-collector migrate ready --clickhouse-dsn=${CLICKHOUSE_DSN} --timeout 60s
     dockerCommand: |
-      /bin/sh -c /signoz-otel-collector migrate bootstrap --clickhouse-dsn=$CLICKHOUSE_DSN
-        && /signoz-otel-collector migrate sync up --clickhouse-dsn=$CLICKHOUSE_DSN
-        && /signoz-otel-collector migrate async up --clickhouse-dsn=$CLICKHOUSE_DSN
+      /bin/sh -c /o11y-otel-collector migrate bootstrap --clickhouse-dsn=$CLICKHOUSE_DSN
+        && /o11y-otel-collector migrate sync up --clickhouse-dsn=$CLICKHOUSE_DSN
+        && /o11y-otel-collector migrate async up --clickhouse-dsn=$CLICKHOUSE_DSN
   {{ end }}
 
 {{ if and $.Spec.MetaStore.Spec.Enabled (eq ($.Spec.MetaStore.Kind.String) "postgres") }}

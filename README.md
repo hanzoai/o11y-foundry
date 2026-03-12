@@ -1,21 +1,21 @@
 <h1 align="center" style="border-bottom: none">
-    <a href="https://signoz.io" target="_blank">
+    <a href="https://o11y.hanzo.ai" target="_blank">
         <img alt="Foundry" src="https://github.com/user-attachments/assets/ef9a33f7-12d7-4c94-8908-0a02b22f0c18" width="100" height="100">
     </a>
     <br>Foundry
 </h1>
 
 <p align="center">
-<img alt="GitHub Release" src="https://img.shields.io/github/v/release/signoz/foundry?include_prereleases">
+<img alt="GitHub Release" src="https://img.shields.io/github/v/release/o11y/foundry?include_prereleases">
   <a href="https://golang.org"><img src="https://img.shields.io/badge/Go-1.25+-blue.svg" alt="Go Version"></a>
 
-<p align="center">Foundry is a centralized hub for <a href="https://signoz.io">SigNoz</a> installation configurations and deployments: <strong>integrations for install</strong>. Select yours, configure, and run SigNoz.</p>
+<p align="center">Foundry is a centralized hub for <a href="https://o11y.hanzo.ai">Hanzo O11y</a> installation configurations and deployments: <strong>integrations for install</strong>. Select yours, configure, and run Hanzo O11y.</p>
 
 ## Overview
 
-Just as a metalworking foundry turns raw materials into finished products, Foundry forges your deployment from a single configuration and casts SigNoz to fit your environment.
+Just as a metalworking foundry turns raw materials into finished products, Foundry forges your deployment from a single configuration and casts Hanzo O11y to fit your environment.
 
-Foundry abstracts away the complexities of the installation process so you can spend time *using* SigNoz rather than *installing* it.
+Foundry abstracts away the complexities of the installation process so you can spend time *using* Hanzo O11y rather than *installing* it.
 
 <p align="center">
   <img
@@ -29,8 +29,8 @@ Foundry abstracts away the complexities of the installation process so you can s
 
 ## Features
 
-- **Multi-platform support**: Deploy SigNoz using Docker Compose, Systemd (bare metal), or Render for flexible installation across environments.
-- **Single configuration file**: Configure your entire SigNoz stack with one concise file.
+- **Multi-platform support**: Deploy Hanzo O11y using Docker Compose, Systemd (bare metal), or Render for flexible installation across environments.
+- **Single configuration file**: Configure your entire Hanzo O11y stack with one concise file.
 - **Automatic dependency management**: Handles inter-service dependencies
 - **Tool validation**: Verify prerequisites before deployment
 
@@ -38,21 +38,21 @@ Foundry abstracts away the complexities of the installation process so you can s
 
 **1. Install foundryctl**
 
-You can install `foundryctl` by downloading a release from [GitHub Releases](https://github.com/signoz/foundry/releases).
+You can install `foundryctl` by downloading a release from [GitHub Releases](https://github.com/o11y/foundry/releases).
 
 To quickly get the correct binary for your architecture via the command line, run
 
 **Linux:**
 
 ```bash
-curl -L "https://github.com/SigNoz/foundry/releases/latest/download/foundry_linux_$(uname -m | sed 's/x86_64/amd64/g' | sed 's/aarch64/arm64/g').tar.gz" -o foundry.tar.gz
+curl -L "https://github.com/Hanzo O11y/foundry/releases/latest/download/foundry_linux_$(uname -m | sed 's/x86_64/amd64/g' | sed 's/aarch64/arm64/g').tar.gz" -o foundry.tar.gz
 tar -xzf foundry.tar.gz
 ```
 
 **macOS:**
 
 ```bash
-curl -L "https://github.com/SigNoz/foundry/releases/latest/download/foundry_darwin_$(uname -m | sed 's/x86_64/amd64/g' | sed 's/arm64/arm64/g').tar.gz" -o foundry.tar.gz
+curl -L "https://github.com/Hanzo O11y/foundry/releases/latest/download/foundry_darwin_$(uname -m | sed 's/x86_64/amd64/g' | sed 's/arm64/arm64/g').tar.gz" -o foundry.tar.gz
 tar -xzf foundry.tar.gz
 ```
 
@@ -60,7 +60,7 @@ tar -xzf foundry.tar.gz
 
 ```bash
 $ARCH = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }
-Invoke-WebRequest -Uri "https://github.com/SigNoz/foundry/releases/latest/download/foundry_windows_${ARCH}.tar.gz" -OutFile foundry.tar.gz -UseBasicParsing
+Invoke-WebRequest -Uri "https://github.com/Hanzo O11y/foundry/releases/latest/download/foundry_windows_${ARCH}.tar.gz" -OutFile foundry.tar.gz -UseBasicParsing
 tar -xzf foundry.tar.gz
 ```
 
@@ -77,7 +77,7 @@ Create a `casting.yaml` file (see [How to write a casting](docs/casting.md) for 
 ```yaml
 apiVersion: v1alpha1
 metadata:
-  name: signoz
+  name: o11y
 spec:
   deployment:
     mode: docker
@@ -101,7 +101,7 @@ graph LR
 
     D --> E[🔥 foundryctl cast<br/>Deploy]
     E --> F[⚙️ Docker Compose /<br/>Systemd /<br/>Cloud Platform]
-    F --> G[✨ SigNoz Running<br/>ClickHouse, PostgreSQL,<br/>OTel Collector, SigNoz UI]
+    F --> G[✨ Hanzo O11y Running<br/>ClickHouse, PostgreSQL,<br/>OTel Collector, Hanzo O11y UI]
 
     style A fill:#FF9900,stroke:#E68A00,stroke-width:3px,color:#000
     style D fill:#FDB44B,stroke:#E68A00,stroke-width:3px,color:#000
@@ -113,7 +113,7 @@ graph LR
 ```
 ### Casting
 
-A Casting is a complete SigNoz deployment definition: one YAML file that Foundry merges with built-in defaults. For a step-by-step guide (metadata, deployment target, moldings, config, and examples), see **[How to write a casting](docs/casting.md)**.
+A Casting is a complete Hanzo O11y deployment definition: one YAML file that Foundry merges with built-in defaults. For a step-by-step guide (metadata, deployment target, moldings, config, and examples), see **[How to write a casting](docs/casting.md)**.
 
 ### Examples
 
@@ -125,19 +125,19 @@ A Casting is a complete SigNoz deployment definition: one YAML file that Foundry
 
 ### Moldings
 
-**Moldings** are the individual components that make up a SigNoz deployment:
+**Moldings** are the individual components that make up a Hanzo O11y deployment:
 
 | Molding | Implementation |
 |---------|----------------|
 | **TelemetryStore** | ClickHouse |
 | **TelemetryKeeper** | ClickHouse Keeper |
 | **MetaStore** | PostgreSQL, SQLite |
-| **Ingester** | SigNoz OTel Collector |
-| **SigNoz** | SigNoz |
+| **Ingester** | Hanzo O11y OTel Collector |
+| **Hanzo O11y** | Hanzo O11y |
 
 ### Pours
 
-**Pours** are the generated deployment and configuration files. When you run `forge`, Foundry creates the `pours/` directory containing everything needed to run SigNoz.
+**Pours** are the generated deployment and configuration files. When you run `forge`, Foundry creates the `pours/` directory containing everything needed to run Hanzo O11y.
 
 ```
 pours/
@@ -192,7 +192,7 @@ foundryctl forge -f casting.yaml -p ./pours
 
 ### cast
 
-Deploys SigNoz to your target environment. Runs `gauge` and `forge` automatically unless skipped:
+Deploys Hanzo O11y to your target environment. Runs `gauge` and `forge` automatically unless skipped:
 
 ```bash
 foundryctl cast -f casting.yaml
@@ -216,13 +216,13 @@ foundryctl gen
 
 - [How to write a casting](docs/casting.md): step-by-step guide to casting files
 - [Example configurations](docs/examples/): Docker, systemd, and Render
-- [SigNoz documentation](https://signoz.io/docs/): learn more about SigNoz
-- [SigNoz Slack](https://signoz.io/slack): community and support
+- [Hanzo O11y documentation](https://o11y.hanzo.ai/docs/): learn more about Hanzo O11y
+- [Hanzo O11y Slack](https://o11y.hanzo.ai/slack): community and support
 
 ## How can I get help?
 
-- **Issues**: [GitHub Issues](https://github.com/signoz/foundry/issues)
-- **Documentation**: [SigNoz Docs](https://signoz.io/docs/)
-- **Community**: [SigNoz Slack](https://signoz.io/slack)
+- **Issues**: [GitHub Issues](https://github.com/o11y/foundry/issues)
+- **Documentation**: [Hanzo O11y Docs](https://o11y.hanzo.ai/docs/)
+- **Community**: [Hanzo O11y Slack](https://o11y.hanzo.ai/slack)
 
-**Made with ❤️ for the SigNoz community**
+**Made with ❤️ for the Hanzo O11y community**
