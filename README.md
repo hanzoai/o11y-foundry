@@ -38,7 +38,7 @@ Foundry abstracts away the complexities of the installation process so you can s
 
 **1. Install foundryctl**
 
-You can install `foundryctl` by downloading a release from [GitHub Releases](https://github.com/o11y/foundry/releases).
+You can install `foundryctl` by downloading a release from [GitHub Releases](https://github.com/hanzoai/o11y-foundry/releases).
 
 To quickly get the correct binary for your architecture via the command line, run
 
@@ -221,7 +221,7 @@ foundryctl gen
 
 ## How can I get help?
 
-- **Issues**: [GitHub Issues](https://github.com/o11y/foundry/issues)
+- **Issues**: [GitHub Issues](https://github.com/hanzoai/o11y-foundry/issues)
 - **Documentation**: [Hanzo O11y Docs](https://o11y.hanzo.ai/docs/)
 - **Community**: [Hanzo O11y Slack](https://o11y.hanzo.ai/slack)
 

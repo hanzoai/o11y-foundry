@@ -1,22 +1,22 @@
 package v1alpha1
 
-import "github.com/o11y/foundry/internal/types"
+import "github.com/hanzoai/o11y-foundry/internal/types"
 
-type Hanzo O11y struct {
+type HanzoO11y struct {
 	// Specification for o11y.
-	Spec MoldingSpec `json:"spec" yaml:"spec" jsonschema:"description=Specification for Hanzo O11y"`
+	Spec MoldingSpec `json:"spec" yaml:"spec" jsonschema:"description=Specification for HanzoO11y"`
 
 	// Status of o11y.
-	Status Hanzo O11yStatus `json:"status" yaml:"status,omitempty" jsonschema:"description=Status of Hanzo O11y"`
+	Status HanzoO11yStatus `json:"status" yaml:"status,omitempty" jsonschema:"description=Status of HanzoO11y"`
 }
 
-type Hanzo O11yStatus struct {
+type HanzoO11yStatus struct {
 	MoldingStatus `json:",inline" yaml:",inline"`
 
-	Addresses Hanzo O11yStatusAddresses `json:"addresses" yaml:"addresses,omitempty" jsonschema:"description=Addresses of Hanzo O11y"`
+	Addresses HanzoO11yStatusAddresses `json:"addresses" yaml:"addresses,omitempty" jsonschema:"description=Addresses of HanzoO11y"`
 }
 
-type Hanzo O11yStatusAddresses struct {
+type HanzoO11yStatusAddresses struct {
 	// API server addresses.
 	APIServer []string `json:"apiserver" yaml:"apiserver" jsonschema:"description=API server addresses"`
 
@@ -24,8 +24,8 @@ type Hanzo O11yStatusAddresses struct {
 	Opamp []string `json:"opamp" yaml:"opamp" jsonschema:"description=Opamp server addresses"`
 }
 
-func DefaultHanzo O11y() Hanzo O11y {
-	return Hanzo O11y{
+func DefaultHanzoO11y() HanzoO11y {
+	return HanzoO11y{
 		Spec: MoldingSpec{
 			Enabled: true,
 			Cluster: TypeCluster{

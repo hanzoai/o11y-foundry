@@ -7,10 +7,10 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	"github.com/o11y/foundry/api/v1alpha1"
-	"github.com/o11y/foundry/internal/casting"
-	"github.com/o11y/foundry/internal/molding"
-	"github.com/o11y/foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 var _ casting.Casting = (*renderCasting)(nil)

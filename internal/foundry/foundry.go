@@ -3,15 +3,15 @@ package foundry
 import (
 	"log/slog"
 
-	"github.com/o11y/foundry/api/v1alpha1"
-	"github.com/o11y/foundry/internal/config"
-	"github.com/o11y/foundry/internal/config/yamlconfig"
-	"github.com/o11y/foundry/internal/molding"
-	"github.com/o11y/foundry/internal/molding/ingestermolding"
-	"github.com/o11y/foundry/internal/molding/metastoremolding"
-	"github.com/o11y/foundry/internal/molding/o11ymolding"
-	"github.com/o11y/foundry/internal/molding/telemetrykeepermolding"
-	"github.com/o11y/foundry/internal/molding/telemetrystoremolding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/config"
+	"github.com/hanzoai/o11y-foundry/internal/config/yamlconfig"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/ingestermolding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/metastoremolding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/o11ymolding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/telemetrykeepermolding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/telemetrystoremolding"
 )
 
 type Foundry struct {
