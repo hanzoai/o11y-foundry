@@ -4,8 +4,8 @@ import (
 	"embed"
 	"fmt"
 
-	"github.com/o11y/foundry/api/v1alpha1"
-	"github.com/o11y/foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 //go:embed templates/*.gotmpl

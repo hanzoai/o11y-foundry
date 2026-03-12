@@ -1,4 +1,4 @@
-module github.com/o11y/foundry
+module github.com/hanzoai/o11y-foundry
 
 go 1.25.3
 

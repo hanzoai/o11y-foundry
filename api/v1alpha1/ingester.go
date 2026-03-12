@@ -1,6 +1,6 @@
 package v1alpha1
 
-import "github.com/o11y/foundry/internal/types"
+import "github.com/hanzoai/o11y-foundry/internal/types"
 
 type Ingester struct {
 	// Specification for the ingester.

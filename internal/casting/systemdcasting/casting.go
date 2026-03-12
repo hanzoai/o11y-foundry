@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	rootcasting "github.com/o11y/foundry/internal/casting"
-	"github.com/o11y/foundry/internal/molding"
+	rootcasting "github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 
 	"os"
 	"os/exec"
@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/o11y/foundry/api/v1alpha1"
-	"github.com/o11y/foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 const svcSuffix = ".service"

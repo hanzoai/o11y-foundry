@@ -3,9 +3,9 @@ package casting
 import (
 	"context"
 
-	"github.com/o11y/foundry/api/v1alpha1"
-	"github.com/o11y/foundry/internal/molding"
-	"github.com/o11y/foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 // DeploymentDir is the subdirectory within the pours directory where

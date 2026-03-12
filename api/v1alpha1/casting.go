@@ -18,7 +18,7 @@ type CastingSpec struct {
 	Deployment TypeDeployment `json:"deployment" yaml:"deployment" description:"Deployment configuration for the platform"`
 
 	// The configuration for the o11y molding.
-	O11y Hanzo O11y `json:"o11y,omitzero" yaml:"o11y,omitempty" description:"The configuration for the Hanzo O11y molding"`
+	O11y HanzoO11y `json:"o11y,omitzero" yaml:"o11y,omitempty" description:"The configuration for the HanzoO11y molding"`
 
 	// The configuration for the telemetry store molding.
 	TelemetryStore TelemetryStore `json:"telemetrystore,omitzero" yaml:"telemetrystore,omitempty" description:"The configuration for the telemetry store molding"`
@@ -71,7 +71,7 @@ func DefaultCasting() Casting {
 			Name: "o11y",
 		},
 		Spec: CastingSpec{
-			O11y:          DefaultHanzo O11y(),
+			O11y:          DefaultHanzoO11y(),
 			TelemetryStore:  DefaultTelemetryStore(),
 			TelemetryKeeper: DefaultTelemetryKeeper(),
 			MetaStore:       DefaultMetaStore(),

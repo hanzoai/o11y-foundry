@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/o11y/foundry/api/v1alpha1"
-	foundryerrors "github.com/o11y/foundry/internal/errors"
-	"github.com/o11y/foundry/internal/molding"
-	"github.com/o11y/foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 var _ molding.Molding = (*telemetrystore)(nil)
