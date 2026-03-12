@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/o11y/foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
 )
 
 type metastore struct {

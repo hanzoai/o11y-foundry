@@ -3,7 +3,7 @@ package molding
 import (
 	"context"
 
-	"github.com/o11y/foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
 )
 
 type MoldingEnricher interface {

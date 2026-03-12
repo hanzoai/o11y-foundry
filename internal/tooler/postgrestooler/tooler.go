@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	root "github.com/o11y/foundry/internal/tooler"
+	root "github.com/hanzoai/o11y-foundry/internal/tooler"
 )
 
 var _ root.Tooler = (*postgresTooler)(nil)

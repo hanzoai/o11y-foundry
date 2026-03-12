@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/o11y/foundry/api/v1alpha1"
-	"github.com/o11y/foundry/internal/molding"
-	"github.com/o11y/foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 var _ molding.MoldingEnricher = (*linuxMoldingEnricher)(nil)
@@ -56,7 +56,7 @@ func (e *linuxMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting) er
 	}
 
 	if replicas > 1 || shards > 1 {
-		return fmt.Errorf("deployment mode '%s' does not support Distributed Clickhouse Setup, raise an issue at https://github.com/o11y/foundry/issues", config.Spec.Deployment.Mode)
+		return fmt.Errorf("deployment mode '%s' does not support Distributed Clickhouse Setup, raise an issue at https://github.com/hanzoai/o11y-foundry/issues", config.Spec.Deployment.Mode)
 	}
 
 	// Generate addresses for each shard/replica
@@ -82,7 +82,7 @@ func (e *linuxMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) e
 	}
 
 	if replicas > 1 {
-		return fmt.Errorf("deployment mode '%s' does not support Distributed Clickhouse Setup, raise an issue at https://github.com/o11y/foundry/issues", config.Spec.Deployment.Mode)
+		return fmt.Errorf("deployment mode '%s' does not support Distributed Clickhouse Setup, raise an issue at https://github.com/hanzoai/o11y-foundry/issues", config.Spec.Deployment.Mode)
 	}
 
 	var clientAddresses, raftAddresses []string

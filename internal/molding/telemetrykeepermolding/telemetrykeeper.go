@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/o11y/foundry/api/v1alpha1"
-	foundryerrors "github.com/o11y/foundry/internal/errors"
-	"github.com/o11y/foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
 
 var _ molding.Molding = (*telemetrykeeper)(nil)
