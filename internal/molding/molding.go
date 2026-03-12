@@ -3,7 +3,7 @@ package molding
 import (
 	"context"
 
-	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/o11y/foundry/api/v1alpha1"
 )
 
 type MoldingEnricher interface {
@@ -24,7 +24,7 @@ func MoldingsInOrder() []v1alpha1.MoldingKind {
 		v1alpha1.MoldingKindTelemetryKeeper,
 		v1alpha1.MoldingKindTelemetryStore,
 		v1alpha1.MoldingKindMetaStore,
-		v1alpha1.MoldingKindSignoz,
+		v1alpha1.MoldingKindO11y,
 		v1alpha1.MoldingKindIngester,
 	}
 }

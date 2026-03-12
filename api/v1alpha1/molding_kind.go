@@ -16,7 +16,7 @@ var (
 	MoldingKindTelemetryStore  MoldingKind = MoldingKind{s: "telemetrystore"}
 	MoldingKindTelemetryKeeper MoldingKind = MoldingKind{s: "telemetrykeeper"}
 	MoldingKindMetaStore       MoldingKind = MoldingKind{s: "metastore"}
-	MoldingKindSignoz          MoldingKind = MoldingKind{s: "signoz"}
+	MoldingKindO11y          MoldingKind = MoldingKind{s: "o11y"}
 )
 
 type MoldingKind struct {
@@ -28,7 +28,7 @@ func (kind MoldingKind) String() string {
 }
 
 func MoldingKinds() []MoldingKind {
-	return []MoldingKind{MoldingKindIngester, MoldingKindTelemetryStore, MoldingKindTelemetryKeeper, MoldingKindMetaStore, MoldingKindSignoz}
+	return []MoldingKind{MoldingKindIngester, MoldingKindTelemetryStore, MoldingKindTelemetryKeeper, MoldingKindMetaStore, MoldingKindO11y}
 }
 
 func (kind *MoldingKind) UnmarshalText(text []byte) error {

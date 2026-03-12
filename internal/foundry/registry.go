@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/casting/dockercomposecasting"
-	"github.com/signoz/foundry/internal/casting/rendercasting"
-	"github.com/signoz/foundry/internal/casting/systemdcasting"
-	"github.com/signoz/foundry/internal/tooler"
-	"github.com/signoz/foundry/internal/tooler/clickhousekeepertooler"
-	"github.com/signoz/foundry/internal/tooler/clickhousetooler"
-	"github.com/signoz/foundry/internal/tooler/dockercomposetooler"
-	"github.com/signoz/foundry/internal/tooler/dockertooler"
-	"github.com/signoz/foundry/internal/tooler/postgrestooler"
-	"github.com/signoz/foundry/internal/tooler/systemdtooler"
+	"github.com/o11y/foundry/api/v1alpha1"
+	"github.com/o11y/foundry/internal/casting"
+	"github.com/o11y/foundry/internal/casting/dockercomposecasting"
+	"github.com/o11y/foundry/internal/casting/rendercasting"
+	"github.com/o11y/foundry/internal/casting/systemdcasting"
+	"github.com/o11y/foundry/internal/tooler"
+	"github.com/o11y/foundry/internal/tooler/clickhousekeepertooler"
+	"github.com/o11y/foundry/internal/tooler/clickhousetooler"
+	"github.com/o11y/foundry/internal/tooler/dockercomposetooler"
+	"github.com/o11y/foundry/internal/tooler/dockertooler"
+	"github.com/o11y/foundry/internal/tooler/postgrestooler"
+	"github.com/o11y/foundry/internal/tooler/systemdtooler"
 )
 
 // Defines a single casting item in the registry.
@@ -66,7 +66,7 @@ func (registry *Registry) CastingItems() map[v1alpha1.TypeDeployment]CastingItem
 func (registry *Registry) Casting(deployment v1alpha1.TypeDeployment) (casting.Casting, error) {
 	item, ok := registry.castings[deployment]
 	if !ok {
-		return nil, fmt.Errorf("deployment '%+v' is not supported, raise an issue at https://github.com/signoz/foundry/issues to request support for this deployment", deployment)
+		return nil, fmt.Errorf("deployment '%+v' is not supported, raise an issue at https://github.com/o11y/foundry/issues to request support for this deployment", deployment)
 	}
 
 	return item.Casting, nil
@@ -75,7 +75,7 @@ func (registry *Registry) Casting(deployment v1alpha1.TypeDeployment) (casting.C
 func (registry *Registry) Toolers(deployment v1alpha1.TypeDeployment) ([]tooler.Tooler, error) {
 	item, ok := registry.castings[deployment]
 	if !ok {
-		return nil, fmt.Errorf("deployment '%+v' is not supported, raise an issue at https://github.com/signoz/foundry/issues to request support for this deployment", deployment)
+		return nil, fmt.Errorf("deployment '%+v' is not supported, raise an issue at https://github.com/o11y/foundry/issues to request support for this deployment", deployment)
 	}
 
 	return item.Toolers, nil

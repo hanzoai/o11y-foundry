@@ -18,7 +18,7 @@ echo "Fetching histogram-quantile for ${node_os}/${node_arch}"
 
 cd /tmp
 wget -O histogram-quantile.tar.gz \
-  "https://github.com/SigNoz/signoz/releases/download/histogram-quantile%2F${VERSION}/histogram-quantile_${node_os}_${node_arch}.tar.gz"
+  "https://github.com/Hanzo O11y/o11y/releases/download/histogram-quantile%2F${VERSION}/histogram-quantile_${node_os}_${node_arch}.tar.gz"
 
 tar -xzf histogram-quantile.tar.gz
 mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile

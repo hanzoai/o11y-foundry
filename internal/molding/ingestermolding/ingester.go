@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	foundryerrors "github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/molding"
+	"github.com/o11y/foundry/api/v1alpha1"
+	foundryerrors "github.com/o11y/foundry/internal/errors"
+	"github.com/o11y/foundry/internal/molding"
 )
 
 var _ molding.Molding = (*ingester)(nil)
@@ -55,11 +55,11 @@ func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Cast
 }
 
 func (molding *ingester) getData(config *v1alpha1.Casting) (Data, error) {
-	if len(config.Spec.Signoz.Status.Addresses.Opamp) == 0 {
-		return Data{}, fmt.Errorf("signoz address is not set")
+	if len(config.Spec.O11y.Status.Addresses.Opamp) == 0 {
+		return Data{}, fmt.Errorf("o11y address is not set")
 	}
 
-	signozAddress := config.Spec.Signoz.Status.Addresses.Opamp[0]
+	o11yAddress := config.Spec.O11y.Status.Addresses.Opamp[0]
 
 	if len(config.Spec.TelemetryStore.Status.Addresses.TCP) == 0 {
 		return Data{}, fmt.Errorf("telemetry store address is not set")
@@ -68,26 +68,26 @@ func (molding *ingester) getData(config *v1alpha1.Casting) (Data, error) {
 	telemetryStoreAddresses := config.Spec.TelemetryStore.Status.Addresses.TCP
 	var telemetryStoreTracesAddresses []string
 	for _, address := range telemetryStoreAddresses {
-		telemetryStoreTracesAddresses = append(telemetryStoreTracesAddresses, address+"/signoz_traces")
+		telemetryStoreTracesAddresses = append(telemetryStoreTracesAddresses, address+"/o11y_traces")
 	}
 
 	var telemetryStoreMetricsAddresses []string
 	for _, address := range telemetryStoreAddresses {
-		telemetryStoreMetricsAddresses = append(telemetryStoreMetricsAddresses, address+"/signoz_metrics")
+		telemetryStoreMetricsAddresses = append(telemetryStoreMetricsAddresses, address+"/o11y_metrics")
 	}
 
 	var telemetryStoreLogsAddresses []string
 	for _, address := range telemetryStoreAddresses {
-		telemetryStoreLogsAddresses = append(telemetryStoreLogsAddresses, address+"/signoz_logs")
+		telemetryStoreLogsAddresses = append(telemetryStoreLogsAddresses, address+"/o11y_logs")
 	}
 
 	var telemetryStoreMeterAddresses []string
 	for _, address := range telemetryStoreAddresses {
-		telemetryStoreMeterAddresses = append(telemetryStoreMeterAddresses, address+"/signoz_meter")
+		telemetryStoreMeterAddresses = append(telemetryStoreMeterAddresses, address+"/o11y_meter")
 	}
 
 	return Data{
-		SignozOpampAddress:           signozAddress,
+		O11yOpampAddress:           o11yAddress,
 		TelemetryStoreTracesAddress:  strings.Join(telemetryStoreTracesAddresses, ","),
 		TelemetryStoreMetricsAddress: strings.Join(telemetryStoreMetricsAddresses, ","),
 		TelemetryStoreLogsAddress:    strings.Join(telemetryStoreLogsAddresses, ","),

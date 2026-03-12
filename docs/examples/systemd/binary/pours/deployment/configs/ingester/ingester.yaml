@@ -1,5 +1,5 @@
 connectors:
-  signozmeter:
+  o11ymeter:
     dimensions:
     - name: service.name
     - name: deployment.environment
@@ -7,32 +7,32 @@ connectors:
     metrics_flush_interval: 1h
 exporters:
   clickhouselogsexporter:
-    dsn: tcp://localhost:9000/signoz_logs
+    dsn: tcp://localhost:9000/o11y_logs
     sending_queue:
       enabled: false
     timeout: 45s
     use_new_schema: true
   clickhousetraces:
-    datasource: tcp://localhost:9000/signoz_traces
+    datasource: tcp://localhost:9000/o11y_traces
     low_cardinal_exception_grouping: ${env:LOW_CARDINAL_EXCEPTION_GROUPING}
     sending_queue:
       enabled: false
     timeout: 45s
     use_new_schema: true
-  signozclickhousemeter:
-    dsn: tcp://localhost:9000/signoz_meter
+  o11yclickhousemeter:
+    dsn: tcp://localhost:9000/o11y_meter
     sending_queue:
       enabled: false
     timeout: 45s
-  signozclickhousemetrics:
-    dsn: tcp://localhost:9000/signoz_metrics
+  o11yclickhousemetrics:
+    dsn: tcp://localhost:9000/o11y_metrics
     sending_queue:
       enabled: false
     timeout: 45s
 extensions:
   pprof:
     endpoint: 0.0.0.0:1777
-  signoz_health_check:
+  o11y_health_check:
     endpoint: 0.0.0.0:13133
 processors:
   batch:
@@ -43,14 +43,14 @@ processors:
     send_batch_max_size: 25000
     send_batch_size: 20000
     timeout: 1s
-  signozspanmetrics/delta:
+  o11yspanmetrics/delta:
     aggregation_temporality: AGGREGATION_TEMPORALITY_DELTA
     dimensions:
     - default: default
       name: service.namespace
     - default: default
       name: deployment.environment
-    - name: signoz.collector.id
+    - name: o11y.collector.id
     - name: service.version
     dimensions_cache_size: 100000
     enable_exp_histogram: true
@@ -72,7 +72,7 @@ processors:
     - 20s
     - 40s
     - 60s
-    metrics_exporter: signozclickhousemetrics
+    metrics_exporter: o11yclickhousemetrics
     metrics_flush_interval: 60s
 receivers:
   otlp:
@@ -83,38 +83,38 @@ receivers:
         endpoint: 0.0.0.0:4318
 service:
   extensions:
-  - signoz_health_check
+  - o11y_health_check
   - pprof
   pipelines:
     logs:
       exporters:
       - clickhouselogsexporter
-      - signozmeter
+      - o11ymeter
       processors:
       - batch
       receivers:
       - otlp
     metrics:
       exporters:
-      - signozclickhousemetrics
-      - signozmeter
+      - o11yclickhousemetrics
+      - o11ymeter
       processors:
       - batch
       receivers:
       - otlp
     metrics/meter:
       exporters:
-      - signozclickhousemeter
+      - o11yclickhousemeter
       processors:
       - batch/meter
       receivers:
-      - signozmeter
+      - o11ymeter
     traces:
       exporters:
       - clickhousetraces
-      - signozmeter
+      - o11ymeter
       processors:
-      - signozspanmetrics/delta
+      - o11yspanmetrics/delta
       - batch
       receivers:
       - otlp

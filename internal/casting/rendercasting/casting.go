@@ -7,10 +7,10 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/molding"
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/api/v1alpha1"
+	"github.com/o11y/foundry/internal/casting"
+	"github.com/o11y/foundry/internal/molding"
+	"github.com/o11y/foundry/internal/types"
 )
 
 var _ casting.Casting = (*renderCasting)(nil)

@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 
-	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/o11y/foundry/api/v1alpha1"
 )
 
 type Config interface {

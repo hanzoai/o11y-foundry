@@ -13,7 +13,7 @@ type MoldingSpec struct {
 	Version string `json:"version,omitempty" yaml:"version,omitempty" description:"The version of the molding to use" example:"latest"`
 
 	// Image of the molding
-	Image string `json:"image,omitempty" yaml:"image,omitempty" description:"Container image of the molding" example:"signoz/signoz:latest"`
+	Image string `json:"image,omitempty" yaml:"image,omitempty" description:"Container image of the molding" example:"ghcr.io/hanzoai/o11y:latest"`
 
 	// Environment variables for the molding
 	Env map[string]string `json:"env,omitempty" yaml:"env,omitempty" description:"Environment variables for the molding"`

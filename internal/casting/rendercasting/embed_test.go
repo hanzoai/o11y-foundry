@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/internal/types"
 	"github.com/stretchr/testify/assert"
 )
 

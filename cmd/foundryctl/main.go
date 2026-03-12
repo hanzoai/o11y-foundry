@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	foundryerrors "github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/instrumentation"
+	foundryerrors "github.com/o11y/foundry/internal/errors"
+	"github.com/o11y/foundry/internal/instrumentation"
 	"github.com/spf13/cobra"
 )
 

@@ -17,8 +17,8 @@ type CastingSpec struct {
 	// Mode platform in which the platform will run.
 	Deployment TypeDeployment `json:"deployment" yaml:"deployment" description:"Deployment configuration for the platform"`
 
-	// The configuration for the signoz molding.
-	Signoz SigNoz `json:"signoz,omitzero" yaml:"signoz,omitempty" description:"The configuration for the SigNoz molding"`
+	// The configuration for the o11y molding.
+	O11y Hanzo O11y `json:"o11y,omitzero" yaml:"o11y,omitempty" description:"The configuration for the Hanzo O11y molding"`
 
 	// The configuration for the telemetry store molding.
 	TelemetryStore TelemetryStore `json:"telemetrystore,omitzero" yaml:"telemetrystore,omitempty" description:"The configuration for the telemetry store molding"`
@@ -39,7 +39,7 @@ type CastingStatus struct {
 }
 
 func MergeCastingSpecAndStatus(base *Casting) error {
-	if err := base.Spec.Signoz.Spec.MergeStatus(base.Spec.Signoz.Status.MoldingStatus); err != nil {
+	if err := base.Spec.O11y.Spec.MergeStatus(base.Spec.O11y.Status.MoldingStatus); err != nil {
 		return err
 	}
 
@@ -68,10 +68,10 @@ func DefaultCasting() Casting {
 			APIVersion: "v1alpha1",
 		},
 		Metadata: TypeMetadata{
-			Name: "signoz",
+			Name: "o11y",
 		},
 		Spec: CastingSpec{
-			Signoz:          DefaultSigNoz(),
+			O11y:          DefaultHanzo O11y(),
 			TelemetryStore:  DefaultTelemetryStore(),
 			TelemetryKeeper: DefaultTelemetryKeeper(),
 			MetaStore:       DefaultMetaStore(),
@@ -86,7 +86,7 @@ func ExampleCasting() Casting {
 			APIVersion: "v1alpha1",
 		},
 		Metadata: TypeMetadata{
-			Name: "signoz",
+			Name: "o11y",
 		},
 	}
 }

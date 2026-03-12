@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	rootcasting "github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/molding"
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/api/v1alpha1"
+	rootcasting "github.com/o11y/foundry/internal/casting"
+	"github.com/o11y/foundry/internal/molding"
+	"github.com/o11y/foundry/internal/types"
 )
 
 var _ rootcasting.Casting = (*dockerComposeCasting)(nil)
@@ -79,11 +79,11 @@ func (casting *dockerComposeCasting) Forge(ctx context.Context, config v1alpha1.
 		materials = append(materials, material)
 	}
 
-	// Add signoz config files
-	for filename, content := range config.Spec.Signoz.Spec.Config.Data {
-		material, err := types.NewYAMLMaterial([]byte(content), filepath.Join(rootcasting.DeploymentDir, "configs", "signoz", filename))
+	// Add o11y config files
+	for filename, content := range config.Spec.O11y.Spec.Config.Data {
+		material, err := types.NewYAMLMaterial([]byte(content), filepath.Join(rootcasting.DeploymentDir, "configs", "o11y", filename))
 		if err != nil {
-			return nil, fmt.Errorf("failed to create signoz config material: %w", err)
+			return nil, fmt.Errorf("failed to create o11y config material: %w", err)
 		}
 		materials = append(materials, material)
 	}

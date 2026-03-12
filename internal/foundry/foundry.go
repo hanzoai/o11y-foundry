@@ -3,15 +3,15 @@ package foundry
 import (
 	"log/slog"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/config"
-	"github.com/signoz/foundry/internal/config/yamlconfig"
-	"github.com/signoz/foundry/internal/molding"
-	"github.com/signoz/foundry/internal/molding/ingestermolding"
-	"github.com/signoz/foundry/internal/molding/metastoremolding"
-	"github.com/signoz/foundry/internal/molding/signozmolding"
-	"github.com/signoz/foundry/internal/molding/telemetrykeepermolding"
-	"github.com/signoz/foundry/internal/molding/telemetrystoremolding"
+	"github.com/o11y/foundry/api/v1alpha1"
+	"github.com/o11y/foundry/internal/config"
+	"github.com/o11y/foundry/internal/config/yamlconfig"
+	"github.com/o11y/foundry/internal/molding"
+	"github.com/o11y/foundry/internal/molding/ingestermolding"
+	"github.com/o11y/foundry/internal/molding/metastoremolding"
+	"github.com/o11y/foundry/internal/molding/o11ymolding"
+	"github.com/o11y/foundry/internal/molding/telemetrykeepermolding"
+	"github.com/o11y/foundry/internal/molding/telemetrystoremolding"
 )
 
 type Foundry struct {
@@ -44,7 +44,7 @@ func New(logger *slog.Logger) (*Foundry, error) {
 			v1alpha1.MoldingKindTelemetryStore:  telemetrystoremolding.New(logger),
 			v1alpha1.MoldingKindTelemetryKeeper: telemetrykeepermolding.New(logger),
 			v1alpha1.MoldingKindMetaStore:       metastoremolding.New(logger),
-			v1alpha1.MoldingKindSignoz:          signozmolding.New(logger),
+			v1alpha1.MoldingKindO11y:          o11ymolding.New(logger),
 			v1alpha1.MoldingKindIngester:        ingestermolding.New(logger),
 		},
 	}, nil

@@ -10,9 +10,9 @@ definitions:
       metastore:
         $ref: '#/definitions/V1Alpha1MetaStore'
         description: The configuration for the meta store molding
-      signoz:
-        $ref: '#/definitions/V1Alpha1SigNoz'
-        description: The configuration for the SigNoz molding
+      o11y:
+        $ref: '#/definitions/V1Alpha1Hanzo O11y'
+        description: The configuration for the Hanzo O11y molding
       telemetrykeeper:
         $ref: '#/definitions/V1Alpha1TelemetryKeeper'
         description: The configuration for the telemetry keeper molding
@@ -124,7 +124,7 @@ definitions:
       image:
         description: Container image of the molding
         examples:
-        - signoz/signoz:latest
+        - ghcr.io/hanzoai/o11y:latest
         type: string
       version:
         description: The version of the molding to use
@@ -132,17 +132,17 @@ definitions:
         - latest
         type: string
     type: object
-  V1Alpha1SigNoz:
+  V1Alpha1Hanzo O11y:
     properties:
       spec:
         $ref: '#/definitions/V1Alpha1MoldingSpec'
       status:
-        $ref: '#/definitions/V1Alpha1SigNozStatus'
+        $ref: '#/definitions/V1Alpha1Hanzo O11yStatus'
     type: object
-  V1Alpha1SigNozStatus:
+  V1Alpha1Hanzo O11yStatus:
     properties:
       addresses:
-        $ref: '#/definitions/V1Alpha1SigNozStatusAddresses'
+        $ref: '#/definitions/V1Alpha1Hanzo O11yStatusAddresses'
       config:
         $ref: '#/definitions/V1Alpha1TypeConfig'
         description: Configuration for the molding
@@ -157,7 +157,7 @@ definitions:
         description: Extra information about the molding
         type: object
     type: object
-  V1Alpha1SigNozStatusAddresses:
+  V1Alpha1Hanzo O11yStatusAddresses:
     properties:
       apiserver:
         items:
@@ -338,7 +338,7 @@ definitions:
       name:
         description: The name of this installation
         examples:
-        - signoz-dev
+        - o11y-dev
         type: string
     type: object
 properties:

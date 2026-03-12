@@ -1,0 +1,15 @@
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+ExecStart=/bin/bash -c '/opt/ingester/bin/o11y-otel-collector migrate bootstrap --clickhouse-dsn=tcp://localhost:9000 && /opt/ingester/bin/o11y-otel-collector migrate sync up --clickhouse-dsn=tcp://localhost:9000 && /opt/ingester/bin/o11y-otel-collector migrate async up --clickhouse-dsn=tcp://localhost:9000'
+Group=o11y
+RemainAfterExit=yes
+Type=oneshot
+User=o11y
+
+[Unit]
+After=o11y-telemetrystore-clickhouse-0-0
+Description=Hanzo O11y Schema Migrator
+Documentation=https://o11y.io/docs
+Requires=o11y-telemetrystore-clickhouse-0-0

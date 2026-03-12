@@ -3,7 +3,7 @@ package ingestermolding
 import (
 	"embed"
 
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/internal/types"
 )
 
 //go:embed templates/*.gotmpl
@@ -15,7 +15,7 @@ var (
 )
 
 type Data struct {
-	SignozOpampAddress           string
+	O11yOpampAddress           string
 	TelemetryStoreTracesAddress  string
 	TelemetryStoreMetricsAddress string
 	TelemetryStoreLogsAddress    string

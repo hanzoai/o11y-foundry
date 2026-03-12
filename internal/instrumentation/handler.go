@@ -12,7 +12,7 @@ import (
 
 const (
 	timeFormat       string = "2006-01-02 15:04:05 -07:00"
-	moduleName       string = "github.com/signoz/foundry/"
+	moduleName       string = "github.com/o11y/foundry/"
 	totalLevelSpaces int    = 6 // total spaces for the level key
 )
 

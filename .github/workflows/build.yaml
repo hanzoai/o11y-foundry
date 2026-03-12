@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   docker:
-    uses: signoz/primus.workflows/.github/workflows/go-build.yaml@main
+    uses: o11y/primus.workflows/.github/workflows/go-build.yaml@main
     secrets: inherit
     with:
       PRIMUS_REF: main

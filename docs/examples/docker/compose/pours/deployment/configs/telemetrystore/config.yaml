@@ -35,7 +35,7 @@ remote_servers:
   cluster:
     shard:
     - replica:
-        host: signoz-telemetrystore-clickhouse-0-0
+        host: o11y-telemetrystore-clickhouse-0-0
         port: 9000
 tcp_port: 9000
 tmp_path: /var/lib/clickhouse/tmp/
@@ -58,5 +58,5 @@ users:
     show_named_collection_secrets: 1
 zookeeper:
   node:
-  - host: signoz-telemetrykeeper-clickhousekeeper-0
+  - host: o11y-telemetrykeeper-clickhousekeeper-0
     port: 9181

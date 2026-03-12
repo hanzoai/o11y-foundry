@@ -1,14 +1,14 @@
 networks:
-  signoz-network:
-    name: signoz-network
+  o11y-network:
+    name: o11y-network
 services:
-  signoz-ingester:
+  o11y-ingester:
     command:
     - --config=/etc/otel-collector-config.yaml
     depends_on:
-      signoz-telemetrystore-clickhouse-0-0:
+      o11y-telemetrystore-clickhouse-0-0:
         condition: service_healthy
-      signoz-telemetrystore-migrator:
+      o11y-telemetrystore-migrator:
         condition: service_completed_successfully
     deploy:
       replicas: 1
@@ -23,45 +23,45 @@ services:
       - -q
       - http://localhost:13133/health
       timeout: 10s
-    image: signoz/signoz-otel-collector:latest
+    image: ghcr.io/hanzoai/otel-collector:latest
     networks:
-    - signoz-network
+    - o11y-network
     ports:
     - 4317:4317
     - 4318:4318
     volumes:
     - ./configs/ingester/ingester.yaml:/etc/otel-collector-config.yaml:ro
-  signoz-metastore-postgres-0:
-    container_name: signoz-metastore-postgres-0
+  o11y-metastore-postgres-0:
+    container_name: o11y-metastore-postgres-0
     environment:
-    - POSTGRES_USER=signoz
-    - POSTGRES_PASSWORD=signoz
-    - POSTGRES_DB=signoz
+    - POSTGRES_USER=o11y
+    - POSTGRES_PASSWORD=o11y
+    - POSTGRES_DB=o11y
     healthcheck:
       interval: 30s
       retries: 3
       start_period: 30s
       test:
       - CMD-SHELL
-      - pg_isready -U signoz -d signoz
+      - pg_isready -U o11y -d o11y
       timeout: 10s
     image: docker.io/postgres:16
     networks:
-    - signoz-network
+    - o11y-network
     volumes:
-    - signoz-metastore-0-data:/var/lib/postgresql/data
-  signoz-signoz:
+    - o11y-metastore-0-data:/var/lib/postgresql/data
+  o11y-o11y:
     depends_on:
-      signoz-metastore-postgres-0:
+      o11y-metastore-postgres-0:
         condition: service_healthy
-      signoz-telemetrystore-clickhouse-0-0:
+      o11y-telemetrystore-clickhouse-0-0:
         condition: service_healthy
     deploy:
       replicas: 1
     environment:
-    - SIGNOZ_ALERTMANAGER_PROVIDER=signoz
-    - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://signoz-telemetrystore-clickhouse-0-0:9000
-    - SIGNOZ_SQLSTORE_SQLITE_PATH=/var/lib/signoz/signoz.db
+    - HANZO_ALERTMANAGER_PROVIDER=o11y
+    - HANZO_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://o11y-telemetrystore-clickhouse-0-0:9000
+    - HANZO_SQLSTORE_SQLITE_PATH=/var/lib/ghcr.io/hanzoai/o11y.db
     - DASHBOARDS_PATH=/root/config/dashboards
     - STORAGE=clickhouse
     - GODEBUG=netdns=go
@@ -79,15 +79,15 @@ services:
       - -q
       - http://localhost:3301/api/v1/health
       timeout: 10s
-    image: signoz/signoz:latest
+    image: ghcr.io/hanzoai/o11y:latest
     networks:
-    - signoz-network
+    - o11y-network
     ports:
     - 8080:8080
     volumes:
-    - signoz-signoz-0-data:/var/lib/signoz
-  signoz-telemetrykeeper-clickhousekeeper-0:
-    container_name: signoz-telemetrykeeper-clickhousekeeper-0
+    - o11y-o11y-0-data:/var/lib/o11y
+  o11y-telemetrykeeper-clickhousekeeper-0:
+    container_name: o11y-telemetrykeeper-clickhousekeeper-0
     entrypoint:
     - /usr/bin/clickhouse-keeper
     - --config-file=/etc/clickhouse-keeper/keeper.yaml
@@ -107,16 +107,16 @@ services:
       timeout: 10s
     image: clickhouse/clickhouse-keeper:25.5.6
     networks:
-    - signoz-network
+    - o11y-network
     volumes:
-    - signoz-telemetrykeeper-0-data:/var/lib/clickhouse-keeper
+    - o11y-telemetrykeeper-0-data:/var/lib/clickhouse-keeper
     - ./configs/telemetrykeeper/keeper-0.yaml:/etc/clickhouse-keeper/keeper.yaml:ro
-  signoz-telemetrystore-clickhouse-0-0:
-    container_name: signoz-telemetrystore-clickhouse-0-0
+  o11y-telemetrystore-clickhouse-0-0:
+    container_name: o11y-telemetrystore-clickhouse-0-0
     depends_on:
-      signoz-telemetrykeeper-clickhousekeeper-0:
+      o11y-telemetrykeeper-clickhousekeeper-0:
         condition: service_healthy
-      signoz-telemetrystore-clickhouse-user-scripts:
+      o11y-telemetrystore-clickhouse-user-scripts:
         condition: service_completed_successfully
     environment:
     - CLICKHOUSE_SKIP_USER_SETUP=1
@@ -132,14 +132,14 @@ services:
       - -q
       - http://localhost:8123/ping
       timeout: 10s
-    image: clickhouse/clickhouse-server:25.5.6
+    image: ghcr.io/hanzoai/datastore:25.5.6
     networks:
-    - signoz-network
+    - o11y-network
     volumes:
-    - signoz-telemetrystore-0-0-data:/var/lib/clickhouse
-    - signoz-telemetrystore-user-scripts:/var/lib/clickhouse/user_scripts:ro
+    - o11y-telemetrystore-0-0-data:/var/lib/clickhouse
+    - o11y-telemetrystore-user-scripts:/var/lib/clickhouse/user_scripts:ro
     - ./configs/telemetrystore/config.yaml:/etc/clickhouse-server/config.yaml:ro
-  signoz-telemetrystore-clickhouse-user-scripts:
+  o11y-telemetrystore-clickhouse-user-scripts:
     command:
     - bash
     - -c
@@ -149,33 +149,33 @@ services:
       node_arch=$$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
       echo "Fetching histogram-binary for $${node_os}/$${node_arch}"
       cd /tmp
-      wget -O histogram-quantile.tar.gz "https://github.com/SigNoz/signoz/releases/download/histogram-quantile%2F$${version}/histogram-quantile_$${node_os}_$${node_arch}.tar.gz"
+      wget -O histogram-quantile.tar.gz "https://github.com/Hanzo O11y/o11y/releases/download/histogram-quantile%2F$${version}/histogram-quantile_$${node_os}_$${node_arch}.tar.gz"
       tar -xvzf histogram-quantile.tar.gz
       mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile
-    container_name: signoz-telemetrystore-clickhouse-user-scripts
-    image: clickhouse/clickhouse-server:25.5.6
+    container_name: o11y-telemetrystore-clickhouse-user-scripts
+    image: ghcr.io/hanzoai/datastore:25.5.6
     networks:
-    - signoz-network
+    - o11y-network
     volumes:
-    - signoz-telemetrystore-user-scripts:/var/lib/clickhouse/user_scripts
-  signoz-telemetrystore-migrator:
+    - o11y-telemetrystore-user-scripts:/var/lib/clickhouse/user_scripts
+  o11y-telemetrystore-migrator:
     command:
-    - /signoz-otel-collector migrate bootstrap --clickhouse-dsn tcp://signoz-telemetrystore-clickhouse-0-0:9000
-    - /signoz-otel-collector migrate sync up --clickhouse-dsn tcp://signoz-telemetrystore-clickhouse-0-0:9000
-    - /signoz-otel-collector migrate async up --clickhouse-dsn tcp://signoz-telemetrystore-clickhouse-0-0:9000
-    container_name: signoz-telemetrystore-migrator
+    - /o11y-otel-collector migrate bootstrap --clickhouse-dsn tcp://o11y-telemetrystore-clickhouse-0-0:9000
+    - /o11y-otel-collector migrate sync up --clickhouse-dsn tcp://o11y-telemetrystore-clickhouse-0-0:9000
+    - /o11y-otel-collector migrate async up --clickhouse-dsn tcp://o11y-telemetrystore-clickhouse-0-0:9000
+    container_name: o11y-telemetrystore-migrator
     depends_on:
-      signoz-telemetrystore-clickhouse-0-0:
+      o11y-telemetrystore-clickhouse-0-0:
         condition: service_healthy
     entrypoint:
     - /bin/sh
     - -c
-    image: signoz/signoz-otel-collector:latest
+    image: ghcr.io/hanzoai/otel-collector:latest
     networks:
-    - signoz-network
+    - o11y-network
 volumes:
-  signoz-metastore-0-data: null
-  signoz-signoz-0-data: null
-  signoz-telemetrykeeper-0-data: null
-  signoz-telemetrystore-0-0-data: null
-  signoz-telemetrystore-user-scripts: null
+  o11y-metastore-0-data: null
+  o11y-o11y-0-data: null
+  o11y-telemetrykeeper-0-data: null
+  o11y-telemetrystore-0-0-data: null
+  o11y-telemetrystore-user-scripts: null
