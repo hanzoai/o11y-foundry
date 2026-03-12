@@ -1,6 +1,6 @@
 package v1alpha1
 
-import "github.com/signoz/foundry/internal/types"
+import "github.com/o11y/foundry/internal/types"
 
 type Ingester struct {
 	// Specification for the ingester.
@@ -28,7 +28,7 @@ func DefaultIngester() Ingester {
 				Replicas: types.NewIntPtr(1),
 			},
 			Version: "latest",
-			Image:   "signoz/signoz-otel-collector:latest",
+			Image:   "ghcr.io/hanzoai/otel-collector:latest",
 			Env:     map[string]string{},
 			Config: TypeConfig{
 				Data: map[string]string{},

@@ -76,7 +76,7 @@ services:
       node_arch=$$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
       echo "Fetching histogram-binary for $${node_os}/$${node_arch}"
       cd /tmp
-      wget -O histogram-quantile.tar.gz "https://github.com/SigNoz/signoz/releases/download/histogram-quantile%2F$${version}/histogram-quantile_$${node_os}_$${node_arch}.tar.gz"
+      wget -O histogram-quantile.tar.gz "https://github.com/Hanzo O11y/o11y/releases/download/histogram-quantile%2F$${version}/histogram-quantile_$${node_os}_$${node_arch}.tar.gz"
       tar -xvzf histogram-quantile.tar.gz
       mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile
   {{- range $replicaIdx := until (int $.Spec.MetaStore.Spec.Cluster.Replicas) }}
@@ -86,15 +86,15 @@ services:
     networks:
       - {{ $.Metadata.Name }}-network
     environment:
-      - POSTGRES_USER=signoz
-      - POSTGRES_PASSWORD=signoz
-      - POSTGRES_DB=signoz
+      - POSTGRES_USER=o11y
+      - POSTGRES_PASSWORD=o11y
+      - POSTGRES_DB=o11y
     volumes:
       - {{ $.Metadata.Name }}-metastore-{{ $replicaIdx }}-data:/var/lib/postgresql/data
     healthcheck:
       test:
       - "CMD-SHELL"
-      - "pg_isready -U signoz -d signoz"
+      - "pg_isready -U o11y -d o11y"
       interval: 30s
       timeout: 10s
       retries: 3
@@ -133,9 +133,9 @@ services:
         condition: service_completed_successfully
     deploy:
       replicas: {{ int $.Spec.Ingester.Spec.Cluster.Replicas }}
-   {{- range $replicaIdx := until (int $.Spec.Signoz.Spec.Cluster.Replicas) }}
-  {{ $.Metadata.Name }}-signoz:
-    image: {{ $.Spec.Signoz.Spec.Image }}
+   {{- range $replicaIdx := until (int $.Spec.O11y.Spec.Cluster.Replicas) }}
+  {{ $.Metadata.Name }}-o11y:
+    image: {{ $.Spec.O11y.Spec.Image }}
     networks:
       - {{ $.Metadata.Name }}-network
     depends_on:
@@ -150,9 +150,9 @@ services:
       {{- end }}
       {{- end }}
     environment:
-      - SIGNOZ_ALERTMANAGER_PROVIDER=signoz
-      - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
-      - SIGNOZ_SQLSTORE_SQLITE_PATH=/var/lib/signoz/signoz.db
+      - HANZO_ALERTMANAGER_PROVIDER=o11y
+      - HANZO_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
+      - HANZO_SQLSTORE_SQLITE_PATH=/var/lib/o11y/o11y.db
       - DASHBOARDS_PATH=/root/config/dashboards
       - STORAGE=clickhouse
       - GODEBUG=netdns=go
@@ -173,9 +173,9 @@ services:
       retries: 3
       start_period: 60s
     deploy:
-      replicas: {{ int $.Spec.Signoz.Spec.Cluster.Replicas }}
+      replicas: {{ int $.Spec.O11y.Spec.Cluster.Replicas }}
     volumes:
-      - {{ $.Metadata.Name }}-signoz-{{ $replicaIdx }}-data:/var/lib/signoz
+      - {{ $.Metadata.Name }}-o11y-{{ $replicaIdx }}-data:/var/lib/o11y
   {{- end }}
   {{ $.Metadata.Name }}-telemetrystore-migrator:
     image: {{ $.Spec.Ingester.Spec.Image }}
@@ -186,9 +186,9 @@ services:
     - "/bin/sh"
     - "-c"
     command:
-      - /signoz-otel-collector migrate bootstrap --clickhouse-dsn tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
-      - /signoz-otel-collector migrate sync up --clickhouse-dsn tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
-      - /signoz-otel-collector migrate async up --clickhouse-dsn tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
+      - /o11y-otel-collector migrate bootstrap --clickhouse-dsn tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
+      - /o11y-otel-collector migrate sync up --clickhouse-dsn tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
+      - /o11y-otel-collector migrate async up --clickhouse-dsn tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
     depends_on:
       {{- range $shardIdx := $.Spec.TelemetryStore.Spec.Cluster.Shards }}
       {{- range $replicaIdx := add $.Spec.TelemetryStore.Spec.Cluster.Replicas 1 }}
@@ -212,6 +212,6 @@ volumes:
   {{- range $replicaIdx := until (int $.Spec.MetaStore.Spec.Cluster.Replicas) }}
   {{ $.Metadata.Name }}-metastore-{{ $replicaIdx }}-data:
   {{- end }}
-  {{- range $replicaIdx := until (int $.Spec.Signoz.Spec.Cluster.Replicas) }}
-  {{ $.Metadata.Name }}-signoz-{{ $replicaIdx }}-data:
+  {{- range $replicaIdx := until (int $.Spec.O11y.Spec.Cluster.Replicas) }}
+  {{ $.Metadata.Name }}-o11y-{{ $replicaIdx }}-data:
   {{- end }}

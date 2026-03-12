@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/o11y/foundry/api/v1alpha1"
 )
 
 func (foundry *Foundry) Cast(ctx context.Context, config v1alpha1.Casting, poursPath string) error {

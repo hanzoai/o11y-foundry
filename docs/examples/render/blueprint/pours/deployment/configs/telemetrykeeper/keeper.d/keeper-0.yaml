@@ -7,7 +7,7 @@ keeper_server:
   log_storage_path: /var/lib/clickhouse/coordination/log
   raft_configuration:
     server:
-    - hostname: signoz-telemetrykeeper-clickhousekeeper-0
+    - hostname: o11y-telemetrykeeper-clickhousekeeper-0
       id: 0
       port: 9234
   server_id: 0

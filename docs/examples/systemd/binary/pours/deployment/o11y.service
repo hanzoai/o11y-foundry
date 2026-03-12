@@ -1,0 +1,22 @@
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Environment=HANZO_WEB_DIRECTORY=/opt/o11y/web
+Environment=HANZO_SQLSTORE_POSTGRES_DSN=postgres://o11y:o11y@localhost:5432/o11y?sslmode=disable
+Environment=HANZO_SQLSTORE_PROVIDER=postgres
+Environment=HANZO_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://localhost:9000
+Environment=HANZO_TELEMETRYSTORE_PROVIDER=clickhouse
+ExecStart=/opt/o11y/bin/o11y server
+Group=o11y
+KillMode=mixed
+Restart=on-failure
+Type=simple
+User=o11y
+WorkingDirectory=/opt/o11y
+
+[Unit]
+After=o11y-telemetrystore-clickhouse-0-0 o11y-metastore-postgres o11y-telemetrystore-migrator
+Description=Hanzo O11y
+Documentation=https://o11y.io/docs
+Requires=o11y-telemetrystore-migrator

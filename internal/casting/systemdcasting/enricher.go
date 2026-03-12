@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/molding"
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/api/v1alpha1"
+	"github.com/o11y/foundry/internal/molding"
+	"github.com/o11y/foundry/internal/types"
 )
 
 var _ molding.MoldingEnricher = (*linuxMoldingEnricher)(nil)
@@ -34,8 +34,8 @@ func (e *linuxMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.M
 		return e.enrichTelemetryKeeper(config)
 	case v1alpha1.MoldingKindMetaStore:
 		return e.enrichMetaStore(config)
-	case v1alpha1.MoldingKindSignoz:
-		return e.enrichSignoz(config)
+	case v1alpha1.MoldingKindO11y:
+		return e.enrichO11y(config)
 	case v1alpha1.MoldingKindIngester:
 		return e.enrichIngester(config)
 	}
@@ -56,7 +56,7 @@ func (e *linuxMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting) er
 	}
 
 	if replicas > 1 || shards > 1 {
-		return fmt.Errorf("deployment mode '%s' does not support Distributed Clickhouse Setup, raise an issue at https://github.com/signoz/foundry/issues", config.Spec.Deployment.Mode)
+		return fmt.Errorf("deployment mode '%s' does not support Distributed Clickhouse Setup, raise an issue at https://github.com/o11y/foundry/issues", config.Spec.Deployment.Mode)
 	}
 
 	// Generate addresses for each shard/replica
@@ -82,7 +82,7 @@ func (e *linuxMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) e
 	}
 
 	if replicas > 1 {
-		return fmt.Errorf("deployment mode '%s' does not support Distributed Clickhouse Setup, raise an issue at https://github.com/signoz/foundry/issues", config.Spec.Deployment.Mode)
+		return fmt.Errorf("deployment mode '%s' does not support Distributed Clickhouse Setup, raise an issue at https://github.com/o11y/foundry/issues", config.Spec.Deployment.Mode)
 	}
 
 	var clientAddresses, raftAddresses []string
@@ -101,7 +101,7 @@ func (e *linuxMoldingEnricher) enrichMetaStore(config *v1alpha1.Casting) error {
 	config.Spec.MetaStore.Status.Addresses.DSN = []string{dsn}
 
 	// Get the annotation value
-	metastoreBin := config.Metadata.Annotations["foundry.signoz.io/metastore-postgres-binary-path"]
+	metastoreBin := config.Metadata.Annotations["foundry.o11y.hanzo.ai/metastore-postgres-binary-path"]
 
 	// If it's missing, apply the default and write it back
 	if metastoreBin == "" {
@@ -110,30 +110,30 @@ func (e *linuxMoldingEnricher) enrichMetaStore(config *v1alpha1.Casting) error {
 		if config.Metadata.Annotations == nil {
 			config.Metadata.Annotations = make(map[string]string)
 		}
-		config.Metadata.Annotations["foundry.signoz.io/metastore-postgres-binary-path"] = metastoreBin
+		config.Metadata.Annotations["foundry.o11y.hanzo.ai/metastore-postgres-binary-path"] = metastoreBin
 	}
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichSignoz(config *v1alpha1.Casting) error {
-	config.Spec.Signoz.Status.Addresses.Opamp = []string{
+func (e *linuxMoldingEnricher) enrichO11y(config *v1alpha1.Casting) error {
+	config.Spec.O11y.Status.Addresses.Opamp = []string{
 		types.FormatAddress("ws", "localhost", 4320),
 	}
-	config.Spec.Signoz.Status.Addresses.APIServer = []string{
+	config.Spec.O11y.Status.Addresses.APIServer = []string{
 		types.FormatAddress("tcp", "localhost", 8080),
 	}
 
 	// Get the annotation value
-	signozBin := config.Metadata.Annotations["foundry.signoz.io/signoz-binary-path"]
+	o11yBin := config.Metadata.Annotations["foundry.o11y.hanzo.ai/o11y-binary-path"]
 
 	// If it's missing, apply the default and write it back
-	if signozBin == "" {
-		signozBin = "/opt/signoz/bin/signoz"
+	if o11yBin == "" {
+		o11yBin = "/opt/o11y/bin/o11y"
 
 		if config.Metadata.Annotations == nil {
 			config.Metadata.Annotations = make(map[string]string)
 		}
-		config.Metadata.Annotations["foundry.signoz.io/signoz-binary-path"] = signozBin
+		config.Metadata.Annotations["foundry.o11y.hanzo.ai/o11y-binary-path"] = o11yBin
 	}
 
 	return nil
@@ -145,16 +145,16 @@ func (e *linuxMoldingEnricher) enrichIngester(config *v1alpha1.Casting) error {
 	}
 
 	// Get the annotation value
-	ingesterBin := config.Metadata.Annotations["foundry.signoz.io/ingester-binary-path"]
+	ingesterBin := config.Metadata.Annotations["foundry.o11y.hanzo.ai/ingester-binary-path"]
 
 	// If it's missing, apply the default and write it back
 	if ingesterBin == "" {
-		ingesterBin = "/opt/ingester/bin/signoz-otel-collector"
+		ingesterBin = "/opt/ingester/bin/o11y-otel-collector"
 
 		if config.Metadata.Annotations == nil {
 			config.Metadata.Annotations = make(map[string]string)
 		}
-		config.Metadata.Annotations["foundry.signoz.io/ingester-binary-path"] = ingesterBin
+		config.Metadata.Annotations["foundry.o11y.hanzo.ai/ingester-binary-path"] = ingesterBin
 	}
 
 	return nil

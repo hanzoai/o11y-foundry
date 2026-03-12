@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/signoz/foundry/internal/types"
+	"github.com/o11y/foundry/internal/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +13,7 @@ func TestNotEmptyAndValid(t *testing.T) {
 		"telemetryStoreServiceTemplate":  telemetryStoreServiceTemplate,
 		"telemetryKeeperServiceTemplate": telemetryKeeperServiceTemplate,
 		"metaStoreServiceTemplate":       metaStoreServiceTemplate,
-		"signozServiceTemplate":          signozServiceTemplate,
+		"o11yServiceTemplate":          o11yServiceTemplate,
 		"ingesterServiceTemplate":        ingesterServiceTemplate,
 		"telemetryStoreMigratorTemplate": telemetryStoreMigratorServiceTemplate,
 	}

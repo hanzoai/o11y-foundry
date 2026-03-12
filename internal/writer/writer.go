@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	foundryerrors "github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/types"
+	foundryerrors "github.com/o11y/foundry/internal/errors"
+	"github.com/o11y/foundry/internal/types"
 )
 
 type Options struct {

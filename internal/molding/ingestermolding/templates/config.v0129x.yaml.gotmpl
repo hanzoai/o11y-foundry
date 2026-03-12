@@ -1,5 +1,5 @@
 connectors:
-  signozmeter:
+  o11ymeter:
     metrics_flush_interval: 1h
     dimensions:
       - name: service.name
@@ -21,8 +21,8 @@ processors:
     send_batch_size: 20000
     send_batch_max_size: 25000
     timeout: 1s
-  signozspanmetrics/delta:
-    metrics_exporter: signozclickhousemetrics
+  o11yspanmetrics/delta:
+    metrics_exporter: o11yclickhousemetrics
     metrics_flush_interval: 60s
     latency_histogram_buckets:
       - 100us
@@ -50,7 +50,7 @@ processors:
         default: default
       - name: deployment.environment
         default: default
-      - name: signoz.collector.id
+      - name: o11y.collector.id
       - name: service.version
 exporters:
   clickhousetraces:
@@ -60,7 +60,7 @@ exporters:
     timeout: 45s
     sending_queue:
       enabled: false
-  signozclickhousemetrics:
+  o11yclickhousemetrics:
     dsn: {{ .TelemetryStoreMetricsAddress }}
     timeout: 45s
     sending_queue:
@@ -71,13 +71,13 @@ exporters:
     timeout: 45s
     sending_queue:
       enabled: false
-  signozclickhousemeter:
+  o11yclickhousemeter:
     dsn: {{ .TelemetryStoreMeterAddress }}
     timeout: 45s
     sending_queue:
       enabled: false
 extensions:
-  signoz_health_check:
+  o11y_health_check:
     endpoint: "0.0.0.0:13133"
   pprof:
     endpoint: "0.0.0.0:1777"
@@ -86,26 +86,26 @@ service:
     logs:
       encoding: json
   extensions:
-    - signoz_health_check
+    - o11y_health_check
     - pprof
   pipelines:
     traces:
       receivers:
         - otlp
       processors:
-        - signozspanmetrics/delta
+        - o11yspanmetrics/delta
         - batch
       exporters:
         - clickhousetraces
-        - signozmeter
+        - o11ymeter
     metrics:
       receivers:
         - otlp
       processors:
         - batch
       exporters:
-        - signozclickhousemetrics
-        - signozmeter
+        - o11yclickhousemetrics
+        - o11ymeter
     logs:
       receivers:
         - otlp
@@ -113,11 +113,11 @@ service:
         - batch
       exporters:
         - clickhouselogsexporter
-        - signozmeter
+        - o11ymeter
     metrics/meter:
       receivers:
-        - signozmeter
+        - o11ymeter
       processors:
         - batch/meter
       exporters:
-        - signozclickhousemeter
+        - o11yclickhousemeter

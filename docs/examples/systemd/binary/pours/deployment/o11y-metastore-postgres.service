@@ -2,9 +2,9 @@
 WantedBy=multi-user.target
 
 [Service]
-Environment=POSTGRES_DB=signoz
-Environment=POSTGRES_PASSWORD=signoz
-Environment=POSTGRES_USER=signoz
+Environment=POSTGRES_DB=o11y
+Environment=POSTGRES_PASSWORD=o11y
+Environment=POSTGRES_USER=o11y
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStart=/usr/bin/postgres -D /usr/local/pgsql/data
 KillMode=mixed
