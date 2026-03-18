@@ -7,6 +7,7 @@ import (
 	"github.com/signoz/foundry/api/v1alpha1"
 	"github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/casting/dockercomposecasting"
+	"github.com/signoz/foundry/internal/casting/kuberneteskustomizecasting"
 	"github.com/signoz/foundry/internal/casting/railwaytemplatecasting"
 	"github.com/signoz/foundry/internal/casting/rendercasting"
 	"github.com/signoz/foundry/internal/casting/systemdcasting"
@@ -15,6 +16,7 @@ import (
 	"github.com/signoz/foundry/internal/tooler/clickhousetooler"
 	"github.com/signoz/foundry/internal/tooler/dockercomposetooler"
 	"github.com/signoz/foundry/internal/tooler/dockertooler"
+	"github.com/signoz/foundry/internal/tooler/kubectltooler"
 	"github.com/signoz/foundry/internal/tooler/postgrestooler"
 	"github.com/signoz/foundry/internal/tooler/systemdtooler"
 )
@@ -49,6 +51,13 @@ func NewRegistry(logger *slog.Logger) (*Registry, error) {
 			}: {
 				Casting: systemdcasting.New(logger),
 				Toolers: []tooler.Tooler{systemdtooler.New(), clickhousekeepertooler.New(), clickhousetooler.New(), postgrestooler.New()},
+			},
+			{
+				Mode:   "kubernetes",
+				Flavor: "kustomize",
+			}: {
+				Casting: kuberneteskustomizecasting.New(logger),
+				Toolers: []tooler.Tooler{kubectltooler.New()},
 			},
 			{
 				Platform: "render",
