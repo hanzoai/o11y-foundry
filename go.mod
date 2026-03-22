@@ -1,6 +1,6 @@
 module github.com/hanzoai/o11y-foundry
 
-go 1.25.3
+go 1.26.1
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
