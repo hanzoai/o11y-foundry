@@ -7,11 +7,13 @@ var (
 	commonCfg commonConfig
 
 	// Stores pours configuration.
-
 	poursCfg poursConfig
 
 	// Stores cast configuration.
 	castCfg castConfig
+
+	// Stores catalog configuration.
+	catalogCfg catalogConfig
 )
 
 type commonConfig struct {
@@ -40,4 +42,14 @@ type castConfig struct {
 func (c *castConfig) RegisterFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVar(&c.NoGauge, "no-gauge", false, "Do not run gauge before forge and cast.")
 	cmd.PersistentFlags().BoolVar(&c.NoForge, "no-forge", false, "Do not run forge before cast.")
+}
+
+type catalogConfig struct {
+	Format  string
+	OutPath string
+}
+
+func (c *catalogConfig) RegisterFlags(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&c.Format, "format", "", "Output format (json)")
+	cmd.Flags().StringVarP(&c.OutPath, "output", "o", "", "Path to write castings.json")
 }
