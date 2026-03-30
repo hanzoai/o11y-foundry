@@ -11,6 +11,7 @@ import (
 	foundryerrors "github.com/signoz/foundry/internal/errors"
 	"github.com/signoz/foundry/internal/foundry"
 	"github.com/signoz/foundry/internal/instrumentation"
+	"github.com/signoz/foundry/internal/ledger"
 	"github.com/signoz/foundry/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/swaggest/jsonschema-go"
@@ -35,8 +36,12 @@ func registerGenExamples(rootCmd *cobra.Command) {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			logger := instrumentation.NewLogger(commonCfg.Debug)
+			tracker := newTracker()
+			defer func() {
+				_ = tracker.Close()
+			}()
 
-			return runGenExamples(ctx, logger)
+			return runGenExamples(ctx, logger, tracker)
 		},
 	}
 
@@ -49,19 +54,23 @@ func registerGenSchemas(rootCmd *cobra.Command) {
 		Short: "Generate schema files.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			logger := instrumentation.NewLogger(commonCfg.Debug)
+			tracker := newTracker()
+			defer func() {
+				_ = tracker.Close()
+			}()
 
-			return runGenSchemas(ctx, logger)
+			return runGenSchemas(ctx, tracker)
 		},
 	}
 
 	rootCmd.AddCommand(genSchemasCmd)
 }
 
-func runGenExamples(ctx context.Context, logger *slog.Logger) error {
+func runGenExamples(ctx context.Context, logger *slog.Logger, tracker ledger.Ledger) error {
 	foundry, err := foundry.New(logger)
 	if err != nil {
 		logger.ErrorContext(ctx, "failed to create foundry, please report this issues to developers at https://github.com/signoz/foundry/issues", foundryerrors.LogAttr(err))
+		tracker.Track(ctx, ledger.WithError(ledger.CommandProperties("gen.examples"), err))
 		return err
 	}
 
@@ -82,27 +91,32 @@ func runGenExamples(ctx context.Context, logger *slog.Logger) error {
 			return err
 		}
 
-		err = runForge(ctx, logger, filepath.Join(rootPath, "casting.yaml"), filepath.Join(rootPath, "pours"))
+		err = runForge(ctx, logger, tracker, filepath.Join(rootPath, "casting.yaml"), filepath.Join(rootPath, "pours"))
 		if err != nil {
 			logger.ErrorContext(ctx, "failed to forge casting", slog.Any("deployment", deployment), foundryerrors.LogAttr(err))
 			continue
 		}
 	}
 
+	tracker.Track(ctx, ledger.WithSuccess(ledger.CommandProperties("gen.examples")))
 	return nil
 }
-func runGenSchemas(context.Context, *slog.Logger) error {
+
+func runGenSchemas(ctx context.Context, tracker ledger.Ledger) error {
 	reflector := jsonschema.Reflector{}
 
 	schema, err := reflector.Reflect(v1alpha1.Casting{})
 	if err != nil {
+		tracker.Track(ctx, ledger.WithError(ledger.CommandProperties("gen.schemas"), err))
 		log.Fatal(err)
 	}
 
 	err = os.WriteFile(filepath.Join("docs", "schemas", "v1alpha1.yaml"), types.MustMarshalYAML(schema), 0644)
 	if err != nil {
+		tracker.Track(ctx, ledger.WithError(ledger.CommandProperties("gen.schemas"), err))
 		return err
 	}
 
+	tracker.Track(ctx, ledger.WithSuccess(ledger.CommandProperties("gen.schemas")))
 	return nil
 }
