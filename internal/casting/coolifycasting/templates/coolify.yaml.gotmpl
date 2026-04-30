@@ -204,8 +204,13 @@ services:
       - {{ $key }}={{ $value }}
       {{- end }}
       {{- end }}
+    entrypoint:
+      - /bin/sh
     command:
-      - --config=/etc/otel-collector-config.yaml
+      - -c
+      - |
+        /signoz-otel-collector migrate sync check &&
+        /signoz-otel-collector --config=/etc/otel-collector-config.yaml
     volumes:
       - type: bind
         source: ./configs/ingester/ingester.yaml
@@ -225,6 +230,12 @@ services:
         condition: service_healthy
       {{- end }}
       {{- end }}
+    {{- if $.Spec.Ingester.Spec.Env }}
+    environment:
+      {{- range $key, $value := $.Spec.Ingester.Spec.Env }}
+      - {{ $key }}={{ $value }}
+      {{- end }}
+    {{- end }}
     restart: on-failure
     exclude_from_hc: true
     {{- $clickhouseDSN := printf "%s-telemetrystore-%s-0-0" $.Metadata.Name $.Spec.TelemetryStore.Kind }}
