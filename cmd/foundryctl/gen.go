@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"log/slog"
 	"os"
@@ -74,7 +75,7 @@ func runGenExamples(ctx context.Context, logger *slog.Logger) error {
 		config := v1alpha1.ExampleCasting()
 		config.Spec.Deployment = deployment
 
-		rootPath := filepath.Join("docs", "examples/", deployment.Platform, deployment.Mode, deployment.Flavor)
+		rootPath := filepath.Join("docs", "examples/", deployment.Platform.String(), deployment.Mode.String(), deployment.Flavor.String())
 		err = os.MkdirAll(rootPath, 0755)
 		if err != nil {
 			return err
@@ -103,7 +104,12 @@ func runGenSchemas(_ context.Context) error {
 		log.Fatal(err)
 	}
 
-	err = os.WriteFile(filepath.Join("docs", "schemas", "v1alpha1.yaml"), types.MustMarshalYAML(schema), 0644)
+	contents, err := json.MarshalIndent(schema, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.WriteFile(filepath.Join("api", "v1alpha1", "schema.json"), contents, 0644)
 	if err != nil {
 		return err
 	}
