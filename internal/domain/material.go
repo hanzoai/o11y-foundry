@@ -1,157 +1,73 @@
 package domain
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-
+	"github.com/signoz/foundry/internal/errors"
 	"github.com/tidwall/gjson"
-	"sigs.k8s.io/kustomize/kyaml/kio"
-	"sigs.k8s.io/kustomize/kyaml/yaml"
-	kyaml "sigs.k8s.io/yaml"
 )
 
-type Material struct {
-	contents []byte
-	path     string
-	format   Format
+var (
+	FormatYAML Format = Format{s: "yaml"}
+	FormatJSON Format = Format{s: "json"}
+	FormatINI  Format = Format{s: "ini"}
+	FormatText Format = Format{s: "text"}
+)
+
+// Format identifies the syntax of a Material's contents.
+type Format struct{ s string }
+
+// Material is a unit of output that Foundry produces. It carries the path it
+// should be written to and the bytes to write there.
+type Material interface {
+	Path() string
+
+	// FmtContents returns the bytes in their human-readable, on-disk form. This
+	// is the form Foundry writes out, distinct from the canonical form used for
+	// traversal and patching.
+	FmtContents() []byte
 }
 
-func NewMaterial(contents any, path string, format Format) (Material, error) {
-	contentsBytes, err := json.Marshal(contents)
-	if err != nil {
-		return Material{}, fmt.Errorf("failed to marshal contents: %w", err)
-	}
+// StructuredMaterial is a Material whose contents are structured data with a
+// navigable shape, supporting in-place reads and patches against a canonical
+// representation.
+type StructuredMaterial interface {
+	Material
 
-	return NewYAMLMaterial(contentsBytes, path)
+	// JSONContents returns the canonical JSON form used for traversal and
+	// patching. JSON is the contract: callers (e.g. jsonpatch) operate on it
+	// directly.
+	JSONContents() []byte
+
+	// HasMultipleDocuments reports whether the material groups multiple
+	// top-level documents under one path (currently only multi-document YAML).
+	// Callers use this to choose between scalar and array traversal of
+	// JSONContents.
+	HasMultipleDocuments() bool
+
+	CloneWithJSONContents(contents []byte) StructuredMaterial
+
+	// GetBytes returns the value at the given path as bytes. The path uses
+	// gjson dotted-key syntax (e.g. "service.name", "service.names.0"), not
+	// JSON Pointer.
+	GetBytes(path string) ([]byte, error)
+
+	// GetStringSlice returns the slice at the given path as strings. See
+	// GetBytes for path syntax.
+	GetStringSlice(path string) ([]string, error)
 }
 
-func NewTextMaterial(contents []byte, path string) Material {
-	return Material{
-		contents: contents,
-		path:     path,
-		format:   FormatText,
-	}
-}
-
-func NewYAMLMaterial(contents []byte, path string) (Material, error) {
-	nodes, err := (&kio.ByteReader{
-		Reader:                bytes.NewReader(contents),
-		OmitReaderAnnotations: true,
-	}).Read()
-	if err != nil {
-		return Material{}, fmt.Errorf("invalid yaml: %w", err)
-	}
-
-	var jsonContents []byte
-	if len(nodes) == 1 {
-		jsonContents, err = nodes[0].MarshalJSON()
-		if err != nil {
-			return Material{}, fmt.Errorf("failed to marshal node to json: %w", err)
-		}
-	} else {
-		var docs []json.RawMessage
-		for _, node := range nodes {
-			j, err := node.MarshalJSON()
-			if err != nil {
-				return Material{}, fmt.Errorf("failed to marshal node to json: %w", err)
-			}
-			docs = append(docs, j)
-		}
-		jsonContents, err = json.Marshal(docs)
-		if err != nil {
-			return Material{}, fmt.Errorf("failed to marshal docs to json array: %w", err)
-		}
-	}
-
-	return Material{
-		contents: jsonContents,
-		path:     path,
-		format:   FormatYAML,
-	}, nil
-}
-
-func NewJSONMaterial(contents []byte, path string) (Material, error) {
-	if !json.Valid(contents) {
-		return Material{}, fmt.Errorf("invalid json for %s", path)
-	}
-	return Material{
-		contents: contents,
-		path:     path,
-		format:   FormatJSON,
-	}, nil
-}
-
-func NewINIMaterial(contents []byte, path string) (Material, error) {
-	jsonContents, err := INIToJSON(contents)
-	if err != nil {
-		return Material{}, fmt.Errorf("invalid ini: %w", err)
-	}
-	return Material{
-		contents: jsonContents,
-		path:     path,
-		format:   FormatINI,
-	}, nil
-}
-
-func (m Material) Contents() []byte {
-	return m.contents
-}
-
-func (m Material) IsMultiDoc() bool {
-	return m.format == FormatYAML && gjson.ParseBytes(m.contents).IsArray()
-}
-
-func (m Material) FmtContents() []byte {
-	switch m.format {
-	case FormatYAML:
-		fmtContents, err := m.ToYaml()
-		if err != nil {
-			return nil
-		}
-		return fmtContents
-	case FormatINI:
-		fmtContents, err := JSONToINI(m.contents)
-		if err != nil {
-			return nil
-		}
-		return fmtContents
-	case FormatJSON:
-		return m.contents
-	case FormatText:
-		return m.contents
-	default:
-		return m.contents
-	}
-}
-
-func (m Material) Path() string {
-	return m.path
-}
-
-// WithContents returns a new Material with the given contents, preserving the path and format.
-func (m Material) WithContents(contents []byte) Material {
-	return Material{
-		contents: contents,
-		path:     m.path,
-		format:   m.format,
-	}
-}
-
-func (m Material) GetBytes(path string) ([]byte, error) {
-	result := gjson.GetBytes(m.contents, path)
+func getBytes(contents []byte, path string) ([]byte, error) {
+	result := gjson.GetBytes(contents, path)
 	if !result.Exists() {
-		return nil, fmt.Errorf("path %q does not exist", path)
+		return nil, errors.Newf(errors.TypeNotFound, "path %q does not exist", path)
 	}
 
 	return []byte(result.String()), nil
 }
 
-func (m Material) GetStringSlice(path string) ([]string, error) {
-	result := gjson.GetBytes(m.contents, path)
-
+func getStringSlice(contents []byte, path string) ([]string, error) {
+	result := gjson.GetBytes(contents, path)
 	if !result.Exists() {
-		return nil, fmt.Errorf("path %q does not exist", path)
+		return nil, errors.Newf(errors.TypeNotFound, "path %q does not exist", path)
 	}
 
 	var items []string
@@ -160,35 +76,4 @@ func (m Material) GetStringSlice(path string) ([]string, error) {
 	}
 
 	return items, nil
-}
-
-func (m Material) ToYaml() ([]byte, error) {
-	if !m.IsMultiDoc() {
-		node, err := kyaml.JSONToYAML(m.contents)
-		if err != nil {
-			return nil, err
-		}
-		return node, nil
-	}
-
-	var docs []json.RawMessage
-	if err := json.Unmarshal(m.contents, &docs); err != nil {
-		return nil, err
-	}
-
-	var nodes []*yaml.RNode
-	for _, doc := range docs {
-		node, err := yaml.ConvertJSONToYamlNode(string(doc))
-		if err != nil {
-			return nil, err
-		}
-		nodes = append(nodes, node)
-	}
-
-	var buf bytes.Buffer
-	err := (&kio.ByteWriter{
-		Writer:                &buf,
-		KeepReaderAnnotations: true,
-	}).Write(nodes)
-	return buf.Bytes(), err
 }
