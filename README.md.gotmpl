@@ -39,25 +39,11 @@ Foundry abstracts away the complexities of the installation process so you can s
 
 **1. Install foundryctl**
 
-Download a release from [GitHub Releases](https://github.com/signoz/foundry/releases), or use the command line:
-
 ```bash
-# Linux
-curl -L "https://github.com/SigNoz/foundry/releases/latest/download/foundry_linux_$(uname -m | sed 's/x86_64/amd64/g' | sed 's/aarch64/arm64/g').tar.gz" -o foundry.tar.gz
-tar -xzf foundry.tar.gz
-
-# macOS
-curl -L "https://github.com/SigNoz/foundry/releases/latest/download/foundry_darwin_$(uname -m | sed 's/x86_64/amd64/g' | sed 's/arm64/arm64/g').tar.gz" -o foundry.tar.gz
-tar -xzf foundry.tar.gz
-
-# Windows
-
-$ARCH = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }
-Invoke-WebRequest -Uri "https://github.com/SigNoz/foundry/releases/latest/download/foundry_windows_${ARCH}.tar.gz" -OutFile foundry.tar.gz -UseBasicParsing
-tar -xzf foundry.tar.gz
+curl -fsSL https://signoz.io/foundry.sh | bash
 ```
 
-See [Getting Started](docs/getting-started.md) for full install instructions (including Windows) and a step-by-step walkthrough.
+See [Getting Started](docs/getting-started.md) for manual install options and PATH setup.
 
 **2. Create a casting**
 
