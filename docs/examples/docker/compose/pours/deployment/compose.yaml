@@ -41,11 +41,11 @@ services:
       - CMD-SHELL
       - pg_isready -U signoz -d signoz
       timeout: 10s
-    image: docker.io/postgres:16
+    image: postgres:16
     networks:
     - signoz-network
     volumes:
-    - signoz-metastore-0-data:/var/lib/postgresql/data
+    - signoz-metastore-postgres-0-data:/var/lib/postgresql/data
   signoz-signoz:
     container_name: signoz-signoz
     deploy:
@@ -163,8 +163,8 @@ services:
     networks:
     - signoz-network
 volumes:
-  signoz-metastore-0-data:
-    name: signoz-metastore-0-data
+  signoz-metastore-postgres-0-data:
+    name: signoz-metastore-postgres-0-data
   signoz-telemetrykeeper-0-data:
     name: signoz-telemetrykeeper-0-data
   signoz-telemetrystore-0-0-data:
