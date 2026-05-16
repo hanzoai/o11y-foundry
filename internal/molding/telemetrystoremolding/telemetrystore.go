@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/domain"
 	foundryerrors "github.com/signoz/foundry/internal/errors"
 	"github.com/signoz/foundry/internal/molding"
@@ -28,7 +29,7 @@ func (molding *telemetrystore) Kind() v1alpha1.MoldingKind {
 	return v1alpha1.MoldingKindTelemetryStore
 }
 
-func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting) error {
+func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *installation.Casting) error {
 	data, err := molding.getData(config)
 	if err != nil {
 		molding.logger.ErrorContext(ctx, "failed to get data", foundryerrors.LogAttr(err))
@@ -66,7 +67,7 @@ func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha
 	return nil
 }
 
-func (molding *telemetrystore) getData(config *v1alpha1.Casting) (Data, error) {
+func (molding *telemetrystore) getData(config *installation.Casting) (Data, error) {
 	storeAddresses := config.Spec.TelemetryStore.Status.Addresses.TCP
 	if len(storeAddresses) == 0 {
 		return Data{}, fmt.Errorf("telemetry store addresses not set in status")

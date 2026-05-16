@@ -1,4 +1,5 @@
 apiVersion: v1alpha1
+kind: Installation
 metadata:
   annotations:
     foundry.signoz.io/ingester-binary-path: /opt/ingester/bin/signoz-otel-collector

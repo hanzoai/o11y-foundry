@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
 )
@@ -16,7 +17,7 @@ type renderMoldingEnricher struct {
 	material domain.StructuredMaterial
 }
 
-func newRenderMoldingEnricher(config *v1alpha1.Casting) (*renderMoldingEnricher, error) {
+func newRenderMoldingEnricher(config *installation.Casting) (*renderMoldingEnricher, error) {
 	material, err := getRenderMaterial(config, "render.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get render yaml material: %w", err)
@@ -25,7 +26,7 @@ func newRenderMoldingEnricher(config *v1alpha1.Casting) (*renderMoldingEnricher,
 	return &renderMoldingEnricher{material: material}, nil
 }
 
-func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		// Get telemetrystore service names

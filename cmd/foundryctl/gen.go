@@ -3,12 +3,15 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"reflect"
+	"strings"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/domain"
 	foundryerrors "github.com/signoz/foundry/internal/errors"
 	"github.com/signoz/foundry/internal/foundry"
@@ -16,6 +19,17 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/swaggest/jsonschema-go"
 )
+
+const moduleAPIPrefix = "github.com/signoz/foundry/api/v1alpha1/"
+
+type schemaTarget struct {
+	kind v1alpha1.Kind
+	val  any
+}
+
+var schemaTargets = []schemaTarget{
+	{v1alpha1.KindInstallation, installation.Casting{}},
+}
 
 func registerGenCmd(rootCmd *cobra.Command) {
 	genCmd := &cobra.Command{
@@ -66,7 +80,7 @@ func runGenExamples(ctx context.Context, logger *slog.Logger) error {
 	for deployment := range foundry.Registry.CastingItems() {
 		logger.InfoContext(ctx, "generating example files for deployment", slog.Any("deployment", deployment))
 
-		config := v1alpha1.ExampleCasting()
+		config := installation.Example()
 		config.Spec.Deployment = deployment
 
 		rootPath := filepath.Join("docs", "examples/", deployment.Platform.String(), deployment.Mode.String(), deployment.Flavor.String())
@@ -91,22 +105,51 @@ func runGenExamples(ctx context.Context, logger *slog.Logger) error {
 }
 
 func runGenSchemas(_ context.Context) error {
-	reflector := jsonschema.Reflector{}
+	var oneOf []jsonschema.SchemaOrBool
+	kindType := reflect.TypeFor[v1alpha1.Kind]()
 
-	schema, err := reflector.Reflect(v1alpha1.Casting{})
-	if err != nil {
-		log.Fatal(err)
+	for _, t := range schemaTargets {
+		target := t
+		reflector := jsonschema.Reflector{}
+		// v1alpha1.Kind's Enum() returns all Kinds (the type permits any).
+		// For this per-Kind schema, the kind field is always this Casting's
+		// Kind, so we narrow the enum at reflection.
+		reflector.DefaultOptions = append(reflector.DefaultOptions,
+			jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (bool, error) {
+				if !params.Processed || params.Value.Type() != kindType {
+					return false, nil
+				}
+				params.Schema.Enum = []any{target.kind.String()}
+				return false, nil
+			}),
+		)
+
+		schema, err := reflector.Reflect(target.val)
+		if err != nil {
+			return fmt.Errorf("reflect %T: %w", target.val, err)
+		}
+
+		contents, err := json.MarshalIndent(schema, "", "  ")
+		if err != nil {
+			return fmt.Errorf("marshal %T: %w", target.val, err)
+		}
+
+		kindDir := strings.TrimPrefix(reflect.TypeOf(target.val).PkgPath(), moduleAPIPrefix)
+		if err := os.WriteFile(filepath.Join("api", "v1alpha1", kindDir, "casting.schema.json"), contents, 0644); err != nil {
+			return err
+		}
+		ref := (&jsonschema.Schema{}).WithRef(filepath.Join(kindDir, "casting.schema.json"))
+		oneOf = append(oneOf, ref.ToSchemaOrBool())
 	}
 
-	contents, err := json.MarshalIndent(schema, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
+	root := (&jsonschema.Schema{}).
+		WithSchema("http://json-schema.org/draft-07/schema#").
+		WithTitle("Foundry Casting").
+		WithOneOf(oneOf...)
 
-	err = os.WriteFile(filepath.Join("api", "v1alpha1", "schema.json"), contents, 0644)
+	rootContents, err := json.MarshalIndent(root, "", "  ")
 	if err != nil {
 		return err
 	}
-
-	return nil
+	return os.WriteFile(filepath.Join("api", "v1alpha1", "casting.schema.json"), rootContents, 0644)
 }

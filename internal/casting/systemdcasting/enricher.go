@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
 )
@@ -22,11 +23,11 @@ type linuxMoldingEnricher struct {
 	materials []domain.Material
 }
 
-func newLinuxMoldingEnricher(_ *v1alpha1.Casting) *linuxMoldingEnricher {
+func newLinuxMoldingEnricher(_ *installation.Casting) *linuxMoldingEnricher {
 	return &linuxMoldingEnricher{materials: []domain.Material{}}
 }
 
-func (e *linuxMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		return e.enrichTelemetryStore(config)
@@ -42,7 +43,7 @@ func (e *linuxMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.M
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) enrichTelemetryStore(config *installation.Casting) error {
 	spec := &config.Spec.TelemetryStore
 	cluster := spec.Spec.Cluster
 
@@ -72,7 +73,7 @@ func (e *linuxMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting) er
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) enrichTelemetryKeeper(config *installation.Casting) error {
 	spec := &config.Spec.TelemetryKeeper
 	cluster := spec.Spec.Cluster
 
@@ -96,11 +97,11 @@ func (e *linuxMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) e
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichMetaStore(config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) enrichMetaStore(config *installation.Casting) error {
 	switch config.Spec.MetaStore.Kind {
-	case v1alpha1.MetaStoreKindSQLite:
+	case installation.MetaStoreKindSQLite:
 		// SQLite — no addresses or binaries to enrich.
-	case v1alpha1.MetaStoreKindPostgres:
+	case installation.MetaStoreKindPostgres:
 		dsn := domain.MustNewAddress("postgres", "localhost", baseMetaStorePostgresPort).String()
 		config.Spec.MetaStore.Status.Addresses.DSN = []string{dsn}
 
@@ -120,7 +121,7 @@ func (e *linuxMoldingEnricher) enrichMetaStore(config *v1alpha1.Casting) error {
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichSignoz(config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) enrichSignoz(config *installation.Casting) error {
 	config.Spec.Signoz.Status.Addresses.Opamp = []string{
 		domain.MustNewAddress("ws", "localhost", 4320).String(),
 	}
@@ -144,7 +145,7 @@ func (e *linuxMoldingEnricher) enrichSignoz(config *v1alpha1.Casting) error {
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichIngester(config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) enrichIngester(config *installation.Casting) error {
 	config.Spec.Ingester.Status.Addresses.OTLP = []string{
 		domain.MustNewAddress("tcp", "localhost", 4317).String(),
 	}

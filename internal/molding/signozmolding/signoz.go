@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
 )
@@ -27,7 +28,7 @@ func (molding *signoz) Kind() v1alpha1.MoldingKind {
 	return v1alpha1.MoldingKindSignoz
 }
 
-func (molding *signoz) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting) error {
+func (molding *signoz) MoldV1Alpha1(ctx context.Context, config *installation.Casting) error {
 	if config.Spec.Signoz.Status.Env == nil {
 		config.Spec.Signoz.Status.Env = make(map[string]string)
 	}
@@ -49,9 +50,9 @@ func (molding *signoz) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Castin
 	config.Spec.Signoz.Status.Env["SIGNOZ_SQLSTORE_PROVIDER"] = config.Spec.MetaStore.Kind.String()
 
 	switch config.Spec.MetaStore.Kind {
-	case v1alpha1.MetaStoreKindSQLite:
+	case installation.MetaStoreKindSQLite:
 		config.Spec.Signoz.Status.Env["SIGNOZ_SQLSTORE_SQLITE_PATH"] = "/var/lib/signoz/signoz.db"
-	case v1alpha1.MetaStoreKindPostgres:
+	case installation.MetaStoreKindPostgres:
 		if config.Spec.MetaStore.Status.Addresses.DSN != nil {
 			if val, ok := config.Spec.Signoz.Spec.Env["SIGNOZ_SQLSTORE_POSTGRES_DSN"]; ok {
 				molding.logger.WarnContext(ctx, "SIGNOZ_SQLSTORE_POSTGRES_DSN is going to be overridden", slog.String("value", val))
