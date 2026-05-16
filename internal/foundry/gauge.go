@@ -7,19 +7,30 @@ import (
 	"strings"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	foundryerrors "github.com/signoz/foundry/internal/errors"
 	"github.com/signoz/foundry/internal/tooler/terraformtooler"
 )
 
-func (foundry *Foundry) Gauge(ctx context.Context, config v1alpha1.Casting) error {
+func (foundry *Foundry) Gauge(ctx context.Context, machinery v1alpha1.Machinery) error {
+	switch c := machinery.(type) {
+	case *installation.Casting:
+		return foundry.gaugeInstallation(ctx, *c)
+	}
+	return fmt.Errorf("unsupported casting kind %q", machinery.Kind())
+}
+
+func (foundry *Foundry) gaugeInstallation(ctx context.Context, config installation.Casting) error {
 	foundry.Logger.InfoContext(ctx, "starting gauge pipeline", slog.String("casting.metadata.name", config.Metadata.Name))
 
-	toolers, err := foundry.Registry.Toolers(config.Spec.Deployment)
+	spec := &config.Spec
+
+	toolers, err := foundry.Registry.Toolers(spec.Deployment)
 	if err != nil {
 		return err
 	}
 
-	if config.Spec.Infrastructure.Enabled {
+	if spec.Infrastructure.Enabled {
 		toolers = append(toolers, terraformtooler.New())
 	}
 

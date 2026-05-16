@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	rootcasting "github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
@@ -18,7 +19,7 @@ type dockerSwarmMoldingEnricher struct {
 	material domain.StructuredMaterial
 }
 
-func newDockerSwarmMoldingEnricher(config *v1alpha1.Casting) (*dockerSwarmMoldingEnricher, error) {
+func newDockerSwarmMoldingEnricher(config *installation.Casting) (*dockerSwarmMoldingEnricher, error) {
 	material, err := getComposeMaterial(config, filepath.Join(rootcasting.DeploymentDir, "compose.yaml"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get compose yaml material: %w", err)
@@ -27,7 +28,7 @@ func newDockerSwarmMoldingEnricher(config *v1alpha1.Casting) (*dockerSwarmMoldin
 	return &dockerSwarmMoldingEnricher{material: material}, nil
 }
 
-func (enricher *dockerSwarmMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (enricher *dockerSwarmMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		containerNames, err := enricher.material.GetStringSlice("services|@keys")

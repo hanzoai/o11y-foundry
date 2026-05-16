@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	foundryerrors "github.com/signoz/foundry/internal/errors"
 	"github.com/signoz/foundry/internal/molding"
 )
@@ -28,7 +29,7 @@ func (molding *ingester) Kind() v1alpha1.MoldingKind {
 	return v1alpha1.MoldingKindIngester
 }
 
-func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting) error {
+func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *installation.Casting) error {
 	// render the template for config.yaml
 	data, err := molding.getData(config)
 	if err != nil {
@@ -59,7 +60,7 @@ func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Cast
 	return nil
 }
 
-func (molding *ingester) getData(config *v1alpha1.Casting) (Data, error) {
+func (molding *ingester) getData(config *installation.Casting) (Data, error) {
 	if len(config.Spec.Signoz.Status.Addresses.Opamp) == 0 {
 		return Data{}, fmt.Errorf("signoz address is not set")
 	}

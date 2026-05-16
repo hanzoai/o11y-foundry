@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
 )
@@ -15,11 +16,11 @@ type helmMoldingEnricher struct {
 	materials []domain.Material
 }
 
-func newHelmMoldingEnricher(_ *v1alpha1.Casting) *helmMoldingEnricher {
+func newHelmMoldingEnricher(_ *installation.Casting) *helmMoldingEnricher {
 	return &helmMoldingEnricher{materials: []domain.Material{}}
 }
 
-func (e *helmMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (e *helmMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		return e.enrichTelemetryStore(config)
@@ -35,13 +36,13 @@ func (e *helmMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.Mo
 	return nil
 }
 
-func (e *helmMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting) error {
+func (e *helmMoldingEnricher) enrichTelemetryStore(config *installation.Casting) error {
 	name := fmt.Sprintf("%s-telemetrystore-%s", config.Metadata.Name, config.Spec.TelemetryStore.Kind)
 	config.Spec.TelemetryStore.Status.Addresses.TCP = []string{domain.MustNewAddress("tcp", name, 9000).String()}
 	return nil
 }
 
-func (e *helmMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) error {
+func (e *helmMoldingEnricher) enrichTelemetryKeeper(config *installation.Casting) error {
 	spec := &config.Spec.TelemetryKeeper
 	replicas := 1
 	if spec.Spec.Cluster.Replicas != nil && *spec.Spec.Cluster.Replicas > 0 {
@@ -62,7 +63,7 @@ func (e *helmMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) er
 	return nil
 }
 
-func (e *helmMoldingEnricher) enrichMetaStore(config *v1alpha1.Casting) error {
+func (e *helmMoldingEnricher) enrichMetaStore(config *installation.Casting) error {
 	name := fmt.Sprintf("%s-metastore-%s", config.Metadata.Name, config.Spec.MetaStore.Kind)
 	config.Spec.MetaStore.Status.Addresses.DSN = []string{
 		fmt.Sprintf("postgres://%s:5432", name),
@@ -70,14 +71,14 @@ func (e *helmMoldingEnricher) enrichMetaStore(config *v1alpha1.Casting) error {
 	return nil
 }
 
-func (e *helmMoldingEnricher) enrichSignoz(config *v1alpha1.Casting) error {
+func (e *helmMoldingEnricher) enrichSignoz(config *installation.Casting) error {
 	// Chart uses signoz.fullname which resolves to fullnameOverride directly.
 	name := config.Metadata.Name
 	config.Spec.Signoz.Status.Addresses.Opamp = []string{domain.MustNewAddress("tcp", name, 4320).String()}
 	return nil
 }
 
-func (e *helmMoldingEnricher) enrichIngester(config *v1alpha1.Casting) error {
+func (e *helmMoldingEnricher) enrichIngester(config *installation.Casting) error {
 	// No-op: ingester molding only writes Status.Config.Data from other status.
 	return nil
 }

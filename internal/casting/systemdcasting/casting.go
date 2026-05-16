@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/domain"
 )
 
@@ -42,11 +42,11 @@ func New(logger *slog.Logger) *systemdCasting {
 	}
 }
 
-func (c *systemdCasting) Enricher(ctx context.Context, config *v1alpha1.Casting) (molding.MoldingEnricher, error) {
+func (c *systemdCasting) Enricher(ctx context.Context, config *installation.Casting) (molding.MoldingEnricher, error) {
 	return newLinuxMoldingEnricher(config), nil
 }
 
-func (c *systemdCasting) Forge(ctx context.Context, cfg v1alpha1.Casting, poursPath string) ([]domain.Material, error) {
+func (c *systemdCasting) Forge(ctx context.Context, cfg installation.Casting, poursPath string) ([]domain.Material, error) {
 	var materials []domain.Material
 	for _, tmpl := range c.castings {
 		m, err := c.forgeCasting(tmpl, &cfg)
@@ -58,7 +58,7 @@ func (c *systemdCasting) Forge(ctx context.Context, cfg v1alpha1.Casting, poursP
 	return materials, nil
 }
 
-func (c *systemdCasting) Cast(ctx context.Context, config v1alpha1.Casting, poursPath string) error {
+func (c *systemdCasting) Cast(ctx context.Context, config installation.Casting, poursPath string) error {
 	c.logger.InfoContext(ctx, "Starting systemd service installation", slog.String("pours_path", poursPath))
 
 	runctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
@@ -81,11 +81,11 @@ func (c *systemdCasting) Cast(ctx context.Context, config v1alpha1.Casting, pour
 
 	if config.Spec.MetaStore.Spec.IsEnabled() {
 		switch config.Spec.MetaStore.Kind {
-		case v1alpha1.MetaStoreKindPostgres:
+		case installation.MetaStoreKindPostgres:
 			if err := c.initializePostgres(ctx, &config); err != nil {
 				return err
 			}
-		case v1alpha1.MetaStoreKindSQLite:
+		case installation.MetaStoreKindSQLite:
 			if err := os.MkdirAll("/var/lib/signoz", 0755); err != nil {
 				return fmt.Errorf("failed to create sqlite data directory: %w", err)
 			}
@@ -102,7 +102,7 @@ func (c *systemdCasting) Cast(ctx context.Context, config v1alpha1.Casting, pour
 	return nil
 }
 
-func (c *systemdCasting) forgeCasting(tmpl *domain.Template, cfg *v1alpha1.Casting) ([]domain.Material, error) {
+func (c *systemdCasting) forgeCasting(tmpl *domain.Template, cfg *installation.Casting) ([]domain.Material, error) {
 	switch tmpl {
 	case signozServiceTemplate:
 		if !cfg.Spec.Signoz.Spec.IsEnabled() {
@@ -139,7 +139,7 @@ func (c *systemdCasting) forgeCasting(tmpl *domain.Template, cfg *v1alpha1.Casti
 	}
 }
 
-func (c *systemdCasting) forgeIngester(tmpl *domain.Template, cfg *v1alpha1.Casting) ([]domain.Material, error) {
+func (c *systemdCasting) forgeIngester(tmpl *domain.Template, cfg *installation.Casting) ([]domain.Material, error) {
 	spec := &cfg.Spec.Ingester
 
 	if spec.Status.Extras == nil {
@@ -166,7 +166,7 @@ func (c *systemdCasting) forgeIngester(tmpl *domain.Template, cfg *v1alpha1.Cast
 	return materials, nil
 }
 
-func (c *systemdCasting) forgeSignoz(tmpl *domain.Template, cfg *v1alpha1.Casting) ([]domain.Material, error) {
+func (c *systemdCasting) forgeSignoz(tmpl *domain.Template, cfg *installation.Casting) ([]domain.Material, error) {
 	spec := &cfg.Spec.Signoz
 
 	if spec.Status.Extras == nil {
@@ -185,7 +185,7 @@ func (c *systemdCasting) forgeSignoz(tmpl *domain.Template, cfg *v1alpha1.Castin
 	return materials, nil
 }
 
-func (c *systemdCasting) forgeMetaStore(tmpl *domain.Template, cfg *v1alpha1.Casting) ([]domain.Material, error) {
+func (c *systemdCasting) forgeMetaStore(tmpl *domain.Template, cfg *installation.Casting) ([]domain.Material, error) {
 	spec := &cfg.Spec.MetaStore
 
 	if spec.Status.Extras == nil {
@@ -195,7 +195,7 @@ func (c *systemdCasting) forgeMetaStore(tmpl *domain.Template, cfg *v1alpha1.Cas
 	var materials []domain.Material
 
 	switch spec.Kind {
-	case v1alpha1.MetaStoreKindPostgres:
+	case installation.MetaStoreKindPostgres:
 		svcMat, err := c.renderTemplate(tmpl, cfg, fmt.Sprintf("%s-metastore-%s%s", cfg.Metadata.Name, spec.Kind.String(), svcSuffix))
 		if err != nil {
 			return nil, err
@@ -206,7 +206,7 @@ func (c *systemdCasting) forgeMetaStore(tmpl *domain.Template, cfg *v1alpha1.Cas
 	return materials, nil
 }
 
-func (c *systemdCasting) forgeTelemetryStore(tmpl *domain.Template, cfg *v1alpha1.Casting) ([]domain.Material, error) {
+func (c *systemdCasting) forgeTelemetryStore(tmpl *domain.Template, cfg *installation.Casting) ([]domain.Material, error) {
 	spec := &cfg.Spec.TelemetryStore
 
 	if spec.Status.Extras == nil {
@@ -238,7 +238,7 @@ func (c *systemdCasting) forgeTelemetryStore(tmpl *domain.Template, cfg *v1alpha
 	return materials, nil
 }
 
-func (c *systemdCasting) forgeTelemetryKeeper(tmpl *domain.Template, cfg *v1alpha1.Casting) ([]domain.Material, error) {
+func (c *systemdCasting) forgeTelemetryKeeper(tmpl *domain.Template, cfg *installation.Casting) ([]domain.Material, error) {
 	spec := &cfg.Spec.TelemetryKeeper
 
 	if spec.Status.Extras == nil {
@@ -272,7 +272,7 @@ func (c *systemdCasting) forgeTelemetryKeeper(tmpl *domain.Template, cfg *v1alph
 	return materials, nil
 }
 
-func (c *systemdCasting) forgeMigrator(tmpl *domain.Template, cfg *v1alpha1.Casting) ([]domain.Material, error) {
+func (c *systemdCasting) forgeMigrator(tmpl *domain.Template, cfg *installation.Casting) ([]domain.Material, error) {
 	var materials []domain.Material
 
 	svcMat, err := c.renderTemplate(tmpl, cfg, cfg.Metadata.Name+"-telemetrystore-migrator"+svcSuffix)
@@ -296,7 +296,7 @@ func (c *systemdCasting) configMaterials(data map[string]string, component strin
 	return mats, nil
 }
 
-func (c *systemdCasting) renderTemplate(tmpl *domain.Template, cfg *v1alpha1.Casting, path string) (domain.Material, error) {
+func (c *systemdCasting) renderTemplate(tmpl *domain.Template, cfg *installation.Casting, path string) (domain.Material, error) {
 	return tmpl.Render(cfg, filepath.Join(rootcasting.DeploymentDir, path))
 }
 
@@ -338,7 +338,7 @@ func (c *systemdCasting) discoverAndPrepareServices(ctx context.Context, poursPa
 }
 
 // setupSystemEnvironment creates signoz user, directories, copies configs, and validates binaries.
-func (c *systemdCasting) setupSystemEnvironment(ctx context.Context, config *v1alpha1.Casting, poursPath string) error {
+func (c *systemdCasting) setupSystemEnvironment(ctx context.Context, config *installation.Casting, poursPath string) error {
 	// Create signoz user if needed
 	if _, err := user.Lookup("signoz"); err != nil {
 		c.logger.InfoContext(ctx, "Creating user: signoz")
@@ -398,7 +398,7 @@ func (c *systemdCasting) copyDir(srcDir, dstDir string) error {
 
 // validateBinaries checks if binaries exist at annotation paths.
 // Only validates if annotations are set; defaults are handled in templates.
-func (c *systemdCasting) validateBinaries(config *v1alpha1.Casting) error {
+func (c *systemdCasting) validateBinaries(config *installation.Casting) error {
 	annotations := config.Metadata.Annotations
 	if annotations == nil {
 		return fmt.Errorf("no binary paths found in annotations")
@@ -457,7 +457,7 @@ func (c *systemdCasting) startAllServices(ctx context.Context, services []string
 }
 
 // initializePostgres sets up the PostgreSQL data directory.
-func (c *systemdCasting) initializePostgres(ctx context.Context, config *v1alpha1.Casting) error {
+func (c *systemdCasting) initializePostgres(ctx context.Context, config *installation.Casting) error {
 	pgDataDir := "/usr/local/pgsql/data"
 	pwfile := "/tmp/postgres_pwfile_init"
 

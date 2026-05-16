@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	rootcasting "github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
@@ -34,11 +34,11 @@ func New(logger *slog.Logger) *dockerComposeCasting {
 	}
 }
 
-func (casting *dockerComposeCasting) Enricher(ctx context.Context, config *v1alpha1.Casting) (molding.MoldingEnricher, error) {
+func (casting *dockerComposeCasting) Enricher(ctx context.Context, config *installation.Casting) (molding.MoldingEnricher, error) {
 	return newDockerComposeMoldingEnricher(config)
 }
 
-func (casting *dockerComposeCasting) Forge(ctx context.Context, config v1alpha1.Casting, poursPath string) ([]domain.Material, error) {
+func (casting *dockerComposeCasting) Forge(ctx context.Context, config installation.Casting, poursPath string) ([]domain.Material, error) {
 	buf := bytes.NewBuffer(nil)
 	err := composeYAMLTemplate.Execute(buf, config)
 	if err != nil {
@@ -100,7 +100,7 @@ func (casting *dockerComposeCasting) Forge(ctx context.Context, config v1alpha1.
 	return materials, nil
 }
 
-func (casting *dockerComposeCasting) Cast(ctx context.Context, config v1alpha1.Casting, outputPath string) error {
+func (casting *dockerComposeCasting) Cast(ctx context.Context, config installation.Casting, outputPath string) error {
 	casting.logger.InfoContext(ctx, "Executing commands for platform")
 
 	// Check if compose file exists
@@ -139,7 +139,7 @@ func (casting *dockerComposeCasting) Cast(ctx context.Context, config v1alpha1.C
 	return nil
 }
 
-func getComposeMaterial(config *v1alpha1.Casting, path string) (domain.StructuredMaterial, error) {
+func getComposeMaterial(config *installation.Casting, path string) (domain.StructuredMaterial, error) {
 	buf := bytes.NewBuffer(nil)
 	err := composeYAMLTemplate.Execute(buf, config)
 	if err != nil {
