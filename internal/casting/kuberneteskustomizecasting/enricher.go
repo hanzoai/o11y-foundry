@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
 )
@@ -23,7 +24,7 @@ type kustomizeMoldingEnricher struct {
 	overrideMaterials []domain.StructuredMaterial
 }
 
-func newKustomizeMoldingEnricher(config *v1alpha1.Casting) (*kustomizeMoldingEnricher, error) {
+func newKustomizeMoldingEnricher(config *installation.Casting) (*kustomizeMoldingEnricher, error) {
 	materials, err := getServiceMaterials(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get service yaml material: %w", err)
@@ -40,7 +41,7 @@ func newKustomizeMoldingEnricher(config *v1alpha1.Casting) (*kustomizeMoldingEnr
 	}, nil
 }
 
-func (e *kustomizeMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (e *kustomizeMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		return e.enrichTelemetryStore(config)
@@ -56,7 +57,7 @@ func (e *kustomizeMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alph
 	return nil
 }
 
-func (e *kustomizeMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting) error {
+func (e *kustomizeMoldingEnricher) enrichTelemetryStore(config *installation.Casting) error {
 	name, err := e.materials[0].GetBytes("spec.templates.serviceTemplates.0.generateName")
 	if err != nil {
 		return fmt.Errorf("failed to get telemetrystore service names: %w", err)
@@ -71,7 +72,7 @@ func (e *kustomizeMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting
 	return nil
 }
 
-func (e *kustomizeMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) error {
+func (e *kustomizeMoldingEnricher) enrichTelemetryKeeper(config *installation.Casting) error {
 	spec := &config.Spec.TelemetryKeeper
 	replicas := 1
 	if spec.Spec.Cluster.Replicas != nil && *spec.Spec.Cluster.Replicas > 0 {
@@ -93,7 +94,7 @@ func (e *kustomizeMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Castin
 	return nil
 }
 
-func (e *kustomizeMoldingEnricher) enrichMetaStore(config *v1alpha1.Casting) error {
+func (e *kustomizeMoldingEnricher) enrichMetaStore(config *installation.Casting) error {
 	name, err := e.materials[1].GetBytes("metadata.name")
 	if err != nil {
 		return fmt.Errorf("failed to get metastore service names: %w", err)
@@ -104,13 +105,13 @@ func (e *kustomizeMoldingEnricher) enrichMetaStore(config *v1alpha1.Casting) err
 	return nil
 }
 
-func (e *kustomizeMoldingEnricher) enrichSignoz(config *v1alpha1.Casting) error {
+func (e *kustomizeMoldingEnricher) enrichSignoz(config *installation.Casting) error {
 	name := config.Metadata.Name + "-signoz"
 	config.Spec.Signoz.Status.Addresses.Opamp = []string{domain.MustNewAddress("ws", name, signozOpampPort).String()}
 	return nil
 }
 
-func (e *kustomizeMoldingEnricher) enrichIngester(config *v1alpha1.Casting) error {
+func (e *kustomizeMoldingEnricher) enrichIngester(config *installation.Casting) error {
 	// No-op: ingester molding only writes Status.Config.Data from other status.
 	return nil
 }

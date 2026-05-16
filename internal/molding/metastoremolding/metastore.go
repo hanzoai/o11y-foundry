@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 )
 
 type metastore struct {
@@ -21,7 +22,7 @@ func (molding *metastore) Kind() v1alpha1.MoldingKind {
 	return v1alpha1.MoldingKindMetaStore
 }
 
-func (molding *metastore) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting) error {
+func (molding *metastore) MoldV1Alpha1(ctx context.Context, config *installation.Casting) error {
 	if config.Spec.MetaStore.Status.Env == nil {
 		config.Spec.MetaStore.Status.Env = make(map[string]string)
 	}
@@ -31,7 +32,7 @@ func (molding *metastore) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Cas
 	}
 
 	switch config.Spec.MetaStore.Kind {
-	case v1alpha1.MetaStoreKindPostgres:
+	case installation.MetaStoreKindPostgres:
 		if val, ok := config.Spec.MetaStore.Spec.Env["POSTGRES_DB"]; ok {
 			molding.logger.WarnContext(ctx, "POSTGRES_DB is going to be overridden", slog.String("value", val))
 		}

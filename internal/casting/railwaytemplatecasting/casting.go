@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
@@ -40,11 +40,11 @@ func New(logger *slog.Logger) *railwayTemplateCasting {
 	}
 }
 
-func (c *railwayTemplateCasting) Enricher(ctx context.Context, config *v1alpha1.Casting) (molding.MoldingEnricher, error) {
+func (c *railwayTemplateCasting) Enricher(ctx context.Context, config *installation.Casting) (molding.MoldingEnricher, error) {
 	return newRailwayTemplateMoldingEnricher(config)
 }
 
-func (c *railwayTemplateCasting) Forge(ctx context.Context, config v1alpha1.Casting, poursPath string) ([]domain.Material, error) {
+func (c *railwayTemplateCasting) Forge(ctx context.Context, config installation.Casting, poursPath string) ([]domain.Material, error) {
 	var materials []domain.Material
 
 	// TelemetryKeeper: Dockerfile + configs + railway.json
@@ -141,12 +141,12 @@ func (c *railwayTemplateCasting) Forge(ctx context.Context, config v1alpha1.Cast
 	return materials, nil
 }
 
-func (c *railwayTemplateCasting) Cast(ctx context.Context, config v1alpha1.Casting, poursPath string) error {
+func (c *railwayTemplateCasting) Cast(ctx context.Context, config installation.Casting, poursPath string) error {
 	c.logger.InfoContext(ctx, "Please use the template.")
 	return nil
 }
 
-func getRailwayMaterial(config *v1alpha1.Casting) ([]domain.StructuredMaterial, error) {
+func getRailwayMaterial(config *installation.Casting) ([]domain.StructuredMaterial, error) {
 	var materials []domain.StructuredMaterial
 
 	keeperBuf := bytes.NewBuffer(nil)

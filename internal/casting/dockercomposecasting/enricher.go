@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	rootcasting "github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
@@ -18,7 +19,7 @@ type dockerComposeMoldingEnricher struct {
 	material domain.StructuredMaterial
 }
 
-func newDockerComposeMoldingEnricher(config *v1alpha1.Casting) (*dockerComposeMoldingEnricher, error) {
+func newDockerComposeMoldingEnricher(config *installation.Casting) (*dockerComposeMoldingEnricher, error) {
 	material, err := getComposeMaterial(config, filepath.Join(rootcasting.DeploymentDir, "compose.yaml"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get compose yaml material: %w", err)
@@ -27,7 +28,7 @@ func newDockerComposeMoldingEnricher(config *v1alpha1.Casting) (*dockerComposeMo
 	return &dockerComposeMoldingEnricher{material: material}, nil
 }
 
-func (enricher *dockerComposeMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (enricher *dockerComposeMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		// Get telemetrystore container names
@@ -90,7 +91,7 @@ func (enricher *dockerComposeMoldingEnricher) EnrichStatus(ctx context.Context, 
 
 	case v1alpha1.MoldingKindMetaStore:
 		// Skip molding enrichment if sqlite
-		if config.Spec.MetaStore.Kind == v1alpha1.MetaStoreKindSQLite {
+		if config.Spec.MetaStore.Kind == installation.MetaStoreKindSQLite {
 			return nil
 		}
 		// Get metastore container names

@@ -8,6 +8,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 )
 
+// Merge applies an override onto a base via Kubernetes strategic merge patch
+// and mutates base in place. Both arguments must be pointers to the same
+// concrete struct type. Fields typed as any are replaced wholesale rather than
+// recursively merged.
 func Merge(base, overrides any) error {
 	if overrides == nil {
 		return nil
@@ -50,30 +54,6 @@ func Merge(base, overrides any) error {
 	}
 
 	valueOfBase.Set(reflect.Indirect(into))
-
-	return nil
-}
-
-func MergeCastingSpecAndStatus(base *Casting) error {
-	if err := base.Spec.Signoz.Spec.MergeStatus(base.Spec.Signoz.Status.MoldingStatus); err != nil {
-		return err
-	}
-
-	if err := base.Spec.TelemetryStore.Spec.MergeStatus(base.Spec.TelemetryStore.Status.MoldingStatus); err != nil {
-		return err
-	}
-
-	if err := base.Spec.TelemetryKeeper.Spec.MergeStatus(base.Spec.TelemetryKeeper.Status.MoldingStatus); err != nil {
-		return err
-	}
-
-	if err := base.Spec.MetaStore.Spec.MergeStatus(base.Spec.MetaStore.Status.MoldingStatus); err != nil {
-		return err
-	}
-
-	if err := base.Spec.Ingester.Spec.MergeStatus(base.Spec.Ingester.Status.MoldingStatus); err != nil {
-		return err
-	}
 
 	return nil
 }

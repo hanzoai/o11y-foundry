@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
 )
@@ -24,7 +25,7 @@ type ecsMoldingEnricher struct {
 	materials []domain.StructuredMaterial
 }
 
-func newEcsMoldingEnricher(config *v1alpha1.Casting) (*ecsMoldingEnricher, error) {
+func newEcsMoldingEnricher(config *installation.Casting) (*ecsMoldingEnricher, error) {
 	materials, err := getMaterials(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get materials: %w", err)
@@ -33,7 +34,7 @@ func newEcsMoldingEnricher(config *v1alpha1.Casting) (*ecsMoldingEnricher, error
 	return &ecsMoldingEnricher{materials: materials}, nil
 }
 
-func (enricher *ecsMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (enricher *ecsMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	namespaceBytes, err := enricher.materials[0].GetBytes("resource.aws_service_discovery_private_dns_namespace.main.name")
 	if err != nil {
 		return fmt.Errorf("failed to get namespace: %w", err)

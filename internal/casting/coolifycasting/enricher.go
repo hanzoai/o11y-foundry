@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	rootcasting "github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
@@ -18,7 +19,7 @@ type coolifyMoldingEnricher struct {
 	material domain.StructuredMaterial
 }
 
-func newCoolifyMoldingEnricher(config *v1alpha1.Casting) (*coolifyMoldingEnricher, error) {
+func newCoolifyMoldingEnricher(config *installation.Casting) (*coolifyMoldingEnricher, error) {
 	material, err := getCoolifyMaterial(config, filepath.Join(rootcasting.DeploymentDir, "coolify.yaml"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get coolify yaml material: %w", err)
@@ -26,7 +27,7 @@ func newCoolifyMoldingEnricher(config *v1alpha1.Casting) (*coolifyMoldingEnriche
 	return &coolifyMoldingEnricher{material: material}, nil
 }
 
-func (enricher *coolifyMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (enricher *coolifyMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		containerNames, err := enricher.material.GetStringSlice("services|@keys")
@@ -83,7 +84,7 @@ func (enricher *coolifyMoldingEnricher) EnrichStatus(ctx context.Context, kind v
 
 	case v1alpha1.MoldingKindMetaStore:
 		// Skip molding enrichment if sqlite
-		if config.Spec.MetaStore.Kind == v1alpha1.MetaStoreKindSQLite {
+		if config.Spec.MetaStore.Kind == installation.MetaStoreKindSQLite {
 			return nil
 		}
 		containerNames, err := enricher.material.GetStringSlice("services|@keys")

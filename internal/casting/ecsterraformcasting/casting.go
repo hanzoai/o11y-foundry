@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/signoz/foundry/api/v1alpha1/installation"
 	rootcasting "github.com/signoz/foundry/internal/casting"
 	"github.com/signoz/foundry/internal/domain"
 	"github.com/signoz/foundry/internal/molding"
@@ -28,11 +28,11 @@ func New(logger *slog.Logger) *ecsCasting {
 	}
 }
 
-func (c *ecsCasting) Enricher(ctx context.Context, config *v1alpha1.Casting) (molding.MoldingEnricher, error) {
+func (c *ecsCasting) Enricher(ctx context.Context, config *installation.Casting) (molding.MoldingEnricher, error) {
 	return newEcsMoldingEnricher(config)
 }
 
-func (c *ecsCasting) Forge(ctx context.Context, config v1alpha1.Casting, poursPath string) ([]domain.Material, error) {
+func (c *ecsCasting) Forge(ctx context.Context, config installation.Casting, poursPath string) ([]domain.Material, error) {
 	var materials []domain.Material
 
 	deployDir := rootcasting.DeploymentDir
@@ -155,7 +155,7 @@ func (c *ecsCasting) Forge(ctx context.Context, config v1alpha1.Casting, poursPa
 	return materials, nil
 }
 
-func (c *ecsCasting) Cast(ctx context.Context, config v1alpha1.Casting, outputPath string) error {
+func (c *ecsCasting) Cast(ctx context.Context, config installation.Casting, outputPath string) error {
 	c.logger.InfoContext(ctx, "Running Terraform for ECS deployment")
 
 	deploymentDir := filepath.Join(outputPath, rootcasting.DeploymentDir)
@@ -197,7 +197,7 @@ func (c *ecsCasting) Cast(ctx context.Context, config v1alpha1.Casting, outputPa
 }
 
 // getMaterials renders all module templates and returns them as JSONMaterials.
-func getMaterials(config *v1alpha1.Casting) ([]domain.StructuredMaterial, error) {
+func getMaterials(config *installation.Casting) ([]domain.StructuredMaterial, error) {
 	var materials []domain.StructuredMaterial
 
 	for _, tmpl := range []*domain.Template{
