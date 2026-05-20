@@ -17,8 +17,8 @@ logger:
     level: information
     size: 1000M
 macros:
-    replica: "01"
-    shard: "01"
+    replica: "{{ printf "%02d" .ReplicaID }}"
+    shard: "{{ printf "%02d" .ShardID }}"
 profiles:
     default:
         allow_simdjson: 0

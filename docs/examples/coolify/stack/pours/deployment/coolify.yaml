@@ -325,8 +325,8 @@ services:
             level: information
             size: 1000M
         macros:
-            replica: "01"
-            shard: "01"
+            replica: "00"
+            shard: "00"
         profiles:
             default:
                 allow_simdjson: 0
@@ -402,7 +402,7 @@ services:
                 quota: default
                 show_named_collection: 1
                 show_named_collection_secrets: 1
-      source: ./configs/telemetrystore/config.yaml
+      source: ./configs/telemetrystore/config-0-0.yaml
       target: /etc/clickhouse-server/config.yaml
       type: bind
     - content: |

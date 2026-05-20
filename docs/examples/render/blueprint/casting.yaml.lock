@@ -413,7 +413,7 @@ spec:
         shards: 1
       config:
         data:
-          config.yaml: |
+          config-0-0.yaml: |
             path: /var/lib/clickhouse/
             tmp_path: /var/lib/clickhouse/tmp/
             user_files_path: /var/lib/clickhouse/user_files/
@@ -433,8 +433,8 @@ spec:
                 level: information
                 size: 1000M
             macros:
-                replica: "01"
-                shard: "01"
+                replica: "00"
+                shard: "00"
             profiles:
                 default:
                     allow_simdjson: 0
@@ -533,7 +533,7 @@ spec:
         - tcp://signoz-telemetrystore-clickhouse-0-0:9000
       config:
         data:
-          config.yaml: |
+          config-0-0.yaml: |
             path: /var/lib/clickhouse/
             tmp_path: /var/lib/clickhouse/tmp/
             user_files_path: /var/lib/clickhouse/user_files/
@@ -553,8 +553,8 @@ spec:
                 level: information
                 size: 1000M
             macros:
-                replica: "01"
-                shard: "01"
+                replica: "00"
+                shard: "00"
             profiles:
                 default:
                     allow_simdjson: 0
