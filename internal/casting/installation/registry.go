@@ -1,4 +1,4 @@
-package foundry
+package installation
 
 import (
 	"log/slog"
@@ -42,7 +42,7 @@ type Registry struct {
 	castings map[v1alpha1.TypeDeployment]CastingItem
 }
 
-func NewRegistry(logger *slog.Logger) (*Registry, error) {
+func NewRegistry(logger *slog.Logger) *Registry {
 	return &Registry{
 		castings: map[v1alpha1.TypeDeployment]CastingItem{
 			{
@@ -107,7 +107,7 @@ func NewRegistry(logger *slog.Logger) (*Registry, error) {
 				Toolers: []tooler.Tooler{helmtooler.New()},
 			},
 		},
-	}, nil
+	}
 }
 
 func (registry *Registry) CastingItems() map[v1alpha1.TypeDeployment]CastingItem {
@@ -132,7 +132,6 @@ func (registry *Registry) Casting(deployment v1alpha1.TypeDeployment) (casting.C
 	if !ok {
 		return nil, foundryerrors.Newf(foundryerrors.TypeUnsupported, "deployment '%+v' is not supported, raise an issue at https://github.com/signoz/foundry/issues to request support for this deployment", deployment)
 	}
-
 	return item.Casting, nil
 }
 
@@ -141,6 +140,5 @@ func (registry *Registry) Toolers(deployment v1alpha1.TypeDeployment) ([]tooler.
 	if !ok {
 		return nil, foundryerrors.Newf(foundryerrors.TypeUnsupported, "deployment '%+v' is not supported, raise an issue at https://github.com/signoz/foundry/issues to request support for this deployment", deployment)
 	}
-
 	return item.Toolers, nil
 }
