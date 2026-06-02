@@ -1,6 +1,9 @@
 ARG DISTROLESS_SHA="pass-a-valid-docker-sha-otherwise-this-will-fail"
 
-FROM gcr.io/distroless/base@sha256:${DISTROLESS_SHA}
+# Hanzo-mirrored distroless base. SHA passed in via build-arg is
+# preserved verbatim — only the registry/path is changed from gcr.io/*
+# to ghcr.io/hanzoai/* so caller pin discipline remains identical.
+FROM ghcr.io/hanzoai/debian12:base@sha256:${DISTROLESS_SHA}
 LABEL maintainer="o11y"
 WORKDIR /usr/local/foundryctl
 
@@ -10,3 +13,7 @@ ARG ARCH
 COPY ./target/${OS}-${ARCH}/foundryctl /usr/local/bin/foundryctl
 
 ENTRYPOINT ["/usr/local/bin/foundryctl"]
+
+# TODO(ghcr-auth): CI workflows building this image must `docker login`
+# to ghcr.io/hanzoai with a PAT (secret: GHCR_PULL_TOKEN) — the default
+# GITHUB_TOKEN scopes to the repo's own package only.
