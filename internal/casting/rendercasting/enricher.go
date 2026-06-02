@@ -2,7 +2,6 @@ package rendercasting
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
@@ -13,32 +12,32 @@ import (
 var _ molding.MoldingEnricher = (*renderMoldingEnricher)(nil)
 
 type renderMoldingEnricher struct {
-	material types.Material
+	material domain.StructuredMaterial
 }
 
-func newRenderMoldingEnricher(config *v1alpha1.Casting) (*renderMoldingEnricher, error) {
+func newRenderMoldingEnricher(config *installation.Casting) (*renderMoldingEnricher, error) {
 	material, err := getRenderMaterial(config, "render.yaml")
 	if err != nil {
-		return nil, fmt.Errorf("failed to get render yaml material: %w", err)
+		return nil, errors.Wrapf(err, errors.TypeInternal, "failed to get render yaml material")
 	}
 
 	return &renderMoldingEnricher{material: material}, nil
 }
 
-func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		// Get telemetrystore service names
 		serviceNames, err := enricher.material.GetStringSlice("services.#.name")
 		if err != nil {
-			return fmt.Errorf("failed to get telemetrystore service names: %w", err)
+			return errors.Wrapf(err, errors.TypeInternal, "failed to get telemetrystore service names")
 		}
 
 		var addrs []string
 		var storeServiceNames []string
 		for _, serviceName := range serviceNames {
 			if strings.Contains(serviceName, "telemetrystore") && !strings.Contains(serviceName, "migrator") {
-				addrs = append(addrs, types.FormatAddress("tcp", serviceName, 9000))
+				addrs = append(addrs, domain.MustNewAddress("tcp", serviceName, 9000).String())
 				storeServiceNames = append(storeServiceNames, serviceName)
 			}
 		}
@@ -54,7 +53,7 @@ func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1
 		// Get telemetrystore service names
 		serviceNames, err := enricher.material.GetStringSlice("services.#.name")
 		if err != nil {
-			return fmt.Errorf("failed to get telemetrystore service names: %w", err)
+			return errors.Wrapf(err, errors.TypeInternal, "failed to get telemetrystore service names")
 		}
 
 		var apiServerAddr []string
@@ -72,7 +71,7 @@ func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1
 		// Get telemetrykeeper service names
 		serviceNames, err := enricher.material.GetStringSlice("services.#.name")
 		if err != nil {
-			return fmt.Errorf("failed to get telemetrykeeper service names: %w", err)
+			return errors.Wrapf(err, errors.TypeInternal, "failed to get telemetrykeeper service names")
 		}
 
 		var addrsClient []string
@@ -80,8 +79,8 @@ func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1
 		var keeperServiceNames []string
 		for _, serviceName := range serviceNames {
 			if strings.Contains(serviceName, "telemetrykeeper") {
-				addrsClient = append(addrsClient, types.FormatAddress("tcp", serviceName, 9181))
-				addrsRaft = append(addrsRaft, types.FormatAddress("tcp", serviceName, 9234))
+				addrsClient = append(addrsClient, domain.MustNewAddress("tcp", serviceName, 9181).String())
+				addrsRaft = append(addrsRaft, domain.MustNewAddress("tcp", serviceName, 9234).String())
 				keeperServiceNames = append(keeperServiceNames, serviceName)
 			}
 		}
@@ -98,13 +97,13 @@ func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1
 		// Get ingester service names
 		serviceNames, err := enricher.material.GetStringSlice("services.#.name")
 		if err != nil {
-			return fmt.Errorf("failed to get ingester service names: %w", err)
+			return errors.Wrapf(err, errors.TypeInternal, "failed to get ingester service names")
 		}
 
 		var addrs []string
 		for _, serviceName := range serviceNames {
 			if strings.Contains(serviceName, "ingester") {
-				addrs = append(addrs, types.FormatAddress("tcp", serviceName, 4318))
+				addrs = append(addrs, domain.MustNewAddress("tcp", serviceName, 4318).String())
 			}
 		}
 		config.Spec.Ingester.Status.Addresses.OTLP = addrs

@@ -103,6 +103,7 @@ services:
     {{ end }}
     {{ end }}
   {{ end }}
+  {{ end }}
 
   {{ if $.Spec.TelemetryStore.Spec.Enabled }}
   - name: {{ $.Metadata.Name}}-schema-migrator
@@ -115,6 +116,10 @@ services:
       {{ if index $.Spec.O11y.Spec.Env "HANZO_TELEMETRYSTORE_CLICKHOUSE_DSN" }}
       - key: CLICKHOUSE_DSN
         value: {{ index $.Spec.O11y.Spec.Env "HANZO_TELEMETRYSTORE_CLICKHOUSE_DSN" }}
+      {{ end }}
+      {{ range $key, $value := $.Spec.Ingester.Spec.Env }}
+      - key: {{ $key }}
+        value: {{ $value }}
       {{ end }}
       {{ if index $.Spec.TelemetryStore.Status.Extras "service_names" }}
       {{ range $index, $serviceName := splitList "," (index $.Spec.TelemetryStore.Status.Extras "service_names") }}

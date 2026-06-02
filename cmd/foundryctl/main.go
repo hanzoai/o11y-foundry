@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"os"
 
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
@@ -11,12 +10,12 @@ import (
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:           "foundryctl",
-		SilenceUsage:  true,
-		SilenceErrors: true,
+		Use:          "foundryctl",
+		SilenceUsage: true,
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
 		},
+		PersistentPreRunE: newRoot,
 	}
 
 	// Register configuration.
@@ -28,11 +27,12 @@ func main() {
 	registerForgeCmd(rootCmd)
 	registerCastCmd(rootCmd)
 	registerGenCmd(rootCmd)
+	registerCatalogCmd(rootCmd)
+	registerVersionCmd(rootCmd)
 
-	logger := instrumentation.NewLogger(false)
+	defer closeRoot()
 
 	if err := rootCmd.Execute(); err != nil {
-		logger.ErrorContext(context.Background(), "failed to run foundryctl", foundryerrors.LogAttr(err))
-		os.Exit(1)
+		os.Exit(foundryerrors.ExitCode(err))
 	}
 }

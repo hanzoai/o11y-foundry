@@ -17,7 +17,14 @@ Restart=on-failure
 {{- $ingesterBinaryPath := index $.Metadata.Annotations "foundry.o11y.io/ingester-binary-path" }}
 {{ if and $.Spec.Ingester.Status.Extras (index $.Spec.Ingester.Status.Extras "cfgPath") (index $.Spec.Ingester.Status.Extras "cfgOpampPath") }}
 ExecStart={{ $ingesterBinaryPath }} --config=%Y/{{ index $.Spec.Ingester.Status.Extras "cfgPath" }} --manager-config=%Y/{{ index $.Spec.Ingester.Status.Extras "cfgOpampPath" }} --copy-path=/var/lib/ingester/ingester.yaml
-{{ end }}
 {{- end }}
+{{- end }}
+{{- if and $.Spec.TelemetryStore.Spec.Enabled $.Spec.TelemetryStore.Status.Addresses.TCP (index $.Spec.TelemetryStore.Status.Addresses.TCP 0) }}
+Environment=SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_DSN={{ index $.Spec.TelemetryStore.Status.Addresses.TCP 0 }}
+{{- end }}
+{{- range $key, $value := $.Spec.Ingester.Spec.Env }}
+Environment={{ $key }}={{ $value }}
+{{- end }}
+
 [Install]
 WantedBy=multi-user.target

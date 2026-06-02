@@ -2,7 +2,6 @@ package dockercomposecasting
 
 import (
 	"context"
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -15,31 +14,31 @@ import (
 var _ molding.MoldingEnricher = (*dockerComposeMoldingEnricher)(nil)
 
 type dockerComposeMoldingEnricher struct {
-	material types.Material
+	material domain.StructuredMaterial
 }
 
-func newDockerComposeMoldingEnricher(config *v1alpha1.Casting) (*dockerComposeMoldingEnricher, error) {
+func newDockerComposeMoldingEnricher(config *installation.Casting) (*dockerComposeMoldingEnricher, error) {
 	material, err := getComposeMaterial(config, filepath.Join(rootcasting.DeploymentDir, "compose.yaml"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get compose yaml material: %w", err)
+		return nil, errors.Wrapf(err, errors.TypeInternal, "failed to get compose yaml material")
 	}
 
 	return &dockerComposeMoldingEnricher{material: material}, nil
 }
 
-func (enricher *dockerComposeMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (enricher *dockerComposeMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		// Get telemetrystore container names
 		containerNames, err := enricher.material.GetStringSlice("services|@keys")
 		if err != nil {
-			return fmt.Errorf("failed to get telemetrystore container names: %w", err)
+			return errors.Wrapf(err, errors.TypeInternal, "failed to get telemetrystore container names")
 		}
 
 		var telemetrystoreContainerNames []string
 		for _, containerName := range containerNames {
 			if strings.Contains(containerName, "telemetrystore-clickhouse") && !strings.Contains(containerName, "user-scripts") {
-				telemetrystoreContainerNames = append(telemetrystoreContainerNames, types.FormatAddress("tcp", containerName, 9000))
+				telemetrystoreContainerNames = append(telemetrystoreContainerNames, domain.MustNewAddress("tcp", containerName, 9000).String())
 			}
 		}
 
@@ -67,13 +66,13 @@ func (enricher *dockerComposeMoldingEnricher) EnrichStatus(ctx context.Context, 
 		// Get telemetrykeeper container names (using service keys since they match container_name)
 		containerNames, err := enricher.material.GetStringSlice("services|@keys")
 		if err != nil {
-			return fmt.Errorf("failed to get telemetrykeeper container names: %w", err)
+			return errors.Wrapf(err, errors.TypeInternal, "failed to get telemetrykeeper container names")
 		}
 
 		var telemetrykeeperContainerNames []string
 		for _, containerName := range containerNames {
 			if strings.Contains(containerName, "telemetrykeeper") {
-				telemetrykeeperContainerNames = append(telemetrykeeperContainerNames, types.FormatAddress("tcp", containerName, 9181))
+				telemetrykeeperContainerNames = append(telemetrykeeperContainerNames, domain.MustNewAddress("tcp", containerName, 9181).String())
 			}
 		}
 
@@ -82,43 +81,40 @@ func (enricher *dockerComposeMoldingEnricher) EnrichStatus(ctx context.Context, 
 		var telemetryRaftaddress []string
 		for _, containerName := range containerNames {
 			if strings.Contains(containerName, "telemetrykeeper") {
-				telemetryRaftaddress = append(telemetryRaftaddress, types.FormatAddress("tcp", containerName, 9234))
+				telemetryRaftaddress = append(telemetryRaftaddress, domain.MustNewAddress("tcp", containerName, 9234).String())
 			}
 		}
 
 		config.Spec.TelemetryKeeper.Status.Addresses.Raft = telemetryRaftaddress
 
 	case v1alpha1.MoldingKindMetaStore:
+		// Skip molding enrichment if sqlite
+		if config.Spec.MetaStore.Kind == installation.MetaStoreKindSQLite {
+			return nil
+		}
 		// Get metastore container names
 		containerNames, err := enricher.material.GetStringSlice("services|@keys")
 		if err != nil {
-			return fmt.Errorf("failed to get metastore container names: %w", err)
+			return errors.Wrapf(err, errors.TypeInternal, "failed to get metastore container names")
 		}
 
 		var metastoreContainerNames []string
 		for _, containerName := range containerNames {
 			if strings.Contains(containerName, "metastore") {
-				metastoreContainerNames = append(metastoreContainerNames, types.FormatAddress("tcp", containerName, 9000))
+				metastoreContainerNames = append(metastoreContainerNames, domain.MustNewAddress("tcp", containerName, 5432).String())
 			}
 		}
 
 		config.Spec.MetaStore.Status.Addresses.DSN = metastoreContainerNames
 
 	case v1alpha1.MoldingKindIngester:
-		// Get ingester container names
-		containerNames, err := enricher.material.GetStringSlice("services|@keys")
-		if err != nil {
-			return fmt.Errorf("failed to get ingester container names: %w", err)
+		// The ingester is scaled via `deploy.replicas` and reached through the
+		// `<metadata.name>-ingester` network alias, which compose load-balances
+		// across all replicas.
+		config.Spec.Ingester.Status.Addresses.OTLP = []string{
+			domain.MustNewAddress("tcp", config.Metadata.Name+"-ingester", 4318).String(),
+			domain.MustNewAddress("tcp", config.Metadata.Name+"-ingester", 4317).String(),
 		}
-
-		var ingesterContainerNames []string
-		for _, containerName := range containerNames {
-			if strings.Contains(containerName, "ingester") {
-				ingesterContainerNames = append(ingesterContainerNames, types.FormatAddress("tcp", containerName, 9000))
-			}
-		}
-
-		config.Spec.Ingester.Status.Addresses.OTLP = ingesterContainerNames
 	}
 
 	return nil
