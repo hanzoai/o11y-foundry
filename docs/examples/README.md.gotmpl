@@ -1,0 +1,7 @@
+### Examples
+
+| Platform | Mode | Flavor | Example |
+| --- | --- | --- | --- |
+{{- range .Castings }}
+| {{ or .platform "-" }} | {{ or .mode "-" }} | {{ or .flavor "-" }} | [{{ .example }}]({{ .example }}/) |
+{{- end }}

@@ -7,21 +7,27 @@ var (
 	commonCfg commonConfig
 
 	// Stores pours configuration.
-
 	poursCfg poursConfig
 
 	// Stores cast configuration.
 	castCfg castConfig
+
+	// Stores catalog configuration.
+	catalogCfg catalogConfig
 )
 
 type commonConfig struct {
-	File  string
-	Debug bool
+	File     string
+	Debug    bool
+	Format   string
+	NoLedger bool
 }
 
 func (c *commonConfig) RegisterFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&c.File, "file", "f", "casting.yaml", "Path to the casting configuration file.")
 	cmd.PersistentFlags().BoolVarP(&c.Debug, "debug", "d", false, "Enable debug mode.")
+	cmd.PersistentFlags().StringVar(&c.Format, "format", "json", "Output format for results and errors (json|text).")
+	cmd.PersistentFlags().BoolVar(&c.NoLedger, "no-ledger", false, "Disable anonymous usage ledger.")
 }
 
 type poursConfig struct {
@@ -40,4 +46,12 @@ type castConfig struct {
 func (c *castConfig) RegisterFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVar(&c.NoGauge, "no-gauge", false, "Do not run gauge before forge and cast.")
 	cmd.PersistentFlags().BoolVar(&c.NoForge, "no-forge", false, "Do not run forge before cast.")
+}
+
+type catalogConfig struct {
+	OutPath string
+}
+
+func (c *catalogConfig) RegisterFlags(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&c.OutPath, "output", "o", "", "Path to write castings.json")
 }

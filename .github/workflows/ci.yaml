@@ -18,6 +18,14 @@ jobs:
     with:
       PRIMUS_REF: main
       GO_VERSION: 1.25
+  sh-fmt:
+    if: |
+      (github.event_name == 'pull_request' && ! github.event.pull_request.head.repo.fork && github.event.pull_request.user.login != 'dependabot[bot]' && ! contains(github.event.pull_request.labels.*.name, 'safe-to-test')) ||
+      (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe-to-test'))
+    uses: signoz/primus.workflows/.github/workflows/sh-fmt.yaml@main
+    secrets: inherit
+    with:
+      PRIMUS_REF: main
   lint:
     if: |
       (github.event_name == 'pull_request' && ! github.event.pull_request.head.repo.fork && github.event.pull_request.user.login != 'dependabot[bot]' && ! contains(github.event.pull_request.labels.*.name, 'safe-to-test')) ||
@@ -27,6 +35,14 @@ jobs:
     with:
       PRIMUS_REF: main
       GO_VERSION: 1.25
+  sh-lint:
+    if: |
+      (github.event_name == 'pull_request' && ! github.event.pull_request.head.repo.fork && github.event.pull_request.user.login != 'dependabot[bot]' && ! contains(github.event.pull_request.labels.*.name, 'safe-to-test')) ||
+      (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe-to-test'))
+    uses: signoz/primus.workflows/.github/workflows/sh-lint.yaml@main
+    secrets: inherit
+    with:
+      PRIMUS_REF: main
   test:
     if: |
       (github.event_name == 'pull_request' && ! github.event.pull_request.head.repo.fork && github.event.pull_request.user.login != 'dependabot[bot]' && ! contains(github.event.pull_request.labels.*.name, 'safe-to-test')) ||
@@ -60,8 +76,8 @@ jobs:
           go-version: "1.25"
       - name: gen-examples
         run: |
-          go run cmd/foundryctl/*.go gen examples
-          git diff --compact-summary --exit-code || (echo; echo "Unexpected difference in docs/examples/ directory. Run go run cmd/foundryctl/*.go gen locally and commit."; exit 1)
+          make gen-examples
+          git diff --compact-summary --exit-code || (echo; echo "Unexpected difference in docs/examples/. Run 'make gen-examples' locally and commit."; exit 1)
   schemas:
     if: |
       (github.event_name == 'pull_request' && ! github.event.pull_request.head.repo.fork && github.event.pull_request.user.login != 'dependabot[bot]' && ! contains(github.event.pull_request.labels.*.name, 'safe-to-test')) ||
@@ -76,5 +92,21 @@ jobs:
           go-version: "1.25"
       - name: gen-schemas
         run: |
-          go run cmd/foundryctl/*.go gen schemas
-          git diff --compact-summary --exit-code || (echo; echo "Unexpected difference in docs/schemas/ directory. Run go run cmd/foundryctl/*.go gen locally and commit."; exit 1)
+          make gen-schemas
+          git diff --compact-summary --exit-code || (echo; echo "Unexpected difference in docs/schemas/ directory. Run 'make gen-schemas' locally and commit."; exit 1)
+  docs:
+    if: |
+      (github.event_name == 'pull_request' && ! github.event.pull_request.head.repo.fork && github.event.pull_request.user.login != 'dependabot[bot]' && ! contains(github.event.pull_request.labels.*.name, 'safe-to-test')) ||
+      (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe-to-test'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: self-checkout
+        uses: actions/checkout@v4
+      - name: go-install
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+      - name: gen-docs
+        run: |
+          make gen-docs
+          git diff --compact-summary --exit-code || (echo; echo "Unexpected difference in README.md. Run 'make gen-docs' locally and commit."; exit 1)

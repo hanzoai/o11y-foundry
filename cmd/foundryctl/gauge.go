@@ -14,18 +14,15 @@ func registerGaugeCmd(rootCmd *cobra.Command) {
 	gaugeCmd := &cobra.Command{
 		Use:   "gauge",
 		Short: "Gauge whether required tools are available.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := cmd.Context()
-			logger := instrumentation.NewLogger(commonCfg.Debug)
-
-			return runGauge(ctx, logger, commonCfg.File)
-		},
+		RunE: recoverRunE(domain.EventGauge, func(cmd *cobra.Command, args []string) (domain.Properties, error) {
+			return runGauge(cmd.Context(), rootLogger, commonCfg.File)
+		}),
 	}
 
 	rootCmd.AddCommand(gaugeCmd)
 }
 
-func runGauge(ctx context.Context, logger *slog.Logger, path string) error {
+func runGauge(ctx context.Context, logger *slog.Logger, path string) (domain.Properties, error) {
 	foundry, err := foundry.New(logger)
 	if err != nil {
 		logger.ErrorContext(ctx, "failed to create foundry, please report this issues to developers at https://github.com/hanzoai/o11y-foundry/issues", foundryerrors.LogAttr(err))
@@ -34,15 +31,11 @@ func runGauge(ctx context.Context, logger *slog.Logger, path string) error {
 
 	casting, err := foundry.Config.GetV1Alpha1(ctx, path)
 	if err != nil {
-		logger.ErrorContext(ctx, err.Error())
-		return err
+		return domain.NewProperties(), err
 	}
+
+	props := casting.TrackableProperties()
 
 	err = foundry.Gauge(ctx, casting)
-	if err != nil {
-		logger.ErrorContext(ctx, err.Error())
-		return err
-	}
-
-	return nil
+	return props, err
 }

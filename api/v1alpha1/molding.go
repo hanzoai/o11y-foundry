@@ -4,7 +4,7 @@ import "maps"
 
 type MoldingSpec struct {
 	// Whether the molding is enabled
-	Enabled bool `json:"enabled,omitempty" yaml:"enabled,omitempty" description:"Whether the molding is enabled" default:"true"`
+	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty" description:"Whether the molding is enabled" default:"true"`
 
 	// Cluster configuration for the molding
 	Cluster TypeCluster `json:"cluster" yaml:"cluster,omitempty" description:"Cluster configuration for the molding"`
@@ -20,6 +20,8 @@ type MoldingSpec struct {
 
 	// Configuration for the molding
 	Config TypeConfig `json:"config" yaml:"config,omitempty" description:"Configuration for the molding"`
+
+	_ struct{} `additionalProperties:"false"`
 }
 
 type MoldingStatus struct {
@@ -31,6 +33,17 @@ type MoldingStatus struct {
 
 	// Configuration for the molding
 	Config TypeConfig `json:"config" yaml:"config,omitempty" description:"Configuration for the molding"`
+
+	_ struct{} `additionalProperties:"false"`
+}
+
+// IsEnabled returns whether the molding is enabled.
+// Returns false if the receiver or Enabled is nil.
+func (spec *MoldingSpec) IsEnabled() bool {
+	if spec == nil || spec.Enabled == nil {
+		return false
+	}
+	return *spec.Enabled
 }
 
 func (spec *MoldingSpec) MergeStatus(status MoldingStatus) error {
@@ -42,11 +55,14 @@ func (spec *MoldingSpec) MergeStatus(status MoldingStatus) error {
 		status.Env = make(map[string]string)
 	}
 
-	maps.Copy(spec.Env, status.Env)
+	maps.Copy(status.Env, spec.Env)
+	spec.Env = status.Env
 
-	if err := Merge(&spec.Config, status.Config); err != nil {
+	if err := Merge(&status.Config, spec.Config); err != nil {
 		return err
 	}
+
+	spec.Config = status.Config
 
 	return nil
 }

@@ -2,7 +2,7 @@ package systemdcasting
 
 import (
 	"context"
-	"fmt"
+	"path"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
 	"github.com/hanzoai/o11y-foundry/internal/molding"
@@ -19,14 +19,14 @@ const (
 )
 
 type linuxMoldingEnricher struct {
-	materials []types.Material
+	materials []domain.Material
 }
 
-func newLinuxMoldingEnricher(_ *v1alpha1.Casting) *linuxMoldingEnricher {
-	return &linuxMoldingEnricher{materials: []types.Material{}}
+func newLinuxMoldingEnricher(_ *installation.Casting) *linuxMoldingEnricher {
+	return &linuxMoldingEnricher{materials: []domain.Material{}}
 }
 
-func (e *linuxMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.MoldingKind, config *installation.Casting) error {
 	switch kind {
 	case v1alpha1.MoldingKindTelemetryStore:
 		return e.enrichTelemetryStore(config)
@@ -42,7 +42,7 @@ func (e *linuxMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.M
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) enrichTelemetryStore(config *installation.Casting) error {
 	spec := &config.Spec.TelemetryStore
 	cluster := spec.Spec.Cluster
 
@@ -64,7 +64,7 @@ func (e *linuxMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting) er
 	for shard := 0; shard < shards; shard++ {
 		for replica := 0; replica < replicas; replica++ {
 			port := baseTelemetryStoreClusterPort + (shard * replicas) + replica
-			addresses = append(addresses, types.FormatAddress("tcp", "localhost", port))
+			addresses = append(addresses, domain.MustNewAddress("tcp", "localhost", port).String())
 		}
 	}
 
@@ -72,7 +72,7 @@ func (e *linuxMoldingEnricher) enrichTelemetryStore(config *v1alpha1.Casting) er
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) enrichTelemetryKeeper(config *installation.Casting) error {
 	spec := &config.Spec.TelemetryKeeper
 	cluster := spec.Spec.Cluster
 
@@ -87,8 +87,8 @@ func (e *linuxMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) e
 
 	var clientAddresses, raftAddresses []string
 	for r := 0; r < replicas; r++ {
-		clientAddresses = append(clientAddresses, types.FormatAddress("tcp", "localhost", baseTelemetryKeeperClientPort+r))
-		raftAddresses = append(raftAddresses, types.FormatAddress("tcp", "localhost", baseTelemetryKeeperRaftPort+r))
+		clientAddresses = append(clientAddresses, domain.MustNewAddress("tcp", "localhost", baseTelemetryKeeperClientPort+r).String())
+		raftAddresses = append(raftAddresses, domain.MustNewAddress("tcp", "localhost", baseTelemetryKeeperRaftPort+r).String())
 	}
 
 	config.Spec.TelemetryKeeper.Status.Addresses.Client = clientAddresses
@@ -96,19 +96,25 @@ func (e *linuxMoldingEnricher) enrichTelemetryKeeper(config *v1alpha1.Casting) e
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichMetaStore(config *v1alpha1.Casting) error {
-	dsn := types.FormatAddress("postgres", "localhost", baseMetaStorePostgresPort)
-	config.Spec.MetaStore.Status.Addresses.DSN = []string{dsn}
+func (e *linuxMoldingEnricher) enrichMetaStore(config *installation.Casting) error {
+	switch config.Spec.MetaStore.Kind {
+	case installation.MetaStoreKindSQLite:
+		// SQLite — no addresses or binaries to enrich.
+	case installation.MetaStoreKindPostgres:
+		dsn := domain.MustNewAddress("postgres", "localhost", baseMetaStorePostgresPort).String()
+		config.Spec.MetaStore.Status.Addresses.DSN = []string{dsn}
 
 	// Get the annotation value
 	metastoreBin := config.Metadata.Annotations["foundry.o11y.hanzo.ai/metastore-postgres-binary-path"]
 
-	// If it's missing, apply the default and write it back
-	if metastoreBin == "" {
-		metastoreBin = "/usr/bin/postgres"
+		// If it's missing, apply the default and write it back
+		if metastoreBin == "" {
+			metastoreBin = "/usr/bin/postgres"
 
-		if config.Metadata.Annotations == nil {
-			config.Metadata.Annotations = make(map[string]string)
+			if config.Metadata.Annotations == nil {
+				config.Metadata.Annotations = make(map[string]string)
+			}
+			config.Metadata.Annotations["foundry.signoz.io/metastore-postgres-binary-path"] = metastoreBin
 		}
 		config.Metadata.Annotations["foundry.o11y.hanzo.ai/metastore-postgres-binary-path"] = metastoreBin
 	}
@@ -136,12 +142,23 @@ func (e *linuxMoldingEnricher) enrichO11y(config *v1alpha1.Casting) error {
 		config.Metadata.Annotations["foundry.o11y.hanzo.ai/o11y-binary-path"] = o11yBin
 	}
 
+	// The binary defaults these to its in-container paths, so point them at the
+	// extracted tarball tree (binary lives at <root>/bin/signoz).
+	root := path.Dir(path.Dir(signozBin))
+	if config.Spec.Signoz.Status.Env == nil {
+		config.Spec.Signoz.Status.Env = make(map[string]string)
+	}
+	env := config.Spec.Signoz.Status.Env
+	env["SIGNOZ_WEB_DIRECTORY"] = path.Join(root, "web")
+	env["SIGNOZ_EMAILING_TEMPLATES_DIRECTORY"] = path.Join(root, "templates", "email")
+	env["SIGNOZ_ALERTMANAGER_SIGNOZ_TEMPLATES"] = path.Join(root, "templates", "alertmanager", "*.gotmpl")
+
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichIngester(config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) enrichIngester(config *installation.Casting) error {
 	config.Spec.Ingester.Status.Addresses.OTLP = []string{
-		types.FormatAddress("tcp", "localhost", 4317),
+		domain.MustNewAddress("tcp", "localhost", 4317).String(),
 	}
 
 	// Get the annotation value
@@ -156,6 +173,11 @@ func (e *linuxMoldingEnricher) enrichIngester(config *v1alpha1.Casting) error {
 		}
 		config.Metadata.Annotations["foundry.o11y.hanzo.ai/ingester-binary-path"] = ingesterBin
 	}
+
+	if config.Spec.Ingester.Status.Env == nil {
+		config.Spec.Ingester.Status.Env = make(map[string]string)
+	}
+	config.Spec.Ingester.Status.Env["SIGNOZ_OTEL_COLLECTOR_TIMEOUT"] = "10m"
 
 	return nil
 }

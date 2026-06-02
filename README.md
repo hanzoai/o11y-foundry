@@ -2,8 +2,9 @@
     <a href="https://o11y.hanzo.ai" target="_blank">
         <img alt="Foundry" src="https://github.com/user-attachments/assets/ef9a33f7-12d7-4c94-8908-0a02b22f0c18" width="100" height="100">
     </a>
-    <br>Foundry
-</h1>
+</p>
+
+<h1 align="center" style="border-bottom: none">Foundry</h1>
 
 <p align="center">
 <img alt="GitHub Release" src="https://img.shields.io/github/v/release/o11y/foundry?include_prereleases">
@@ -49,7 +50,7 @@ curl -L "https://github.com/Hanzo O11y/foundry/releases/latest/download/foundry_
 tar -xzf foundry.tar.gz
 ```
 
-**macOS:**
+See [Getting Started](docs/getting-started.md) for manual install options and PATH setup.
 
 ```bash
 curl -L "https://github.com/Hanzo O11y/foundry/releases/latest/download/foundry_darwin_$(uname -m | sed 's/x86_64/amd64/g' | sed 's/arm64/arm64/g').tar.gz" -o foundry.tar.gz
@@ -89,7 +90,6 @@ spec:
 ```bash
 foundryctl cast -f casting.yaml
 ```
-## The Foundry Model
 
 Foundry uses a metalworking metaphor: you define a **Casting**, which contains **Moldings** (components), and Foundry **forges** them into **Pours** (generated files).
 
@@ -140,49 +140,85 @@ A Casting is a complete Hanzo O11y deployment definition: one YAML file that Fou
 **Pours** are the generated deployment and configuration files. When you run `forge`, Foundry creates the `pours/` directory containing everything needed to run Hanzo O11y.
 
 ```
-pours/
-└── deployment/
-    ├── compose.yaml
-    └── configs/
-        ├── ingester/
-        │   ├── ingester.yaml
-        │   └── opamp.yaml
-        ├── telemetrykeeper/
-        │   └── keeper-0.yaml
-        └── telemetrystore/
-            ├── config.yaml
-            └── functions.yaml
+  +-------------------------------------------------------------+
+  |                       casting.yaml                          |
+  |              your single deployment config                  |
+  +-----------------------------+-------------------------------+
+                                |
+                +---------------+---------------+
+                |               |               |
+                v               v               v
+         +-----------+  +-----------+  +----------------+
+         |   gauge   |  |   forge   |  |     cast       |
+         |-----------|  |-----------|  |----------------|
+         | validate  |  | generate  |  | gauge + forge  |
+         | prereqs   |  | files     |  | + deploy       |
+         +-----------+  +-----+-----+  +-------+--------+
+                              |                 |
+                              v                 |
+         +----------------------------------+   |
+         |             pours/               |   |
+         |----------------------------------|   |
+         |  compose.yaml    manifests/      |   |
+         |  values.yaml     configs/        |   |
+         |  render.yaml     *.tf.json       |   |
+         +-----------------+----------------+   |
+                           |                    |
+                           +----------+---------+
+                                      v
+  +-------------------------------------------------------------+
+  |                      SigNoz Running                         |
+  |-------------------------------------------------------------|
+  |  Docker Compose - Swarm - Systemd - Kubernetes - ECS        |
+  |  Render - Railway - Coolify                                 |
+  +-------------------------------------------------------------+
 ```
+
+`foundryctl cast` runs the full pipeline (gauge + forge + deploy) in one step.
+
+| Term | What it means |
+| --- | --- |
+| **Casting** | Your deployment config. One YAML file describing what you want. [Learn more](docs/concepts/casting.md) |
+| **Moldings** | The SigNoz components (ClickHouse, PostgreSQL, OTel Collector, etc.) that Foundry configures for you. [Learn more](docs/concepts/moldings.md) |
+| **Pours** | The generated output files in `pours/`. Structure varies by deployment mode. See [examples](docs/examples/) |
+
+## Examples
+
+| Platform | Mode | Flavor | Example |
+| --- | --- | --- | --- |
+| - | docker | compose | [docker/compose](docs/examples/docker/compose/) |
+| - | docker | swarm | [docker/swarm](docs/examples/docker/swarm/) |
+| - | kubernetes | helm | [kubernetes/helm](docs/examples/kubernetes/helm/) |
+| - | kubernetes | kustomize | [kubernetes/kustomize](docs/examples/kubernetes/kustomize/) |
+| - | systemd | binary | [systemd/binary](docs/examples/systemd/binary/) |
+| ecs | ec2 | terraform | [ecs/ec2/terraform](docs/examples/ecs/ec2/terraform/) |
+| coolify | - | stack | [coolify/stack](docs/examples/coolify/stack/) |
+| railway | - | template | [railway/template](docs/examples/railway/template/) |
+| render | - | blueprint | [render/blueprint](docs/examples/render/blueprint/) |
 
 ## CLI reference
 
 ```
-Usage:
-  foundryctl [command]
+foundryctl [command]
 
-Available Commands:
-  gauge       Gauge whether required tools are available
-  forge       Forge configuration and deployment files
-  cast        Cast to the target environment
-  gen         Generate example files for all supported deployments
-  help        Help about any command
+Commands:
+  gauge       Validate required tools for your deployment mode
+  forge       Generate deployment and configuration files
+  cast        Full pipeline: gauge + forge + deploy
+  gen         Generate example casting files for all modes
 
 Flags:
-  -d, --debug          Enable debug mode
-  -f, --file string    Path to the Casting configuration file (default "casting.yaml")
-  -p, --pours string   Directory for Pours (default "./pours")
-  -h, --help           Help for foundryctl
+  -d, --debug          Enable debug logging
+  -f, --file string    Casting file path (default "casting.yaml")
+  -p, --pours string   Output directory (default "./pours")
 ```
-
-### gauge
-
-Validates that all required tools are installed for your deployment mode:
 
 ```bash
+# Validate tools
 foundryctl gauge -f casting.yaml
-```
 
-### forge
+# Generate files only
+foundryctl forge -f casting.yaml
 
 Generates deployment and configuration files based on your Casting:
 
@@ -197,20 +233,11 @@ Deploys Hanzo O11y to your target environment. Runs `gauge` and `forge` automati
 ```bash
 foundryctl cast -f casting.yaml
 
-# Skip gauge check
-foundryctl cast --no-gauge
-
-# Skip forge (use existing Pours)
-foundryctl cast --no-forge
-```
-
-### gen
-
-Generates example Casting configurations for all supported deployment modes:
-
-```bash
+# Generate examples for all deployment modes
 foundryctl gen
 ```
+
+See [CLI Reference](docs/reference/cli.md) for the full command reference with all flags and examples.
 
 ## What's next
 

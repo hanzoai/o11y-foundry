@@ -1,0 +1,58 @@
+{
+  "Castings": [
+    {
+      "platform": "",
+      "mode": "docker",
+      "flavor": "compose",
+      "example": "docker/compose"
+    },
+    {
+      "platform": "",
+      "mode": "docker",
+      "flavor": "swarm",
+      "example": "docker/swarm"
+    },
+    {
+      "platform": "",
+      "mode": "kubernetes",
+      "flavor": "helm",
+      "example": "kubernetes/helm"
+    },
+    {
+      "platform": "",
+      "mode": "kubernetes",
+      "flavor": "kustomize",
+      "example": "kubernetes/kustomize"
+    },
+    {
+      "platform": "",
+      "mode": "systemd",
+      "flavor": "binary",
+      "example": "systemd/binary"
+    },
+    {
+      "platform": "ecs",
+      "mode": "ec2",
+      "flavor": "terraform",
+      "example": "ecs/ec2/terraform"
+    },
+    {
+      "platform": "coolify",
+      "mode": "",
+      "flavor": "stack",
+      "example": "coolify/stack"
+    },
+    {
+      "platform": "railway",
+      "mode": "",
+      "flavor": "template",
+      "example": "railway/template"
+    },
+    {
+      "platform": "render",
+      "mode": "",
+      "flavor": "blueprint",
+      "example": "render/blueprint"
+    }
+  ]
+}
