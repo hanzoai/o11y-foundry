@@ -2,7 +2,6 @@ package postgrestooler
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -52,7 +51,7 @@ func (tooler *postgresTooler) Gauge(ctx context.Context) error {
 		}
 	}
 
-	return fmt.Errorf("postgres not found: neither command nor binary in common locations")
+	return errors.Newf(errors.TypeNotFound, "postgres not found: neither command nor binary in common locations")
 }
 
 func (tooler *postgresTooler) Install(ctx context.Context) error {

@@ -14,9 +14,9 @@ receivers:
         endpoint: "0.0.0.0:4318"
 processors:
   batch:
-    send_batch_size: 20000
-    send_batch_max_size: 25000
-    timeout: 1s
+    send_batch_size: 50000
+    send_batch_max_size: 55000
+    timeout: 5s
   batch/meter:
     send_batch_size: 20000
     send_batch_max_size: 25000
@@ -76,6 +76,12 @@ exporters:
     timeout: 45s
     sending_queue:
       enabled: false
+  metadataexporter:
+    enabled: true
+    dsn: {{ .TelemetryStoreMetadataAddress }}
+    timeout: 45s
+    cache:
+      provider: in_memory
 extensions:
   o11y_health_check:
     endpoint: "0.0.0.0:13133"

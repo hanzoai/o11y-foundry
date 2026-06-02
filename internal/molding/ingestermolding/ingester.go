@@ -3,9 +3,7 @@ package ingestermolding
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"log/slog"
-	"strings"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
@@ -28,7 +26,7 @@ func (molding *ingester) Kind() v1alpha1.MoldingKind {
 	return v1alpha1.MoldingKindIngester
 }
 
-func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting) error {
+func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *installation.Casting) error {
 	// render the template for config.yaml
 	data, err := molding.getData(config)
 	if err != nil {
@@ -51,6 +49,11 @@ func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Cast
 		"opamp.yaml":    opampBuf.String(),
 	}
 
+	if config.Spec.Ingester.Status.Env == nil {
+		config.Spec.Ingester.Status.Env = make(map[string]string)
+	}
+	config.Spec.Ingester.Status.Env["SIGNOZ_OTEL_COLLECTOR_TIMEOUT"] = "10m"
+
 	return nil
 }
 
@@ -62,7 +65,7 @@ func (molding *ingester) getData(config *v1alpha1.Casting) (Data, error) {
 	o11yAddress := config.Spec.O11y.Status.Addresses.Opamp[0]
 
 	if len(config.Spec.TelemetryStore.Status.Addresses.TCP) == 0 {
-		return Data{}, fmt.Errorf("telemetry store address is not set")
+		return Data{}, foundryerrors.Newf(foundryerrors.TypeInternal, "telemetry store address is not set")
 	}
 
 	telemetryStoreAddresses := config.Spec.TelemetryStore.Status.Addresses.TCP

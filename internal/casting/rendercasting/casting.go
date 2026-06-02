@@ -17,13 +17,13 @@ var _ casting.Casting = (*renderCasting)(nil)
 
 type renderCasting struct {
 	logger   *slog.Logger
-	castings []*types.Template
+	castings []*domain.Template
 }
 
 func New(logger *slog.Logger) *renderCasting {
 	return &renderCasting{
 		logger: logger,
-		castings: []*types.Template{
+		castings: []*domain.Template{
 			renderYAMLTemplate,
 			telemetryKeeperDockerfileTemplate,
 			telemetryStoreDockerfileTemplate,
@@ -32,75 +32,75 @@ func New(logger *slog.Logger) *renderCasting {
 	}
 }
 
-func (c *renderCasting) Enricher(ctx context.Context, config *v1alpha1.Casting) (molding.MoldingEnricher, error) {
+func (c *renderCasting) Enricher(ctx context.Context, config *installation.Casting) (molding.MoldingEnricher, error) {
 	return newRenderMoldingEnricher(config)
 }
 
-func (c *renderCasting) Forge(ctx context.Context, config v1alpha1.Casting, poursPath string) ([]types.Material, error) {
-	var materials []types.Material
+func (c *renderCasting) Forge(ctx context.Context, config installation.Casting, poursPath string) ([]domain.Material, error) {
+	var materials []domain.Material
 
 	configsDir := filepath.Join(casting.DeploymentDir, "configs/")
 	// Generate render.yaml
 	blueprintMaterial, err := getRenderMaterial(&config, filepath.Join(casting.DeploymentDir, "render.yaml"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create blueprint yaml material: %w", err)
+		return nil, errors.Wrapf(err, errors.TypeInternal, "failed to create blueprint yaml material")
 	}
 	materials = append(materials, blueprintMaterial)
 
 	// Generate Dockerfile for telemetrykeeper services
-	if config.Spec.TelemetryKeeper.Spec.Enabled {
+	if config.Spec.TelemetryKeeper.Spec.IsEnabled() {
 		dockerfileBuf := bytes.NewBuffer(nil)
 		err := telemetryKeeperDockerfileTemplate.Execute(dockerfileBuf, config)
 		if err != nil {
-			return nil, fmt.Errorf("failed to execute dockerfile keeper template: %w", err)
+			return nil, errors.Wrapf(err, errors.TypeInternal, "failed to execute dockerfile keeper template")
 		}
-		dockerfileMaterial := types.NewTextMaterial(dockerfileBuf.Bytes(), filepath.Join(configsDir, "telemetrykeeper/Dockerfile"))
+		dockerfileMaterial := domain.NewBlobMaterial(dockerfileBuf.Bytes(), filepath.Join(configsDir, "telemetrykeeper/Dockerfile"))
 		materials = append(materials, dockerfileMaterial)
 
 		// Add telemetrykeeper config files (for dockerfile to copy)
 		for filename, content := range config.Spec.TelemetryKeeper.Spec.Config.Data {
-			material, err := types.NewYAMLMaterial([]byte(content), filepath.Join(configsDir, fmt.Sprintf("telemetrykeeper/keeper.d/%s", filename)))
+			material, err := domain.NewYAMLMaterial([]byte(content), filepath.Join(configsDir, fmt.Sprintf("telemetrykeeper/keeper.d/%s", filename)))
 			if err != nil {
-				return nil, fmt.Errorf("failed to create telemetrykeeper config material: %w", err)
+				return nil, errors.Wrapf(err, errors.TypeInternal, "failed to create telemetrykeeper config material")
 			}
 			materials = append(materials, material)
 		}
 	}
 
 	// Add Dockerfile for telemetrystore services
-	if config.Spec.TelemetryStore.Spec.Enabled {
+	if config.Spec.TelemetryStore.Spec.IsEnabled() {
 		dockerfileBuf := bytes.NewBuffer(nil)
 		err := telemetryStoreDockerfileTemplate.Execute(dockerfileBuf, config)
 		if err != nil {
-			return nil, fmt.Errorf("failed to execute dockerfile clickhouse template: %w", err)
+			return nil, errors.Wrapf(err, errors.TypeInternal, "failed to execute dockerfile clickhouse template")
 		}
-		dockerfileMaterial := types.NewTextMaterial(dockerfileBuf.Bytes(), filepath.Join(configsDir, "telemetrystore/Dockerfile"))
+		dockerfileMaterial := domain.NewBlobMaterial(dockerfileBuf.Bytes(), filepath.Join(configsDir, "telemetrystore/Dockerfile"))
 		materials = append(materials, dockerfileMaterial)
 
 		// Add telemetrystore config files (for dockerfile to copy)
 		for filename, content := range config.Spec.TelemetryStore.Spec.Config.Data {
-			material, err := types.NewYAMLMaterial([]byte(content), filepath.Join(configsDir, fmt.Sprintf("telemetrystore/config.d/%s", filename)))
+			material, err := domain.NewYAMLMaterial([]byte(content), filepath.Join(configsDir, fmt.Sprintf("telemetrystore/config.d/%s", filename)))
 			if err != nil {
-				return nil, fmt.Errorf("failed to create telemetrystore config material: %w", err)
+				return nil, errors.Wrapf(err, errors.TypeInternal, "failed to create telemetrystore config material")
 			}
 			materials = append(materials, material)
 		}
 	}
 
 	// Add Dockerfile for ingester services
-	if config.Spec.Ingester.Spec.Enabled {
+	if config.Spec.Ingester.Spec.IsEnabled() {
 		dockerfileBuf := bytes.NewBuffer(nil)
 		err := ingesterDockerfileTemplate.Execute(dockerfileBuf, config)
 		if err != nil {
-			return nil, fmt.Errorf("failed to execute dockerfile otel template: %w", err)
+			return nil, errors.Wrapf(err, errors.TypeInternal, "failed to execute dockerfile otel template")
 		}
-		dockerfileMaterial := types.NewTextMaterial(dockerfileBuf.Bytes(), filepath.Join(configsDir, "ingester/Dockerfile"))
+		dockerfileMaterial := domain.NewBlobMaterial(dockerfileBuf.Bytes(), filepath.Join(configsDir, "ingester/Dockerfile"))
 		materials = append(materials, dockerfileMaterial)
 
 		for filename, content := range config.Spec.Ingester.Spec.Config.Data {
-			material, err := types.NewYAMLMaterial([]byte(content), filepath.Join(configsDir, fmt.Sprintf("ingester/%s", filename)))
+			material, err := domain.NewYAMLMaterial([]byte(content), filepath.Join(configsDir, fmt.Sprintf("ingester/%s", filename)))
 			if err != nil {
-				return nil, fmt.Errorf("failed to create ingester config material: %w", err)
+				return nil, errors.Wrapf(err, errors.TypeInternal, "failed to create ingester config material")
 			}
 			materials = append(materials, material)
 		}
@@ -109,7 +109,7 @@ func (c *renderCasting) Forge(ctx context.Context, config v1alpha1.Casting, pour
 	return materials, nil
 }
 
-func (c *renderCasting) Cast(ctx context.Context, config v1alpha1.Casting, poursPath string) error {
+func (c *renderCasting) Cast(ctx context.Context, config installation.Casting, poursPath string) error {
 	c.logger.InfoContext(ctx, "Please run 'forge' first to generate the Render Casting",
 		slog.String("pours_path", poursPath))
 	c.logger.InfoContext(ctx, "After forging, deploy render.yaml to Render using Infrastructure as Code",
@@ -117,11 +117,11 @@ func (c *renderCasting) Cast(ctx context.Context, config v1alpha1.Casting, pours
 	return nil
 }
 
-func getRenderMaterial(config *v1alpha1.Casting, path string) (types.Material, error) {
+func getRenderMaterial(config *installation.Casting, path string) (domain.StructuredMaterial, error) {
 	buf := bytes.NewBuffer(nil)
 	err := renderYAMLTemplate.Execute(buf, config)
 	if err != nil {
-		return types.Material{}, fmt.Errorf("failed to execute render yaml template: %w", err)
+		return nil, errors.Wrapf(err, errors.TypeInternal, "failed to execute render yaml template")
 	}
-	return types.NewYAMLMaterial(buf.Bytes(), path)
+	return domain.NewYAMLMaterial(buf.Bytes(), path)
 }

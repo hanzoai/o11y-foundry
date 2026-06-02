@@ -60,9 +60,24 @@ sudo chown -R o11y:o11y /opt/o11y /var/lib/o11y /opt/ingester /var/lib/ingester
 
 Also, make sure that "o11y" user is allowed to transverse to the pours directory.
 
-## Deployment
+## Download SigNoz
 
-Create a `casting.yaml` file:
+Download the SigNoz release tarball and extract it into `/opt/signoz`:
+
+```bash
+ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
+sudo mkdir -p /opt/signoz
+curl -fsSL "https://github.com/SigNoz/signoz/releases/latest/download/signoz_linux_${ARCH}.tar.gz" \
+  | sudo tar -xz --strip-components=1 -C /opt/signoz
+```
+
+> [!IMPORTANT]
+> Extract the full tarball, do not move the `signoz` binary on its own. SigNoz resolves
+> the web frontend and notification templates relative to the binary, so `bin/`, `web/`,
+> `templates/`, and `conf/` must stay together under `/opt/signoz`. Moving only the binary
+> leaves the UI and alert/email templates unresolved.
+
+## Configuration
 
 ```yaml
 apiVersion: v1alpha1
@@ -74,7 +89,7 @@ spec:
     mode: systemd
 ```
 
-### 1. Verify Prerequisites
+## Deploy
 
 ```bash
 foundryctl gauge -f casting.yaml
@@ -86,9 +101,10 @@ foundryctl gauge -f casting.yaml
 sudo foundryctl cast -f casting.yaml
 ```
 
-### 3. Verify Services
+> [!NOTE]
+> `foundryctl cast` requires `sudo` because it manages systemd services, creates system users, and writes to system directories.
 
-Replace `<name>` with your `metadata.name` from `casting.yaml`:
+Step-by-step alternative:
 
 ```bash
 systemctl status <name>-o11y.service
@@ -98,18 +114,46 @@ systemctl status <name>-telemetrykeeper-clickhousekeeper-0.service
 systemctl status <name>-metastore-postgres.service
 ```
 
-View logs:
+## Generated output
+
+```text
+pours/deployment/
+  signoz-ingester.service
+  signoz-metastore-postgres.service
+  signoz-signoz.service
+  signoz-telemetrykeeper-clickhousekeeper-0.service
+  signoz-telemetrystore-clickhouse-0-0.service
+  signoz-telemetrystore-migrator.service
+  configs/
+    ingester/
+      ingester.yaml
+      opamp.yaml
+    telemetrykeeper/
+      keeper-0.yaml
+    telemetrystore/
+      config.yaml
+      functions.yaml
+```
+
+## After deployment
+
+Check service status (replace `signoz` with your `metadata.name`):
 
 ```bash
 journalctl -u <name>-o11y.service -f
 ```
 
+View logs for a specific service:
 
-## Configuration
+```bash
+journalctl -u signoz-signoz.service -f
+```
 
-### Custom Binary Path
+View logs for all SigNoz services:
 
-Use annotations to specify custom binary paths or other deployment metadata:
+```bash
+journalctl -u 'signoz-*' -f
+```
 
 | Name | Type | Description |
 |------|------|-------------|

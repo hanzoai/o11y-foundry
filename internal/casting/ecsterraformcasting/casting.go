@@ -1,0 +1,223 @@
+package ecsterraformcasting
+
+import (
+	"context"
+	"log/slog"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/signoz/foundry/api/v1alpha1/installation"
+	rootcasting "github.com/signoz/foundry/internal/casting"
+	"github.com/signoz/foundry/internal/domain"
+	"github.com/signoz/foundry/internal/errors"
+	"github.com/signoz/foundry/internal/molding"
+)
+
+var _ rootcasting.Casting = (*ecsCasting)(nil)
+
+type ecsCasting struct {
+	logger *slog.Logger
+}
+
+func New(logger *slog.Logger) *ecsCasting {
+	return &ecsCasting{
+		logger: logger,
+	}
+}
+
+func (c *ecsCasting) Enricher(ctx context.Context, config *installation.Casting) (molding.MoldingEnricher, error) {
+	return newEcsMoldingEnricher(config)
+}
+
+func (c *ecsCasting) Forge(ctx context.Context, config installation.Casting, poursPath string) ([]domain.Material, error) {
+	var materials []domain.Material
+
+	deployDir := rootcasting.DeploymentDir
+	moduleDir := filepath.Join(deployDir, "module")
+
+	// Root Terraform files
+	rootTemplates := map[string]*domain.Template{
+		"main.tf.json":          mainTF,
+		"variables.tf.json":     variablesTF,
+		"terraform.tfvars.json": tfarsTF,
+	}
+	for filename, tmpl := range rootTemplates {
+		m, err := tmpl.Render(config, filepath.Join(deployDir, filename))
+		if err != nil {
+			return nil, err
+		}
+		materials = append(materials, m)
+	}
+
+	// Module shared files
+	moduleTemplates := map[string]*domain.Template{
+		"main.tf.json":      moduleMainTF,
+		"variables.tf.json": moduleVariablesTF,
+		"outputs.tf.json":   moduleOutputsTF,
+	}
+	for filename, tmpl := range moduleTemplates {
+		m, err := tmpl.Render(config, filepath.Join(moduleDir, filename))
+		if err != nil {
+			return nil, err
+		}
+		materials = append(materials, m)
+	}
+
+	// TelemetryKeeper
+	if config.Spec.TelemetryKeeper.Spec.IsEnabled() {
+		m, err := moduleTelemetryKeeperTF.Render(config, filepath.Join(moduleDir, "telemetrykeeper.tf.json"))
+		if err != nil {
+			return nil, err
+		}
+		materials = append(materials, m)
+
+		for filename, content := range config.Spec.TelemetryKeeper.Spec.Config.Data {
+			material, err := domain.NewYAMLMaterial([]byte(content), filepath.Join(moduleDir, "telemetrykeeper", config.Spec.TelemetryKeeper.Kind.String(), filename))
+			if err != nil {
+				return nil, err
+			}
+			materials = append(materials, material)
+		}
+	}
+
+	// TelemetryStore
+	if config.Spec.TelemetryStore.Spec.IsEnabled() {
+		m, err := moduleTelemetryStoreTF.Render(config, filepath.Join(moduleDir, "telemetrystore.tf.json"))
+		if err != nil {
+			return nil, err
+		}
+		materials = append(materials, m)
+
+		for filename, content := range config.Spec.TelemetryStore.Spec.Config.Data {
+			material, err := domain.NewYAMLMaterial([]byte(content), filepath.Join(moduleDir, "telemetrystore", config.Spec.TelemetryStore.Kind.String(), filename))
+			if err != nil {
+				return nil, err
+			}
+			materials = append(materials, material)
+		}
+	}
+
+	// TelemetryStore migrator
+	if config.Spec.TelemetryStore.Spec.IsEnabled() {
+		m, err := moduleMigratorTF.Render(config, filepath.Join(moduleDir, "telemetrystore_migrator.tf.json"))
+		if err != nil {
+			return nil, err
+		}
+		materials = append(materials, m)
+	}
+
+	// MetaStore
+	if config.Spec.MetaStore.Spec.IsEnabled() {
+		m, err := moduleMetaStoreTF.Render(config, filepath.Join(moduleDir, "metastore.tf.json"))
+		if err != nil {
+			return nil, err
+		}
+		materials = append(materials, m)
+
+		for filename, content := range config.Spec.MetaStore.Spec.Config.Data {
+			material, err := domain.NewYAMLMaterial([]byte(content), filepath.Join(moduleDir, "metastore", config.Spec.MetaStore.Kind.String(), filename))
+			if err != nil {
+				return nil, err
+			}
+			materials = append(materials, material)
+		}
+	}
+
+	// Signoz
+	if config.Spec.Signoz.Spec.IsEnabled() {
+		m, err := moduleSignozTF.Render(config, filepath.Join(moduleDir, "signoz.tf.json"))
+		if err != nil {
+			return nil, err
+		}
+		materials = append(materials, m)
+	}
+
+	// Ingester
+	if config.Spec.Ingester.Spec.IsEnabled() {
+		m, err := moduleIngesterTF.Render(config, filepath.Join(moduleDir, "ingester.tf.json"))
+		if err != nil {
+			return nil, err
+		}
+		materials = append(materials, m)
+
+		for filename, content := range config.Spec.Ingester.Spec.Config.Data {
+			material, err := domain.NewYAMLMaterial([]byte(content), filepath.Join(moduleDir, "ingester", filename))
+			if err != nil {
+				return nil, err
+			}
+			materials = append(materials, material)
+		}
+	}
+
+	return materials, nil
+}
+
+func (c *ecsCasting) Cast(ctx context.Context, config installation.Casting, outputPath string) error {
+	c.logger.InfoContext(ctx, "Running Terraform for ECS deployment")
+
+	deploymentDir := filepath.Join(outputPath, rootcasting.DeploymentDir)
+
+	// Verify terraform files exist
+	if _, err := os.Stat(filepath.Join(deploymentDir, "main.tf.json")); os.IsNotExist(err) {
+		return errors.Newf(errors.TypeNotFound, "terraform files do not exist at path: %s; run forge first", deploymentDir)
+	}
+
+	// Create a context with 10-minute timeout (terraform can be slow)
+	runctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	defer cancel()
+
+	// Run terraform init
+	c.logger.InfoContext(runctx, "Running terraform init")
+	initCmd := exec.CommandContext(runctx, "terraform", "-chdir="+deploymentDir, "init")
+	initCmd.Stdout = os.Stdout
+	initCmd.Stderr = os.Stderr
+	if err := initCmd.Run(); err != nil {
+		c.logger.ErrorContext(runctx, "terraform init failed", slog.String("error", err.Error()))
+		return errors.Wrapf(err, errors.TypeInternal, "terraform init failed")
+	}
+
+	// Run terraform apply
+	c.logger.InfoContext(runctx, "Running terraform apply")
+	args := []string{"-chdir=" + deploymentDir, "apply", "-auto-approve"}
+	c.logger.DebugContext(runctx, "Running command", slog.String("command", "terraform "+strings.Join(args, " ")))
+
+	applyCmd := exec.CommandContext(runctx, "terraform", args...)
+	applyCmd.Stdout = os.Stdout
+	applyCmd.Stderr = os.Stderr
+	if err := applyCmd.Run(); err != nil {
+		c.logger.ErrorContext(runctx, "terraform apply failed", slog.String("error", err.Error()))
+		return errors.Wrapf(err, errors.TypeInternal, "terraform apply failed")
+	}
+
+	c.logger.InfoContext(runctx, "Terraform apply completed successfully")
+	return nil
+}
+
+// getMaterials renders all module templates and returns them as JSONMaterials.
+func getMaterials(config *installation.Casting) ([]domain.StructuredMaterial, error) {
+	var materials []domain.StructuredMaterial
+
+	for _, tmpl := range []*domain.Template{
+		moduleMainTF,
+		moduleTelemetryStoreTF,
+		moduleTelemetryKeeperTF,
+		moduleMetaStoreTF,
+		moduleSignozTF,
+		moduleIngesterTF,
+	} {
+		m, err := tmpl.Render(*config, tmpl.Path())
+		if err != nil {
+			return nil, errors.Wrapf(err, errors.TypeInternal, "failed to create material")
+		}
+		sm, ok := m.(domain.StructuredMaterial)
+		if !ok {
+			return nil, errors.Newf(errors.TypeInternal, "template %s does not produce a structured material", tmpl.Path())
+		}
+		materials = append(materials, sm)
+	}
+
+	return materials, nil
+}

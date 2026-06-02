@@ -21,7 +21,7 @@ func (molding *metastore) Kind() v1alpha1.MoldingKind {
 	return v1alpha1.MoldingKindMetaStore
 }
 
-func (molding *metastore) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting) error {
+func (molding *metastore) MoldV1Alpha1(ctx context.Context, config *installation.Casting) error {
 	if config.Spec.MetaStore.Status.Env == nil {
 		config.Spec.MetaStore.Status.Env = make(map[string]string)
 	}
@@ -31,7 +31,12 @@ func (molding *metastore) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Cas
 	}
 
 	switch config.Spec.MetaStore.Kind {
-	case v1alpha1.MetaStoreKindPostgres:
+	case installation.MetaStoreKindSQLite:
+		replicas := config.Spec.MetaStore.Spec.Cluster.Replicas
+		if replicas != nil && *replicas != 1 {
+			return errors.Newf(errors.TypeInvalidInput, "metastore.spec.cluster.replicas must be 1 when metastore.kind is sqlite; sqlite is embedded and per-instance storage is driven by signoz.spec.cluster.replicas (got %d)", *replicas)
+		}
+	case installation.MetaStoreKindPostgres:
 		if val, ok := config.Spec.MetaStore.Spec.Env["POSTGRES_DB"]; ok {
 			molding.logger.WarnContext(ctx, "POSTGRES_DB is going to be overridden", slog.String("value", val))
 		}

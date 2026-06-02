@@ -9,7 +9,7 @@ import (
 )
 
 func TestNotEmptyAndValid(t *testing.T) {
-	serviceTemplates := map[string]*types.Template{
+	serviceTemplates := map[string]*domain.Template{
 		"telemetryKeeperDockerfileTemplate": telemetryKeeperDockerfileTemplate,
 		"telemetryStoreDockerfileTemplate":  telemetryStoreDockerfileTemplate,
 		"ingesterDockerfileTemplate":        ingesterDockerfileTemplate,

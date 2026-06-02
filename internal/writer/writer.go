@@ -2,7 +2,6 @@ package writer
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log/slog"
 	"os"
@@ -37,7 +36,7 @@ func New(logger *slog.Logger, options *Options) (*Writer, error) {
 	}
 
 	if err := os.MkdirAll(options.TargetDirectory, 0755); err != nil {
-		return nil, fmt.Errorf("failed to create output directory '%s': %s", options.TargetDirectory, err.Error())
+		return nil, foundryerrors.Wrapf(err, foundryerrors.TypeInternal, "failed to create output directory '%s'", options.TargetDirectory)
 	}
 
 	return &Writer{
@@ -46,7 +45,7 @@ func New(logger *slog.Logger, options *Options) (*Writer, error) {
 	}, nil
 }
 
-func (w *Writer) Write(ctx context.Context, material types.Material) error {
+func (w *Writer) Write(ctx context.Context, material domain.Material) error {
 	if _, ok := w.options.Output.(*os.File); ok {
 		path := filepath.Join(w.options.TargetDirectory, material.Path())
 
@@ -75,7 +74,7 @@ func (w *Writer) Write(ctx context.Context, material types.Material) error {
 	return nil
 }
 
-func (w *Writer) WriteMany(ctx context.Context, materials ...types.Material) error {
+func (w *Writer) WriteMany(ctx context.Context, materials ...domain.Material) error {
 	for _, material := range materials {
 		if err := w.Write(ctx, material); err != nil {
 			return err

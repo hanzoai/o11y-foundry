@@ -10,14 +10,16 @@ import (
 var templates embed.FS
 
 var (
-	ConfigClickhousev2556YAML    *types.Template = types.MustNewTemplateFromFS(templates, "templates/config.clickhouse.v2556.yaml.gotmpl", types.FormatYAML)
-	FunctionsClickhousev2556YAML *types.Template = types.MustNewTemplateFromFS(templates, "templates/functions.clickhouse.v2556.yaml.gotmpl", types.FormatYAML)
+	ConfigClickhousev2556YAML    *domain.Template = domain.MustNewTemplateFromFS(templates, "templates/config.clickhouse.v2556.yaml.gotmpl", domain.FormatYAML)
+	FunctionsClickhousev2556YAML *domain.Template = domain.MustNewTemplateFromFS(templates, "templates/functions.clickhouse.v2556.yaml.gotmpl", domain.FormatYAML)
 )
 
 // Data is the template data for rendering ClickHouse telemetry store configs.
 type Data struct {
-	StoreAddresses  []types.Address
-	KeeperAddresses []types.Address
+	StoreAddresses  []domain.Address
+	KeeperAddresses []domain.Address
 	ShardCount      int
 	ReplicaCount    int
+	ShardID         int // 0-indexed, used to render per-node macros.shard
+	ReplicaID       int // 0-indexed, used to render per-node macros.replica
 }

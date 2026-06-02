@@ -28,62 +28,94 @@ func (molding *telemetrystore) Kind() v1alpha1.MoldingKind {
 	return v1alpha1.MoldingKindTelemetryStore
 }
 
-func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting) error {
+func (molding *telemetrystore) MoldV1Alpha1(ctx context.Context, config *installation.Casting) error {
 	data, err := molding.getData(config)
 	if err != nil {
 		molding.logger.ErrorContext(ctx, "failed to get data", foundryerrors.LogAttr(err))
 		return err
 	}
 
-	configBuf := bytes.NewBuffer(nil)
-	if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
-		return fmt.Errorf("failed to execute config template: %w", err)
-	}
+	// Extract enricher config overrides (applies to all nodes).
+	overrides := config.Spec.TelemetryStore.Status.Extras["_overrides"]
 
 	functionBuf := bytes.NewBuffer(nil)
 	if err := FunctionsClickhousev2556YAML.Execute(functionBuf, data); err != nil {
-		return fmt.Errorf("failed to execute config template: %w", err)
+		return foundryerrors.Wrapf(err, foundryerrors.TypeInternal, "failed to execute functions template")
 	}
-	config.Spec.TelemetryStore.Status.Config.Data = map[string]string{
-		"config.yaml":    configBuf.String(),
-		"functions.yaml": functionBuf.String(),
+
+	// Generate per-node configs (each node needs its own macros.shard / macros.replica).
+	configs := make(map[string]string, data.ShardCount*data.ReplicaCount+1)
+	for s := 0; s < data.ShardCount; s++ {
+		for r := 0; r < data.ReplicaCount; r++ {
+			data.ShardID = s
+			data.ReplicaID = r
+
+			configBuf := bytes.NewBuffer(nil)
+			if err := ConfigClickhousev2556YAML.Execute(configBuf, data); err != nil {
+				return foundryerrors.Wrapf(err, foundryerrors.TypeInternal, "failed to execute config template for shard %d replica %d", s, r)
+			}
+
+			key := fmt.Sprintf("config-%d-%d.yaml", s, r)
+			base := configBuf.String()
+
+			if overrides != "" {
+				merged, err := domain.MergeYAML(base, overrides)
+				if err != nil {
+					return foundryerrors.Wrapf(err, foundryerrors.TypeInternal, "failed to merge config overrides for %s", key)
+				}
+				base = merged
+			}
+
+			configs[key] = base
+		}
 	}
+	configs["functions.yaml"] = functionBuf.String()
+
+	config.Spec.TelemetryStore.Status.Config.Data = configs
 
 	return nil
 }
 
-func (molding *telemetrystore) getData(config *v1alpha1.Casting) (Data, error) {
+func (molding *telemetrystore) getData(config *installation.Casting) (Data, error) {
 	storeAddresses := config.Spec.TelemetryStore.Status.Addresses.TCP
 	if len(storeAddresses) == 0 {
-		return Data{}, fmt.Errorf("telemetry store addresses not set in status")
+		return Data{}, foundryerrors.Newf(foundryerrors.TypeInternal, "telemetry store addresses not set in status")
 	}
 
 	cluster := config.Spec.TelemetryStore.Spec.Cluster
 
-	shardCount := max(*cluster.Shards, 1)
-	replicaCount := max(*cluster.Replicas, 1)
+	shardCount := 1
+	if cluster.Shards != nil && *cluster.Shards > 0 {
+		shardCount = *cluster.Shards
+	}
+
+	replicaCount := 1
+	if cluster.Replicas != nil {
+		replicaCount = *cluster.Replicas + 1
+	}
 
 	expectedNodes := shardCount * replicaCount
 	if len(storeAddresses) < expectedNodes {
-		return Data{}, fmt.Errorf(
+		return Data{}, foundryerrors.Newf(
+			foundryerrors.TypeInvalidInput,
 			"insufficient addresses: have %d, need %d (shards=%d × replicas=%d)",
 			len(storeAddresses), expectedNodes, shardCount, replicaCount,
 		)
 	}
 
-	newStoreAddrs, err := types.NewAddresses(storeAddresses[:expectedNodes])
+	newStoreAddrs, err := domain.ParseAddresses(storeAddresses[:expectedNodes])
 	if err != nil {
-		return Data{}, fmt.Errorf("failed to parse addresses: %w", err)
+		return Data{}, foundryerrors.Wrapf(err, foundryerrors.TypeInternal, "failed to parse addresses")
 	}
 
 	keeperAddresses := config.Spec.TelemetryKeeper.Status.Addresses.Client
 	if len(keeperAddresses) == 0 {
-		return Data{}, fmt.Errorf("telemetry keeper addresses not set in status")
+		return Data{}, foundryerrors.Newf(foundryerrors.TypeInternal, "telemetry keeper addresses not set in status")
 	}
 
-	newKeeperAddrs, err := types.NewAddresses(keeperAddresses)
+	newKeeperAddrs, err := domain.ParseAddresses(keeperAddresses)
 	if err != nil {
-		return Data{}, fmt.Errorf("failed to parse addresses: %w", err)
+		return Data{}, foundryerrors.Wrapf(err, foundryerrors.TypeInternal, "failed to parse addresses")
 	}
 
 	return Data{
