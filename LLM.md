@@ -1,4 +1,4 @@
-# o11y-foundry — AI Assistant Context
+# o11y-foundry
 
 <h1 align="center" style="border-bottom: none">
     <a href="https://o11y.hanzo.ai" target="_blank">
