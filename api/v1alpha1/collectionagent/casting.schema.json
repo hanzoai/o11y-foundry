@@ -140,9 +140,8 @@
         "image": {
           "description": "Container image of the molding",
           "examples": [
-            "signoz/signoz:latest"
+            "ghcr.io/hanzoai/o11y:latest"
           ],
-          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*(/[a-z0-9]+([._-][a-z0-9]+)*)*(:[a-zA-Z0-9._-]+)?(@sha256:[a-f0-9]{64})?$",
           "type": "string"
         },
         "version": {
@@ -322,29 +321,19 @@
       "type": "object"
     },
     "V1Alpha1TypeMetadata": {
-      "required": [
-        "name"
-      ],
-      "additionalProperties": false,
       "properties": {
         "annotations": {
-          "description": "Annotations is an unstructured key-value map for arbitrary metadata. Can be used to specify deployment-specific settings.",
+          "description": "Unstructured key-value map for arbitrary metadata",
           "additionalProperties": {
             "type": "string"
           },
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "name": {
-          "description": "The name of this installation. This name is used to identify the installation.",
-          "default": "signoz",
+          "description": "The name of this installation",
           "examples": [
-            "signoz"
+            "o11y-dev"
           ],
-          "maxLength": 63,
-          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
           "type": "string"
         }
       },

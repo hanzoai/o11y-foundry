@@ -3,8 +3,8 @@ package noopledger
 import (
 	"context"
 
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/ledger"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/ledger"
 )
 
 // provider is a no-op implementation of ledger.Ledger.

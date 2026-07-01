@@ -129,11 +129,11 @@
         }
       },
       "signoz": {
-        "count": {{ if .Spec.Signoz.Spec.Enabled }}1{{ else }}0{{ end }},
+        "count": {{ if .Spec.O11y.Spec.Enabled }}1{{ else }}0{{ end }},
         "name": "signoz",
         "kubernetes_cluster_id": "${azurerm_kubernetes_cluster.main.id}",
         "vm_size": "${var.signoz_vm_size}",
-        "node_count": {{ derefInt .Spec.Signoz.Spec.Cluster.Replicas }},
+        "node_count": {{ derefInt .Spec.O11y.Spec.Cluster.Replicas }},
         "vnet_subnet_id": "${azurerm_subnet.aks.id}",
         "os_disk_size_gb": "${var.signoz_disk_size}",
         "node_labels": {

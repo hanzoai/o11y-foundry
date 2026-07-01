@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/signoz/foundry/internal/version"
+	"github.com/hanzoai/o11y-foundry/internal/version"
 	"github.com/spf13/cobra"
 )
 

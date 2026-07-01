@@ -10,7 +10,6 @@ User=postgres
 {{- range $key, $value := $.Spec.MetaStore.Spec.Env }}
 Environment={{ $key }}={{ $value }}
 {{ end }}
-{{ end }}
 {{- if and $.Metadata.Annotations (index $.Metadata.Annotations "foundry.o11y.io/metastore-postgres-binary-path") }}
 {{- $metastoreBinaryPath := index $.Metadata.Annotations "foundry.o11y.io/metastore-postgres-binary-path" }}
 ExecStart={{ $metastoreBinaryPath }} -D /usr/local/pgsql/data

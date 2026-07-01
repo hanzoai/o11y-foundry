@@ -1,8 +1,8 @@
 package installation
 
 import (
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 )
 
 // Casting is the Installation kind.
@@ -17,7 +17,7 @@ type Spec struct {
 	Deployment      v1alpha1.TypeDeployment `json:"deployment" yaml:"deployment" required:"true" description:"Deployment configuration for the platform"`
 	Patches         []v1alpha1.PatchEntry   `json:"patches,omitempty" yaml:"patches,omitempty" description:"Patch operations to apply to generated materials"`
 	Infrastructure  Infrastructure          `json:"infrastructure,omitzero" yaml:"infrastructure,omitzero" description:"Infrastructure configuration for generating infrastructure manifests (e.g., Terraform)."`
-	Signoz          SigNoz                  `json:"signoz,omitzero" yaml:"signoz,omitempty" description:"The configuration for the SigNoz molding"`
+	O11y            v1alpha1.HanzoO11y      `json:"o11y,omitzero" yaml:"o11y,omitempty" description:"The configuration for the HanzoO11y molding"`
 	TelemetryStore  TelemetryStore          `json:"telemetrystore,omitzero" yaml:"telemetrystore,omitempty" description:"The configuration for the telemetry store molding"`
 	TelemetryKeeper TelemetryKeeper         `json:"telemetrykeeper,omitzero" yaml:"telemetrykeeper,omitempty" description:"The configuration for the telemetry keeper molding"`
 	MetaStore       MetaStore               `json:"metastore,omitzero" yaml:"metastore,omitempty" description:"The configuration for the meta store molding"`
@@ -38,7 +38,7 @@ func Default() *Casting {
 		},
 		Spec: Spec{
 			Infrastructure:  DefaultInfrastructure(),
-			Signoz:          DefaultSigNoz(),
+			O11y:            v1alpha1.DefaultHanzoO11y(),
 			TelemetryStore:  DefaultTelemetryStore(),
 			TelemetryKeeper: DefaultTelemetryKeeper(),
 			MetaStore:       DefaultMetaStore(),
@@ -66,7 +66,7 @@ func (c *Casting) Kind() v1alpha1.Kind {
 
 // MergeStatusIntoSpec folds each molding's Status into its own Spec.
 func (c *Casting) MergeStatusIntoSpec() error {
-	if err := c.Spec.Signoz.Spec.MergeStatus(c.Spec.Signoz.Status.MoldingStatus); err != nil {
+	if err := c.Spec.O11y.Spec.MergeStatus(c.Spec.O11y.Status.MoldingStatus); err != nil {
 		return err
 	}
 	if err := c.Spec.TelemetryStore.Spec.MergeStatus(c.Spec.TelemetryStore.Status.MoldingStatus); err != nil {

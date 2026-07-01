@@ -3,7 +3,7 @@ package domain
 import (
 	"encoding/json"
 
-	"github.com/signoz/foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 )
 
 var _ StructuredMaterial = JSONMaterial{}

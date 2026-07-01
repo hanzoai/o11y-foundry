@@ -1,6 +1,6 @@
 package collectionagent
 
-import "github.com/signoz/foundry/api/v1alpha1"
+import "github.com/hanzoai/o11y-foundry/api/v1alpha1"
 
 type Collector struct {
 	// Kind of the collector to use.

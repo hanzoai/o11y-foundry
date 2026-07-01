@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/ledger"
+	"github.com/hanzoai/o11y-foundry/internal/ledger/noopledger"
+	"github.com/hanzoai/o11y-foundry/internal/version"
 	segment "github.com/segmentio/analytics-go/v3"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/ledger"
-	"github.com/signoz/foundry/internal/ledger/noopledger"
-	"github.com/signoz/foundry/internal/version"
 )
 
 // provider implements ledger.Ledger using Segment.

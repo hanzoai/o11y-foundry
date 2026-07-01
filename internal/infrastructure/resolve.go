@@ -1,8 +1,8 @@
 package infrastructure
 
 import (
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 )
 
 // ResolveProvider normalizes a deployment platform to the cloud platform that

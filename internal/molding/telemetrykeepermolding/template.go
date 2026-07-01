@@ -3,8 +3,9 @@ package telemetrykeepermolding
 import (
 	"embed"
 
-	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
-	"github.com/hanzoai/o11y-foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 )
 
 //go:embed templates/*.gotmpl

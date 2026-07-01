@@ -149,69 +149,6 @@
       },
       "type": "object"
     },
-    "InstallationSigNoz": {
-      "additionalProperties": false,
-      "properties": {
-        "spec": {
-          "$ref": "#/definitions/V1Alpha1MoldingSpec"
-        },
-        "status": {
-          "$ref": "#/definitions/InstallationSigNozStatus"
-        }
-      },
-      "type": "object"
-    },
-    "InstallationSigNozStatus": {
-      "additionalProperties": false,
-      "properties": {
-        "addresses": {
-          "$ref": "#/definitions/InstallationSigNozStatusAddresses"
-        },
-        "config": {
-          "$ref": "#/definitions/V1Alpha1TypeConfig",
-          "description": "Configuration for the molding"
-        },
-        "env": {
-          "description": "Environment variables for the molding",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "type": "object"
-        },
-        "extras": {
-          "description": "Extra information about the molding",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "type": "object"
-        }
-      },
-      "type": "object"
-    },
-    "InstallationSigNozStatusAddresses": {
-      "additionalProperties": false,
-      "properties": {
-        "apiserver": {
-          "items": {
-            "type": "string"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "opamp": {
-          "items": {
-            "type": "string"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        }
-      },
-      "type": "object"
-    },
     "InstallationSpec": {
       "required": [
         "deployment"
@@ -234,16 +171,16 @@
           "$ref": "#/definitions/InstallationMetaStore",
           "description": "The configuration for the meta store molding"
         },
+        "o11y": {
+          "$ref": "#/definitions/V1Alpha1HanzoO11Y",
+          "description": "The configuration for the HanzoO11y molding"
+        },
         "patches": {
           "description": "Patch operations to apply to generated materials",
           "items": {
             "$ref": "#/definitions/V1Alpha1PatchEntry"
           },
           "type": "array"
-        },
-        "signoz": {
-          "$ref": "#/definitions/InstallationSigNoz",
-          "description": "The configuration for the SigNoz molding"
         },
         "telemetrykeeper": {
           "$ref": "#/definitions/InstallationTelemetryKeeper",
@@ -422,6 +359,67 @@
       ],
       "type": "string"
     },
+    "V1Alpha1HanzoO11Y": {
+      "properties": {
+        "spec": {
+          "$ref": "#/definitions/V1Alpha1MoldingSpec"
+        },
+        "status": {
+          "$ref": "#/definitions/V1Alpha1HanzoO11YStatus"
+        }
+      },
+      "type": "object"
+    },
+    "V1Alpha1HanzoO11YStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "addresses": {
+          "$ref": "#/definitions/V1Alpha1HanzoO11YStatusAddresses"
+        },
+        "config": {
+          "$ref": "#/definitions/V1Alpha1TypeConfig",
+          "description": "Configuration for the molding"
+        },
+        "env": {
+          "description": "Environment variables for the molding",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "extras": {
+          "description": "Extra information about the molding",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "V1Alpha1HanzoO11YStatusAddresses": {
+      "properties": {
+        "apiserver": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "opamp": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
     "V1Alpha1Kind": {
       "enum": [
         "Installation"
@@ -466,9 +464,8 @@
         "image": {
           "description": "Container image of the molding",
           "examples": [
-            "signoz/signoz:latest"
+            "ghcr.io/hanzoai/o11y:latest"
           ],
-          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*(/[a-z0-9]+([._-][a-z0-9]+)*)*(:[a-zA-Z0-9._-]+)?(@sha256:[a-f0-9]{64})?$",
           "type": "string"
         },
         "version": {
@@ -648,29 +645,19 @@
       "type": "object"
     },
     "V1Alpha1TypeMetadata": {
-      "required": [
-        "name"
-      ],
-      "additionalProperties": false,
       "properties": {
         "annotations": {
-          "description": "Annotations is an unstructured key-value map for arbitrary metadata. Can be used to specify deployment-specific settings.",
+          "description": "Unstructured key-value map for arbitrary metadata",
           "additionalProperties": {
             "type": "string"
           },
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "name": {
-          "description": "The name of this installation. This name is used to identify the installation.",
-          "default": "signoz",
+          "description": "The name of this installation",
           "examples": [
-            "signoz"
+            "o11y-dev"
           ],
-          "maxLength": 63,
-          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
           "type": "string"
         }
       },

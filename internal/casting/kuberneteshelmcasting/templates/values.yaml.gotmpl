@@ -26,13 +26,13 @@ clickhouse:
     replicaCount: {{ $.Spec.TelemetryKeeper.Spec.Cluster.Replicas }}
 signoz:
   name: signoz
-  {{- with $.Spec.Signoz.Spec.Image }}
+  {{- with $.Spec.O11y.Spec.Image }}
   {{- $parts := splitn ":" 2 . }}
   image:
     repository: {{ $parts._0 }}
     tag: {{ $parts._1 | default "latest" }}
   {{- end }}
-  {{- with $.Spec.Signoz.Spec.Cluster.Replicas }}
+  {{- with $.Spec.O11y.Spec.Cluster.Replicas }}
   replicaCount: {{ . }}
   {{- end }}
   service:
@@ -40,9 +40,9 @@ signoz:
     port: 8080
     internalPort: 8085
     opampPort: 4320
-  {{- if $.Spec.Signoz.Spec.Env }}
+  {{- if $.Spec.O11y.Spec.Env }}
   env:
-    {{- with $.Spec.Signoz.Spec.Env }}
+    {{- with $.Spec.O11y.Spec.Env }}
 {{ toYaml . | indent 4 }}
     {{- end }}
   {{- end }}

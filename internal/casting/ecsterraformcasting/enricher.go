@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
 
 const (
@@ -68,14 +68,14 @@ func (enricher *ecsMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alp
 		fqdn := fmt.Sprintf("%s.%s", string(sdName), namespace)
 		config.Spec.MetaStore.Status.Addresses.DSN = []string{domain.MustNewAddress("tcp", fqdn, metaStorePort).String()}
 
-	case v1alpha1.MoldingKindSignoz:
+	case v1alpha1.MoldingKindO11y:
 		sdName, err := enricher.materials[4].GetBytes("resource.aws_service_discovery_service.signoz.name")
 		if err != nil {
 			return errors.Wrapf(err, errors.TypeInternal, "failed to get signoz service discovery name")
 		}
 		fqdn := fmt.Sprintf("%s.%s", string(sdName), namespace)
-		config.Spec.Signoz.Status.Addresses.APIServer = []string{domain.MustNewAddress("tcp", fqdn, signozAPIPort).String()}
-		config.Spec.Signoz.Status.Addresses.Opamp = []string{domain.MustNewAddress("ws", fqdn, signozOpampPort).String()}
+		config.Spec.O11y.Status.Addresses.APIServer = []string{domain.MustNewAddress("tcp", fqdn, signozAPIPort).String()}
+		config.Spec.O11y.Status.Addresses.Opamp = []string{domain.MustNewAddress("ws", fqdn, signozOpampPort).String()}
 	}
 
 	return nil

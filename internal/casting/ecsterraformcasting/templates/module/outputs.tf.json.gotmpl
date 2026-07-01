@@ -20,7 +20,7 @@
       "description": "Security group IDs used by ECS services",
       "value": "${var.security_group_ids}"
     }
-    {{- if $.Spec.Signoz.Spec.Enabled }},
+    {{- if $.Spec.O11y.Spec.Enabled }},
     "signoz_service_arn": {
       "description": "SigNoz ECS service ARN (target for ALB on port 8080)",
       "value": "${aws_ecs_service.signoz.id}"

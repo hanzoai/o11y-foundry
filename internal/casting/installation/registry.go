@@ -3,29 +3,29 @@ package installation
 import (
 	"log/slog"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/casting/coolifycasting"
-	"github.com/signoz/foundry/internal/casting/dockercomposecasting"
-	"github.com/signoz/foundry/internal/casting/dockerswarmcasting"
-	"github.com/signoz/foundry/internal/casting/ecsterraformcasting"
-	"github.com/signoz/foundry/internal/casting/kuberneteshelmcasting"
-	"github.com/signoz/foundry/internal/casting/kuberneteskustomizecasting"
-	"github.com/signoz/foundry/internal/casting/railwaytemplatecasting"
-	"github.com/signoz/foundry/internal/casting/rendercasting"
-	"github.com/signoz/foundry/internal/casting/systemdcasting"
-	foundryerrors "github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/tooler"
-	"github.com/signoz/foundry/internal/tooler/clickhousekeepertooler"
-	"github.com/signoz/foundry/internal/tooler/clickhousetooler"
-	"github.com/signoz/foundry/internal/tooler/dockercomposetooler"
-	"github.com/signoz/foundry/internal/tooler/dockerswarmtooler"
-	"github.com/signoz/foundry/internal/tooler/dockertooler"
-	"github.com/signoz/foundry/internal/tooler/helmtooler"
-	"github.com/signoz/foundry/internal/tooler/kubectltooler"
-	"github.com/signoz/foundry/internal/tooler/postgrestooler"
-	"github.com/signoz/foundry/internal/tooler/systemdtooler"
-	"github.com/signoz/foundry/internal/tooler/terraformtooler"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/casting/coolifycasting"
+	"github.com/hanzoai/o11y-foundry/internal/casting/dockercomposecasting"
+	"github.com/hanzoai/o11y-foundry/internal/casting/dockerswarmcasting"
+	"github.com/hanzoai/o11y-foundry/internal/casting/ecsterraformcasting"
+	"github.com/hanzoai/o11y-foundry/internal/casting/kuberneteshelmcasting"
+	"github.com/hanzoai/o11y-foundry/internal/casting/kuberneteskustomizecasting"
+	"github.com/hanzoai/o11y-foundry/internal/casting/railwaytemplatecasting"
+	"github.com/hanzoai/o11y-foundry/internal/casting/rendercasting"
+	"github.com/hanzoai/o11y-foundry/internal/casting/systemdcasting"
+	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/tooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/clickhousekeepertooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/clickhousetooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/dockercomposetooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/dockerswarmtooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/dockertooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/helmtooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/kubectltooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/postgrestooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/systemdtooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/terraformtooler"
 )
 
 // Defines a single casting item in the registry.
@@ -130,7 +130,7 @@ func (registry *Registry) lookup(deployment v1alpha1.TypeDeployment) (CastingIte
 func (registry *Registry) Casting(deployment v1alpha1.TypeDeployment) (casting.Casting, error) {
 	item, ok := registry.lookup(deployment)
 	if !ok {
-		return nil, foundryerrors.Newf(foundryerrors.TypeUnsupported, "deployment '%+v' is not supported, raise an issue at https://github.com/signoz/foundry/issues to request support for this deployment", deployment)
+		return nil, foundryerrors.Newf(foundryerrors.TypeUnsupported, "deployment '%+v' is not supported, raise an issue at https://github.com/hanzoai/o11y-foundry/issues to request support for this deployment", deployment)
 	}
 	return item.Casting, nil
 }
@@ -138,7 +138,7 @@ func (registry *Registry) Casting(deployment v1alpha1.TypeDeployment) (casting.C
 func (registry *Registry) Toolers(deployment v1alpha1.TypeDeployment) ([]tooler.Tooler, error) {
 	item, ok := registry.lookup(deployment)
 	if !ok {
-		return nil, foundryerrors.Newf(foundryerrors.TypeUnsupported, "deployment '%+v' is not supported, raise an issue at https://github.com/signoz/foundry/issues to request support for this deployment", deployment)
+		return nil, foundryerrors.Newf(foundryerrors.TypeUnsupported, "deployment '%+v' is not supported, raise an issue at https://github.com/hanzoai/o11y-foundry/issues to request support for this deployment", deployment)
 	}
 	return item.Toolers, nil
 }

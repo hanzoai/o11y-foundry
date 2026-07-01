@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/signoz/foundry/internal/errors"
+import "github.com/hanzoai/o11y-foundry/internal/errors"
 
 const (
 	eventOutcomeSucceeded = "succeeded"

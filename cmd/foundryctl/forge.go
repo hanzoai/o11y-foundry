@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
 	"github.com/hanzoai/o11y-foundry/internal/foundry"
-	"github.com/hanzoai/o11y-foundry/internal/instrumentation"
 	"github.com/hanzoai/o11y-foundry/internal/writer"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,7 @@ func runForge(ctx context.Context, logger *slog.Logger, path string, poursPath s
 	foundry, err := foundry.New(logger)
 	if err != nil {
 		logger.ErrorContext(ctx, "failed to create foundry, please report this issues to developers at https://github.com/hanzoai/o11y-foundry/issues", foundryerrors.LogAttr(err))
-		return err
+		return domain.NewProperties(), err
 	}
 
 	machinery, err := foundry.Config.GetV1Alpha1(ctx, path)

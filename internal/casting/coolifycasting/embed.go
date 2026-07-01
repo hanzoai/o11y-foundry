@@ -3,7 +3,7 @@ package coolifycasting
 import (
 	"embed"
 
-	"github.com/signoz/foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 )
 
 //go:embed templates/*.gotmpl

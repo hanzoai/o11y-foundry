@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/signoz/foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 	kyaml "sigs.k8s.io/yaml"

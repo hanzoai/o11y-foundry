@@ -1,6 +1,6 @@
-FROM {{ $.Spec.Signoz.Spec.Image }}
+FROM {{ $.Spec.O11y.Spec.Image }}
 
 
-{{- range $key, $value := $.Spec.Signoz.Spec.Env }}
+{{- range $key, $value := $.Spec.O11y.Spec.Env }}
 ENV {{ $key }}={{ $value }}
 {{- end }}

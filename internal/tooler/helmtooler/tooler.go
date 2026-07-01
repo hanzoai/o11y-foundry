@@ -3,7 +3,7 @@ package helmtooler
 import (
 	"context"
 
-	root "github.com/signoz/foundry/internal/tooler"
+	root "github.com/hanzoai/o11y-foundry/internal/tooler"
 )
 
 var _ root.Tooler = (*helmTooler)(nil)

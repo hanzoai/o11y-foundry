@@ -3,7 +3,7 @@ package terraform
 import (
 	"embed"
 
-	"github.com/signoz/foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 )
 
 //go:embed templates/*.gotmpl templates/aws/ec2/*.gotmpl templates/aws/eks/*.gotmpl templates/gcp/gce/*.gotmpl templates/gcp/gke/*.gotmpl templates/azure/vm/*.gotmpl templates/azure/aks/*.gotmpl

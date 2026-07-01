@@ -3,9 +3,9 @@ package planner
 import (
 	"context"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/tooler"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/tooler"
 )
 
 // Planner is the per-Kind contract Foundry iterates against. Every Kind

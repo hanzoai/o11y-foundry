@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
 
 const (
@@ -50,7 +50,7 @@ func (e *kustomizeMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alph
 		return e.enrichTelemetryKeeper(config)
 	case v1alpha1.MoldingKindMetaStore:
 		return e.enrichMetaStore(config)
-	case v1alpha1.MoldingKindSignoz:
+	case v1alpha1.MoldingKindO11y:
 		return e.enrichSignoz(config)
 	case v1alpha1.MoldingKindIngester:
 		return e.enrichIngester(config)
@@ -108,7 +108,7 @@ func (e *kustomizeMoldingEnricher) enrichMetaStore(config *installation.Casting)
 
 func (e *kustomizeMoldingEnricher) enrichSignoz(config *installation.Casting) error {
 	name := config.Metadata.Name + "-signoz"
-	config.Spec.Signoz.Status.Addresses.Opamp = []string{domain.MustNewAddress("ws", name, signozOpampPort).String()}
+	config.Spec.O11y.Status.Addresses.Opamp = []string{domain.MustNewAddress("ws", name, signozOpampPort).String()}
 	return nil
 }
 

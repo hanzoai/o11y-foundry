@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	rootcasting "github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	rootcasting "github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
 
 var _ molding.MoldingEnricher = (*dockerSwarmMoldingEnricher)(nil)
@@ -45,7 +45,7 @@ func (enricher *dockerSwarmMoldingEnricher) EnrichStatus(ctx context.Context, ki
 
 		config.Spec.TelemetryStore.Status.Addresses.TCP = telemetrystoreAddresses
 
-	case v1alpha1.MoldingKindSignoz:
+	case v1alpha1.MoldingKindO11y:
 		containerNames, err := enricher.material.GetStringSlice("services|@keys")
 		if err != nil {
 			return errors.Wrapf(err, errors.TypeInternal, "failed to get signoz service names")
@@ -59,8 +59,8 @@ func (enricher *dockerSwarmMoldingEnricher) EnrichStatus(ctx context.Context, ki
 				opampAddr = append(opampAddr, domain.MustNewAddress("ws", name, 4320).String())
 			}
 		}
-		config.Spec.Signoz.Status.Addresses.APIServer = apiServerAddr
-		config.Spec.Signoz.Status.Addresses.Opamp = opampAddr
+		config.Spec.O11y.Status.Addresses.APIServer = apiServerAddr
+		config.Spec.O11y.Status.Addresses.Opamp = opampAddr
 
 	case v1alpha1.MoldingKindTelemetryKeeper:
 		containerNames, err := enricher.material.GetStringSlice("services|@keys")

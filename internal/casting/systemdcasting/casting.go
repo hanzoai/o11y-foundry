@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
 	rootcasting "github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 	"github.com/hanzoai/o11y-foundry/internal/molding"
 
 	"os"
@@ -15,8 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
-	"github.com/hanzoai/o11y-foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 )
 
 const svcSuffix = ".service"
@@ -163,9 +164,9 @@ func (c *systemdCasting) forgeIngester(tmpl *domain.Template, cfg *installation.
 	return materials, nil
 }
 
-func (c *systemdCasting) forgeO11y(tmpl *types.Template, cfg *v1alpha1.Casting) ([]types.Material, error) {
+func (c *systemdCasting) forgeO11y(tmpl *domain.Template, cfg *installation.Casting) ([]domain.Material, error) {
 	spec := &cfg.Spec.O11y
-	if !spec.Spec.Enabled {
+	if !spec.Spec.IsEnabled() {
 		return nil, nil
 	}
 
@@ -180,7 +181,7 @@ func (c *systemdCasting) forgeO11y(tmpl *types.Template, cfg *v1alpha1.Casting) 
 
 	var materials []domain.Material
 
-	svcMat, err := c.renderTemplate(tmpl, cfg, cfg.Metadata.Name+"-signoz"+svcSuffix)
+	svcMat, err := c.renderTemplate(tmpl, cfg, prefix+svcSuffix)
 	if err != nil {
 		return nil, err
 	}
@@ -320,7 +321,7 @@ func (c *systemdCasting) discoverAndPrepareServices(ctx context.Context, poursPa
 		return nil, errors.Wrapf(err, errors.TypeInternal, "failed to read directory %s", deploymentPath)
 	}
 
-	serviceMap := map[string][]string{"keeper": {}, "store": {}, "postgres": {}, "o11y": {}, "ingester": {}, "migrator": {}}
+	var services []string
 
 	for _, entry := range entries {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), svcSuffix) {
@@ -331,17 +332,17 @@ func (c *systemdCasting) discoverAndPrepareServices(ctx context.Context, poursPa
 
 		switch {
 		case strings.HasSuffix(baseName, "-migrator"):
-			serviceMap["migrator"] = append(serviceMap["migrator"], servicePath)
+			services = append(services, servicePath)
 		case strings.Contains(baseName, "-telemetrykeeper-") && !strings.Contains(baseName, "-migrator"):
-			serviceMap["keeper"] = append(serviceMap["keeper"], servicePath)
+			services = append(services, servicePath)
 		case strings.Contains(baseName, "-telemetrystore-") && !strings.Contains(baseName, "-migrator"):
-			serviceMap["store"] = append(serviceMap["store"], servicePath)
+			services = append(services, servicePath)
 		case strings.Contains(baseName, "-metastore-postgres"):
-			serviceMap["postgres"] = append(serviceMap["postgres"], servicePath)
+			services = append(services, servicePath)
 		case strings.HasSuffix(baseName, "-o11y"):
-			serviceMap["o11y"] = append(serviceMap["o11y"], servicePath)
+			services = append(services, servicePath)
 		case strings.HasSuffix(baseName, "-ingester"):
-			serviceMap["ingester"] = append(serviceMap["ingester"], servicePath)
+			services = append(services, servicePath)
 		default:
 			c.logger.WarnContext(ctx, "Unknown service type, skipping", slog.String("service", servicePath))
 		}
@@ -361,7 +362,7 @@ func (c *systemdCasting) discoverAndPrepareServices(ctx context.Context, poursPa
 }
 
 // setupSystemEnvironment creates o11y user, directories, copies configs, and validates binaries.
-func (c *systemdCasting) setupSystemEnvironment(ctx context.Context, config *v1alpha1.Casting, poursPath string) error {
+func (c *systemdCasting) setupSystemEnvironment(ctx context.Context, config *installation.Casting, poursPath string) error {
 	// Create o11y user if needed
 	if _, err := user.Lookup("o11y"); err != nil {
 		c.logger.InfoContext(ctx, "Creating user: o11y")
@@ -374,7 +375,7 @@ func (c *systemdCasting) setupSystemEnvironment(ctx context.Context, config *v1a
 	if err := os.MkdirAll(poursPath, 0755); err != nil {
 		return errors.Wrapf(err, errors.TypeInternal, "failed to create working directory %s", poursPath)
 	}
-	_ = c.execCommand(ctx, "chown", "-R", "o11y:o11y", poursPath)      // best effort
+	_ = c.execCommand(ctx, "chown", "-R", "o11y:o11y", poursPath)    // best effort
 	_ = c.execCommand(ctx, "chown", "-R", "o11y:o11y", "/opt/o11y/") // best effort
 
 	// Copy clickhouse configs to standard locations

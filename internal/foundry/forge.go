@@ -6,8 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
-	"github.com/hanzoai/o11y-foundry/internal/molding"
 	"github.com/hanzoai/o11y-foundry/internal/writer"
 )
 

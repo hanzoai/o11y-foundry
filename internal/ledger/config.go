@@ -1,7 +1,7 @@
 package ledger
 
 // key is the Segment write key, set via ldflags at build time.
-// Example: -ldflags "-X github.com/signoz/foundry/internal/ledger.key=<key>".
+// Example: -ldflags "-X github.com/hanzoai/o11y-foundry/internal/ledger.key=<key>".
 var key string = "<unset>"
 
 // Config holds ledger configuration.

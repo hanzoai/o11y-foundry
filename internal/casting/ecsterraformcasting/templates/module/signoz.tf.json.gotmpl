@@ -4,10 +4,10 @@
     "containers": [
       {
         "name": "signoz",
-        "image": "{{ $.Spec.Signoz.Spec.Image }}",
+        "image": "{{ $.Spec.O11y.Spec.Image }}",
         "essential": true,
         {{- $env := list }}
-        {{- range $key, $value := $.Spec.Signoz.Spec.Env }}
+        {{- range $key, $value := $.Spec.O11y.Spec.Env }}
         {{- $env = append $env (dict "name" $key "value" $value) }}
         {{- end }}
         {{- if $env }}

@@ -4,20 +4,20 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	"github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/domain"
-	foundryerrors "github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/molding"
-	"github.com/signoz/foundry/internal/molding/ingestermolding"
-	"github.com/signoz/foundry/internal/molding/metastoremolding"
-	"github.com/signoz/foundry/internal/molding/signozmolding"
-	"github.com/signoz/foundry/internal/molding/telemetrykeepermolding"
-	"github.com/signoz/foundry/internal/molding/telemetrystoremolding"
-	"github.com/signoz/foundry/internal/planner"
-	"github.com/signoz/foundry/internal/tooler"
-	"github.com/signoz/foundry/internal/tooler/terraformtooler"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/ingestermolding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/metastoremolding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/o11ymolding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/telemetrykeepermolding"
+	"github.com/hanzoai/o11y-foundry/internal/molding/telemetrystoremolding"
+	"github.com/hanzoai/o11y-foundry/internal/planner"
+	"github.com/hanzoai/o11y-foundry/internal/tooler"
+	"github.com/hanzoai/o11y-foundry/internal/tooler/terraformtooler"
 )
 
 var _ planner.Planner = (*Planner)(nil)
@@ -56,7 +56,7 @@ func NewPlanner(ctx context.Context, c *installation.Casting, logger *slog.Logge
 		telemetrykeepermolding.New(logger),
 		telemetrystoremolding.New(logger),
 		metastoremolding.New(logger),
-		signozmolding.New(logger),
+		o11ymolding.New(logger),
 		ingestermolding.New(logger),
 	}
 

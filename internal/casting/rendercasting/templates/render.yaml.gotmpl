@@ -103,7 +103,6 @@ services:
     {{ end }}
     {{ end }}
   {{ end }}
-  {{ end }}
 
   {{ if $.Spec.TelemetryStore.Spec.Enabled }}
   - name: {{ $.Metadata.Name}}-schema-migrator

@@ -3,7 +3,7 @@ package ingestermolding
 import (
 	"embed"
 
-	"github.com/hanzoai/o11y-foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 )
 
 //go:embed templates/*.gotmpl
@@ -15,7 +15,7 @@ var (
 )
 
 type Data struct {
-	O11yOpampAddress           string
+	O11yOpampAddress             string
 	TelemetryStoreTracesAddress  string
 	TelemetryStoreMetricsAddress string
 	TelemetryStoreLogsAddress    string

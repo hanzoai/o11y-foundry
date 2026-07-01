@@ -3,17 +3,17 @@ package systemdcasting
 import (
 	"embed"
 
-	"github.com/hanzoai/o11y-foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 )
 
 //go:embed templates/*.gotmpl
 var templates embed.FS
 
 var (
-	o11yServiceTemplate                 *types.Template = types.MustNewTemplateFromFS(templates, "templates/o11y.service.gotmpl", types.FormatINI)
-	ingesterServiceTemplate               *types.Template = types.MustNewTemplateFromFS(templates, "templates/ingester.service.gotmpl", types.FormatINI)
-	telemetryStoreServiceTemplate         *types.Template = types.MustNewTemplateFromFS(templates, "templates/clickhouse.telemetrystore.v2556.service.gotmpl", types.FormatINI)
-	telemetryKeeperServiceTemplate        *types.Template = types.MustNewTemplateFromFS(templates, "templates/clickhousekeeper.telemetrykeeper.v2556.service.gotmpl", types.FormatINI)
-	metaStoreServiceTemplate              *types.Template = types.MustNewTemplateFromFS(templates, "templates/postgres.metastore.service.gotmpl", types.FormatINI)
-	telemetryStoreMigratorServiceTemplate *types.Template = types.MustNewTemplateFromFS(templates, "templates/migrator.telemetrystore.service.gotmpl", types.FormatINI)
+	o11yServiceTemplate                   *domain.Template = domain.MustNewTemplateFromFS(templates, "templates/o11y.service.gotmpl", domain.FormatINI)
+	ingesterServiceTemplate               *domain.Template = domain.MustNewTemplateFromFS(templates, "templates/ingester.service.gotmpl", domain.FormatINI)
+	telemetryStoreServiceTemplate         *domain.Template = domain.MustNewTemplateFromFS(templates, "templates/clickhouse.telemetrystore.v2556.service.gotmpl", domain.FormatINI)
+	telemetryKeeperServiceTemplate        *domain.Template = domain.MustNewTemplateFromFS(templates, "templates/clickhousekeeper.telemetrykeeper.v2556.service.gotmpl", domain.FormatINI)
+	metaStoreServiceTemplate              *domain.Template = domain.MustNewTemplateFromFS(templates, "templates/postgres.metastore.service.gotmpl", domain.FormatINI)
+	telemetryStoreMigratorServiceTemplate *domain.Template = domain.MustNewTemplateFromFS(templates, "templates/migrator.telemetrystore.service.gotmpl", domain.FormatINI)
 )
