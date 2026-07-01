@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -11,10 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
 	rootcasting "github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
 	"github.com/hanzoai/o11y-foundry/internal/molding"
-	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 var _ rootcasting.Casting = (*dockerComposeCasting)(nil)
@@ -80,7 +82,7 @@ func (casting *dockerComposeCasting) Forge(ctx context.Context, config installat
 
 	// Add o11y config files
 	for filename, content := range config.Spec.O11y.Spec.Config.Data {
-		material, err := types.NewYAMLMaterial([]byte(content), filepath.Join(rootcasting.DeploymentDir, "configs", "o11y", filename))
+		material, err := domain.NewYAMLMaterial([]byte(content), filepath.Join(rootcasting.DeploymentDir, "configs", "o11y", filename))
 		if err != nil {
 			return nil, fmt.Errorf("failed to create o11y config material: %w", err)
 		}

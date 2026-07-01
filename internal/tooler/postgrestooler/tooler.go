@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 	root "github.com/hanzoai/o11y-foundry/internal/tooler"
 )
 

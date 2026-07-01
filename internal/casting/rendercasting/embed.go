@@ -3,7 +3,7 @@ package rendercasting
 import (
 	"embed"
 
-	"github.com/hanzoai/o11y-foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 )
 
 //go:embed templates/*.gotmpl

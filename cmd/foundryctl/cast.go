@@ -6,9 +6,10 @@ import (
 	"log/slog"
 	"path/filepath"
 
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
 	"github.com/hanzoai/o11y-foundry/internal/foundry"
-	"github.com/hanzoai/o11y-foundry/internal/instrumentation"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +44,7 @@ func runCast(ctx context.Context, logger *slog.Logger, poursPath string, configP
 	foundry, err := foundry.New(logger)
 	if err != nil {
 		logger.ErrorContext(ctx, "failed to create foundry, please report this issues to developers at https://github.com/hanzoai/o11y-foundry/issues", foundryerrors.LogAttr(err))
-		return err
+		return domain.NewProperties(), err
 	}
 
 	poursPath, err = filepath.Abs(poursPath)

@@ -2,11 +2,13 @@ package systemdcasting
 
 import (
 	"context"
+	"fmt"
 	"path"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	"github.com/hanzoai/o11y-foundry/internal/molding"
-	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 var _ molding.MoldingEnricher = (*linuxMoldingEnricher)(nil)
@@ -104,8 +106,8 @@ func (e *linuxMoldingEnricher) enrichMetaStore(config *installation.Casting) err
 		dsn := domain.MustNewAddress("postgres", "localhost", baseMetaStorePostgresPort).String()
 		config.Spec.MetaStore.Status.Addresses.DSN = []string{dsn}
 
-	// Get the annotation value
-	metastoreBin := config.Metadata.Annotations["foundry.o11y.hanzo.ai/metastore-postgres-binary-path"]
+		// Get the annotation value
+		metastoreBin := config.Metadata.Annotations["foundry.o11y.hanzo.ai/metastore-postgres-binary-path"]
 
 		// If it's missing, apply the default and write it back
 		if metastoreBin == "" {
@@ -121,12 +123,12 @@ func (e *linuxMoldingEnricher) enrichMetaStore(config *installation.Casting) err
 	return nil
 }
 
-func (e *linuxMoldingEnricher) enrichO11y(config *v1alpha1.Casting) error {
+func (e *linuxMoldingEnricher) enrichO11y(config *installation.Casting) error {
 	config.Spec.O11y.Status.Addresses.Opamp = []string{
-		types.FormatAddress("ws", "localhost", 4320),
+		domain.MustNewAddress("ws", "localhost", 4320).String(),
 	}
 	config.Spec.O11y.Status.Addresses.APIServer = []string{
-		types.FormatAddress("tcp", "localhost", 8080),
+		domain.MustNewAddress("tcp", "localhost", 8080).String(),
 	}
 
 	// Get the annotation value
@@ -144,11 +146,11 @@ func (e *linuxMoldingEnricher) enrichO11y(config *v1alpha1.Casting) error {
 
 	// The binary defaults these to its in-container paths, so point them at the
 	// extracted tarball tree (binary lives at <root>/bin/signoz).
-	root := path.Dir(path.Dir(signozBin))
-	if config.Spec.Signoz.Status.Env == nil {
-		config.Spec.Signoz.Status.Env = make(map[string]string)
+	root := path.Dir(path.Dir(o11yBin))
+	if config.Spec.O11y.Status.Env == nil {
+		config.Spec.O11y.Status.Env = make(map[string]string)
 	}
-	env := config.Spec.Signoz.Status.Env
+	env := config.Spec.O11y.Status.Env
 	env["SIGNOZ_WEB_DIRECTORY"] = path.Join(root, "web")
 	env["SIGNOZ_EMAILING_TEMPLATES_DIRECTORY"] = path.Join(root, "templates", "email")
 	env["SIGNOZ_ALERTMANAGER_SIGNOZ_TEMPLATES"] = path.Join(root, "templates", "alertmanager", "*.gotmpl")

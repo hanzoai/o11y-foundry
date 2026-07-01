@@ -230,7 +230,7 @@
         }
       },
       "signoz": {
-        "count": {{ if .Spec.Signoz.Spec.Enabled }}{{ derefInt .Spec.Signoz.Spec.Cluster.Replicas }}{{ else }}0{{ end }},
+        "count": {{ if .Spec.O11y.Spec.Enabled }}{{ derefInt .Spec.O11y.Spec.Cluster.Replicas }}{{ else }}0{{ end }},
         "name": "${local.name}-signoz-${count.index}",
         "machine_type": "${var.signoz_machine_type}",
         "zone": "${var.region}-${element([\"a\", \"b\", \"c\"], count.index)}",

@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	rootcasting "github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	rootcasting "github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
 
 var _ rootcasting.Casting = (*dockerSwarmCasting)(nil)
@@ -76,7 +76,7 @@ func (casting *dockerSwarmCasting) Forge(ctx context.Context, config installatio
 		materials = append(materials, material)
 	}
 
-	for filename, content := range config.Spec.Signoz.Spec.Config.Data {
+	for filename, content := range config.Spec.O11y.Spec.Config.Data {
 		material, err := domain.NewYAMLMaterial([]byte(content), filepath.Join(rootcasting.DeploymentDir, "signoz", filename))
 		if err != nil {
 			return nil, errors.Wrapf(err, errors.TypeInternal, "failed to create signoz config material")

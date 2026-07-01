@@ -116,6 +116,7 @@ services:
       start_period: 30s
   {{- end }}
   {{- end }}
+  {{- end }}
   {{- $ingesterReplicas := int $.Spec.Ingester.Spec.Cluster.Replicas }}
   ingester:
     image: {{ $.Spec.Ingester.Spec.Image }}
@@ -158,7 +159,7 @@ services:
     image: {{ $.Spec.O11y.Spec.Image }}
     networks:
       - {{ $.Metadata.Name }}-network
-    {{- if $.Spec.Signoz.Spec.Env }}
+    {{- if $.Spec.O11y.Spec.Env }}
     environment:
       - HANZO_ALERTMANAGER_PROVIDER=o11y
       - HANZO_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://{{ $.Metadata.Name }}-telemetrystore-{{ $.Spec.TelemetryStore.Kind }}-0-0:9000
@@ -173,7 +174,7 @@ services:
       - "{{ add 8080 (mul $replicaIdx 1000) }}:8080"
     {{- if eq $.Spec.MetaStore.Kind.String "sqlite" }}
     volumes:
-      - {{ $.Metadata.Name }}-metastore-{{ $.Spec.MetaStore.Kind }}-{{ $replicaIdx }}-data:{{ dir (index $.Spec.Signoz.Spec.Env "SIGNOZ_SQLSTORE_SQLITE_PATH") }}
+      - {{ $.Metadata.Name }}-metastore-{{ $.Spec.MetaStore.Kind }}-{{ $replicaIdx }}-data:{{ dir (index $.Spec.O11y.Spec.Env "SIGNOZ_SQLSTORE_SQLITE_PATH") }}
     {{- end }}
     healthcheck:
       test:
@@ -230,6 +231,7 @@ volumes:
   {{- range $replicaIdx := until (int $.Spec.MetaStore.Spec.Cluster.Replicas) }}
   {{ $.Metadata.Name }}-metastore-{{ $.Spec.MetaStore.Kind }}-{{ $replicaIdx }}-data:
     name: {{ $.Metadata.Name }}-metastore-{{ $.Spec.MetaStore.Kind }}-{{ $replicaIdx }}-data
+  {{- end }}
   {{- end }}
   {{- range $replicaIdx := until (int $.Spec.O11y.Spec.Cluster.Replicas) }}
   {{ $.Metadata.Name }}-o11y-{{ $replicaIdx }}-data:

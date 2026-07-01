@@ -4,14 +4,14 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/api/v1alpha1/collectionagent"
-	"github.com/signoz/foundry/internal/domain"
-	foundryerrors "github.com/signoz/foundry/internal/errors"
-	collectionagentmolding "github.com/signoz/foundry/internal/molding/collectionagent"
-	"github.com/signoz/foundry/internal/molding/collectionagent/collectormolding"
-	"github.com/signoz/foundry/internal/planner"
-	"github.com/signoz/foundry/internal/tooler"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/collectionagent"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
+	collectionagentmolding "github.com/hanzoai/o11y-foundry/internal/molding/collectionagent"
+	"github.com/hanzoai/o11y-foundry/internal/molding/collectionagent/collectormolding"
+	"github.com/hanzoai/o11y-foundry/internal/planner"
+	"github.com/hanzoai/o11y-foundry/internal/tooler"
 )
 
 var _ planner.Planner = (*Planner)(nil)

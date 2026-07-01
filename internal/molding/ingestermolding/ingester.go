@@ -3,9 +3,12 @@ package ingestermolding
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
 	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
@@ -57,7 +60,7 @@ func (molding *ingester) MoldV1Alpha1(ctx context.Context, config *installation.
 	return nil
 }
 
-func (molding *ingester) getData(config *v1alpha1.Casting) (Data, error) {
+func (molding *ingester) getData(config *installation.Casting) (Data, error) {
 	if len(config.Spec.O11y.Status.Addresses.Opamp) == 0 {
 		return Data{}, fmt.Errorf("o11y address is not set")
 	}
@@ -90,7 +93,7 @@ func (molding *ingester) getData(config *v1alpha1.Casting) (Data, error) {
 	}
 
 	return Data{
-		O11yOpampAddress:           o11yAddress,
+		O11yOpampAddress:             o11yAddress,
 		TelemetryStoreTracesAddress:  strings.Join(telemetryStoreTracesAddresses, ","),
 		TelemetryStoreMetricsAddress: strings.Join(telemetryStoreMetricsAddresses, ","),
 		TelemetryStoreLogsAddress:    strings.Join(telemetryStoreLogsAddresses, ","),

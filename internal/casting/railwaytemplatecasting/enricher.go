@@ -3,11 +3,11 @@ package railwaytemplatecasting
 import (
 	"context"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
 
 var _ molding.MoldingEnricher = (*railwayTemplateMoldingEnricher)(nil)
@@ -48,13 +48,13 @@ func (enricher *railwayTemplateMoldingEnricher) EnrichStatus(ctx context.Context
 		config.Spec.TelemetryStore.Status.Extras["service_names"] = svc
 		config.Spec.TelemetryStore.Status.Extras["_overrides"] = string(enricher.material[1].FmtContents())
 
-	case v1alpha1.MoldingKindSignoz:
-		if !config.Spec.Signoz.Spec.IsEnabled() {
+	case v1alpha1.MoldingKindO11y:
+		if !config.Spec.O11y.Spec.IsEnabled() {
 			return nil
 		}
 		svc := name + "-signoz"
-		config.Spec.Signoz.Status.Addresses.APIServer = []string{domain.MustNewAddress("tcp", railwayInternalHost(svc), 8080).String()}
-		config.Spec.Signoz.Status.Addresses.Opamp = []string{domain.MustNewAddress("ws", railwayInternalHost(svc), 4320).String()}
+		config.Spec.O11y.Status.Addresses.APIServer = []string{domain.MustNewAddress("tcp", railwayInternalHost(svc), 8080).String()}
+		config.Spec.O11y.Status.Addresses.Opamp = []string{domain.MustNewAddress("ws", railwayInternalHost(svc), 4320).String()}
 
 	case v1alpha1.MoldingKindTelemetryKeeper:
 		if !config.Spec.TelemetryKeeper.Spec.IsEnabled() {

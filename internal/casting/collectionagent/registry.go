@@ -3,9 +3,9 @@ package collectionagent
 import (
 	"log/slog"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	foundryerrors "github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/tooler"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/tooler"
 )
 
 type CastingItem struct {

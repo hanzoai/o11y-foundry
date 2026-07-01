@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	"github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
 
 var _ casting.Casting = (*railwayTemplateCasting)(nil)
@@ -111,7 +111,7 @@ func (c *railwayTemplateCasting) Forge(ctx context.Context, config installation.
 	}
 
 	// Signoz: Dockerfile + railway.json
-	if config.Spec.Signoz.Spec.IsEnabled() {
+	if config.Spec.O11y.Spec.IsEnabled() {
 		dockerfileBuf := bytes.NewBuffer(nil)
 		if err := signozDockerfileTemplate.Execute(dockerfileBuf, config); err != nil {
 			return nil, errors.Wrapf(err, errors.TypeInternal, "signoz dockerfile")

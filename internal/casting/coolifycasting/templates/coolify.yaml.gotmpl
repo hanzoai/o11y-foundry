@@ -136,10 +136,10 @@ services:
         max-file: "3"
   {{- end }}
   {{- end }}
-  {{- range $replicaIdx := until (int $.Spec.Signoz.Spec.Cluster.Replicas) }}
+  {{- range $replicaIdx := until (int $.Spec.O11y.Spec.Cluster.Replicas) }}
   {{ $.Metadata.Name }}-signoz-{{ $replicaIdx }}:
     container_name: {{ $.Metadata.Name }}-signoz-{{ $replicaIdx }}
-    image: {{ $.Spec.Signoz.Spec.Image }}
+    image: {{ $.Spec.O11y.Spec.Image }}
     depends_on:
       {{- if ne $.Spec.MetaStore.Kind.String "sqlite" }}
       {{- range $metaIdx := until (int $.Spec.MetaStore.Spec.Cluster.Replicas) }}
@@ -166,8 +166,8 @@ services:
       timeout: 5s
       retries: 3
     environment:
-      {{- if $.Spec.Signoz.Spec.Env }}
-      {{- range $key, $value := $.Spec.Signoz.Spec.Env }}
+      {{- if $.Spec.O11y.Spec.Env }}
+      {{- range $key, $value := $.Spec.O11y.Spec.Env }}
       - {{ $key }}={{ $value }}
       {{- end }}
       {{- end }}
@@ -196,7 +196,7 @@ services:
       {{- end }}
       {{ $.Metadata.Name }}-telemetrystore-migrator:
         condition: service_completed_successfully
-      {{- range $signozReplicaIdx := until (int $.Spec.Signoz.Spec.Cluster.Replicas) }}
+      {{- range $signozReplicaIdx := until (int $.Spec.O11y.Spec.Cluster.Replicas) }}
       {{ $.Metadata.Name }}-signoz-{{ $signozReplicaIdx }}:
         condition: service_started
       {{- end }}
@@ -280,7 +280,7 @@ volumes:
     name: {{ $.Metadata.Name }}-metastore-{{ $replicaIdx }}-data
   {{- end }}
   {{- end }}
-  {{- range $replicaIdx := until (int $.Spec.Signoz.Spec.Cluster.Replicas) }}
+  {{- range $replicaIdx := until (int $.Spec.O11y.Spec.Cluster.Replicas) }}
   {{ $.Metadata.Name }}-signoz-{{ $replicaIdx }}-data:
     name: {{ $.Metadata.Name }}-signoz-{{ $replicaIdx }}-data
   {{- end }}

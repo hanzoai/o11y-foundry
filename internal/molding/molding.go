@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
 )
 
 // MoldingEnricher populates a molding's Status fields from the surrounding
@@ -19,7 +20,7 @@ type Molding interface {
 	Kind() v1alpha1.MoldingKind
 
 	// Molds the v1alpha1 casting configuration. This function mutates the config in place. It is not safe for concurrent use.
-	MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting) error
+	MoldV1Alpha1(ctx context.Context, config *installation.Casting) error
 }
 
 func MoldingsInOrder() []v1alpha1.MoldingKind {

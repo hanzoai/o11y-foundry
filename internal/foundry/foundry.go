@@ -5,14 +5,17 @@ import (
 	"log/slog"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/collectionagent"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	collectionagentcasting "github.com/hanzoai/o11y-foundry/internal/casting/collectionagent"
+	installationcasting "github.com/hanzoai/o11y-foundry/internal/casting/installation"
 	"github.com/hanzoai/o11y-foundry/internal/config"
 	"github.com/hanzoai/o11y-foundry/internal/config/yamlconfig"
-	"github.com/hanzoai/o11y-foundry/internal/molding"
-	"github.com/hanzoai/o11y-foundry/internal/molding/ingestermolding"
-	"github.com/hanzoai/o11y-foundry/internal/molding/metastoremolding"
-	"github.com/hanzoai/o11y-foundry/internal/molding/o11ymolding"
-	"github.com/hanzoai/o11y-foundry/internal/molding/telemetrykeepermolding"
-	"github.com/hanzoai/o11y-foundry/internal/molding/telemetrystoremolding"
+	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/infrastructure"
+	terraformgenerator "github.com/hanzoai/o11y-foundry/internal/infrastructure/terraform"
+	"github.com/hanzoai/o11y-foundry/internal/patch"
+	"github.com/hanzoai/o11y-foundry/internal/planner"
 )
 
 type plannerCtor func(ctx context.Context, m v1alpha1.Machinery, logger *slog.Logger) (planner.Planner, error)
@@ -36,16 +39,7 @@ type Foundry struct {
 
 func New(logger *slog.Logger) (*Foundry, error) {
 	return &Foundry{
-		Config:   yamlConfig,
-		Logger:   logger,
-		Registry: registry,
-		Moldings: map[v1alpha1.MoldingKind]molding.Molding{
-			v1alpha1.MoldingKindTelemetryStore:  telemetrystoremolding.New(logger),
-			v1alpha1.MoldingKindTelemetryKeeper: telemetrykeepermolding.New(logger),
-			v1alpha1.MoldingKindMetaStore:       metastoremolding.New(logger),
-			v1alpha1.MoldingKindO11y:          o11ymolding.New(logger),
-			v1alpha1.MoldingKindIngester:        ingestermolding.New(logger),
-		},
+		Config: yamlconfig.New(),
 		Logger: logger,
 		Planners: map[v1alpha1.Kind]plannerCtor{
 			v1alpha1.KindInstallation: func(ctx context.Context, m v1alpha1.Machinery, logger *slog.Logger) (planner.Planner, error) {

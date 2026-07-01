@@ -433,7 +433,7 @@
         }
       },
       "signoz": {
-        "count": {{ if .Spec.Signoz.Spec.Enabled }}{{ derefInt .Spec.Signoz.Spec.Cluster.Replicas }}{{ else }}0{{ end }},
+        "count": {{ if .Spec.O11y.Spec.Enabled }}{{ derefInt .Spec.O11y.Spec.Cluster.Replicas }}{{ else }}0{{ end }},
         "ami": "${data.aws_ami.ubuntu.id}",
         "instance_type": "${var.signoz_instance_type}",
         "subnet_id": "${aws_subnet.public[count.index % var.az_count].id}",

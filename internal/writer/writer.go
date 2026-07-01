@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
-	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 type Options struct {

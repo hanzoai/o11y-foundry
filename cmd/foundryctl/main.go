@@ -4,7 +4,6 @@ import (
 	"os"
 
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
-	"github.com/hanzoai/o11y-foundry/internal/instrumentation"
 	"github.com/spf13/cobra"
 )
 

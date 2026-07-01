@@ -12,9 +12,9 @@ package errors
 var (
 	TypeInvalidInput = typ{"invalid-input", 2, ""}
 	TypeNotFound     = typ{"not-found", 3, ""}
-	TypeUnsupported  = typ{"unsupported", 4, "Please check the documentation for supported features or raise an issue at https://github.com/signoz/foundry/issues for feature requests."}
+	TypeUnsupported  = typ{"unsupported", 4, "Please check the documentation for supported features or raise an issue at https://github.com/hanzoai/o11y-foundry/issues for feature requests."}
 	TypeInternal     = typ{"internal", 5, ""}
-	TypeFatal        = typ{"fatal", 6, "Please raise an issue at https://github.com/signoz/foundry/issues with the error message and stacktrace."}
+	TypeFatal        = typ{"fatal", 6, "Please raise an issue at https://github.com/hanzoai/o11y-foundry/issues with the error message and stacktrace."}
 )
 
 // Defines custom error types, the process exit code they map to, and the
