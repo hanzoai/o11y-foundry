@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
 	"github.com/hanzoai/o11y-foundry/internal/foundry"
-	"github.com/hanzoai/o11y-foundry/internal/instrumentation"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +26,7 @@ func runGauge(ctx context.Context, logger *slog.Logger, path string) (domain.Pro
 	foundry, err := foundry.New(logger)
 	if err != nil {
 		logger.ErrorContext(ctx, "failed to create foundry, please report this issues to developers at https://github.com/hanzoai/o11y-foundry/issues", foundryerrors.LogAttr(err))
-		return err
+		return domain.NewProperties(), err
 	}
 
 	casting, err := foundry.Config.GetV1Alpha1(ctx, path)

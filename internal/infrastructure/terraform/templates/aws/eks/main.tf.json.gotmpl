@@ -296,16 +296,16 @@
         ]
       },
       "signoz": {
-        "count": {{ if .Spec.Signoz.Spec.Enabled }}1{{ else }}0{{ end }},
+        "count": {{ if .Spec.O11y.Spec.Enabled }}1{{ else }}0{{ end }},
         "cluster_name": "${aws_eks_cluster.main.name}",
         "node_group_name": "${local.name}-signoz",
         "node_role_arn": "${aws_iam_role.eks_node_group.arn}",
         "subnet_ids": "${aws_subnet.public[*].id}",
         "instance_types": ["${var.signoz_instance_type}"],
         "scaling_config": [{
-          "desired_size": {{ derefInt .Spec.Signoz.Spec.Cluster.Replicas }},
+          "desired_size": {{ derefInt .Spec.O11y.Spec.Cluster.Replicas }},
           "min_size": 1,
-          "max_size": {{ derefInt .Spec.Signoz.Spec.Cluster.Replicas }}
+          "max_size": {{ derefInt .Spec.O11y.Spec.Cluster.Replicas }}
         }],
         "disk_size": "${var.signoz_volume_size}",
         "labels": {

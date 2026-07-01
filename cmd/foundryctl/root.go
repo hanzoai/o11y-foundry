@@ -5,13 +5,13 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/signoz/foundry/internal/domain"
-	foundryerrors "github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/instrumentation"
-	"github.com/signoz/foundry/internal/ledger"
-	"github.com/signoz/foundry/internal/ledger/noopledger"
-	"github.com/signoz/foundry/internal/ledger/segmentledger"
-	"github.com/signoz/foundry/internal/writer"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/instrumentation"
+	"github.com/hanzoai/o11y-foundry/internal/ledger"
+	"github.com/hanzoai/o11y-foundry/internal/ledger/noopledger"
+	"github.com/hanzoai/o11y-foundry/internal/ledger/segmentledger"
+	"github.com/hanzoai/o11y-foundry/internal/writer"
 	"github.com/spf13/cobra"
 )
 

@@ -1,7 +1,5 @@
 package v1alpha1
 
-import "github.com/hanzoai/o11y-foundry/internal/types"
-
 type HanzoO11y struct {
 	// Specification for o11y.
 	Spec MoldingSpec `json:"spec" yaml:"spec" jsonschema:"description=Specification for HanzoO11y"`
@@ -27,9 +25,9 @@ type HanzoO11yStatusAddresses struct {
 func DefaultHanzoO11y() HanzoO11y {
 	return HanzoO11y{
 		Spec: MoldingSpec{
-			Enabled: true,
+			Enabled: BoolPtr(true),
 			Cluster: TypeCluster{
-				Replicas: types.NewIntPtr(1),
+				Replicas: IntPtr(1),
 			},
 			Version: "latest",
 			Image:   "ghcr.io/hanzoai/o11y:latest",

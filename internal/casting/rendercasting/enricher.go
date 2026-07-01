@@ -5,8 +5,10 @@ import (
 	"strings"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 	"github.com/hanzoai/o11y-foundry/internal/molding"
-	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 var _ molding.MoldingEnricher = (*renderMoldingEnricher)(nil)
@@ -60,8 +62,8 @@ func (enricher *renderMoldingEnricher) EnrichStatus(ctx context.Context, kind v1
 		var opampAddr []string
 		for _, serviceName := range serviceNames {
 			if strings.Contains(serviceName, "-o11y") {
-				apiServerAddr = append(apiServerAddr, types.FormatAddress("tcp", serviceName, 8080))
-				opampAddr = append(opampAddr, types.FormatAddress("ws", serviceName, 4320))
+				apiServerAddr = append(apiServerAddr, domain.MustNewAddress("tcp", serviceName, 8080).String())
+				opampAddr = append(opampAddr, domain.MustNewAddress("ws", serviceName, 4320).String())
 			}
 		}
 		config.Spec.O11y.Status.Addresses.APIServer = apiServerAddr

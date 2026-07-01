@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	"github.com/signoz/foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -32,7 +32,7 @@ spec:
 `,
 			assert: func(t *testing.T, casting installation.Casting) {
 				// All moldings should be enabled by default
-				assert.True(t, *casting.Spec.Signoz.Spec.Enabled)
+				assert.True(t, *casting.Spec.O11y.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryKeeper.Spec.Enabled)
 				assert.True(t, *casting.Spec.MetaStore.Spec.Enabled)
@@ -56,14 +56,14 @@ spec:
 			assert: func(t *testing.T, casting installation.Casting) {
 				assert.False(t, *casting.Spec.MetaStore.Spec.Enabled)
 				// Other moldings should remain enabled
-				assert.True(t, *casting.Spec.Signoz.Spec.Enabled)
+				assert.True(t, *casting.Spec.O11y.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryKeeper.Spec.Enabled)
 				assert.True(t, *casting.Spec.Ingester.Spec.Enabled)
 			},
 		},
 		{
-			name: "DisableSignoz",
+			name: "DisableO11y",
 			input: `
 apiVersion: v1alpha1
 metadata:
@@ -72,12 +72,12 @@ spec:
   deployment:
     mode: docker
     flavor: compose
-  signoz:
+  o11y:
     spec:
       enabled: false
 `,
 			assert: func(t *testing.T, casting installation.Casting) {
-				assert.False(t, *casting.Spec.Signoz.Spec.Enabled)
+				assert.False(t, *casting.Spec.O11y.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryKeeper.Spec.Enabled)
 				assert.True(t, *casting.Spec.MetaStore.Spec.Enabled)
@@ -100,7 +100,7 @@ spec:
 `,
 			assert: func(t *testing.T, casting installation.Casting) {
 				assert.False(t, *casting.Spec.Ingester.Spec.Enabled)
-				assert.True(t, *casting.Spec.Signoz.Spec.Enabled)
+				assert.True(t, *casting.Spec.O11y.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryKeeper.Spec.Enabled)
 				assert.True(t, *casting.Spec.MetaStore.Spec.Enabled)
@@ -122,7 +122,7 @@ spec:
 `,
 			assert: func(t *testing.T, casting installation.Casting) {
 				assert.False(t, *casting.Spec.TelemetryStore.Spec.Enabled)
-				assert.True(t, *casting.Spec.Signoz.Spec.Enabled)
+				assert.True(t, *casting.Spec.O11y.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryKeeper.Spec.Enabled)
 				assert.True(t, *casting.Spec.MetaStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.Ingester.Spec.Enabled)
@@ -144,7 +144,7 @@ spec:
 `,
 			assert: func(t *testing.T, casting installation.Casting) {
 				assert.False(t, *casting.Spec.TelemetryKeeper.Spec.Enabled)
-				assert.True(t, *casting.Spec.Signoz.Spec.Enabled)
+				assert.True(t, *casting.Spec.O11y.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.MetaStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.Ingester.Spec.Enabled)
@@ -170,7 +170,7 @@ spec:
 			assert: func(t *testing.T, casting installation.Casting) {
 				assert.False(t, *casting.Spec.MetaStore.Spec.Enabled)
 				assert.False(t, *casting.Spec.TelemetryKeeper.Spec.Enabled)
-				assert.True(t, *casting.Spec.Signoz.Spec.Enabled)
+				assert.True(t, *casting.Spec.O11y.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.Ingester.Spec.Enabled)
 			},
@@ -285,7 +285,7 @@ func TestGetV1Alpha1Merge(t *testing.T) {
 			base:     *installation.Default(),
 			override: installation.Casting{},
 			assert: func(t *testing.T, casting installation.Casting) {
-				assert.True(t, *casting.Spec.Signoz.Spec.Enabled)
+				assert.True(t, *casting.Spec.O11y.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.MetaStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.Ingester.Spec.Enabled)
@@ -306,7 +306,7 @@ func TestGetV1Alpha1Merge(t *testing.T) {
 			assert: func(t *testing.T, casting installation.Casting) {
 				assert.False(t, *casting.Spec.MetaStore.Spec.Enabled)
 				// Other moldings should remain enabled
-				assert.True(t, *casting.Spec.Signoz.Spec.Enabled)
+				assert.True(t, *casting.Spec.O11y.Spec.Enabled)
 				assert.True(t, *casting.Spec.TelemetryStore.Spec.Enabled)
 				assert.True(t, *casting.Spec.Ingester.Spec.Enabled)
 			},

@@ -3,8 +3,8 @@ package infrastructure
 import (
 	"context"
 
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	"github.com/signoz/foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 )
 
 // Generator is the interface for infrastructure-as-code generators.

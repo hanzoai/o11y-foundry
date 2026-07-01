@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/name: {{ $name }}
 spec:
-  replicas: {{ int $.Spec.Signoz.Spec.Cluster.Replicas }}
+  replicas: {{ int $.Spec.O11y.Spec.Cluster.Replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ $name }}
@@ -26,11 +26,11 @@ spec:
     spec:
       containers:
         - env:
-          {{- range $key, $val := $.Spec.Signoz.Spec.Env }}
+          {{- range $key, $val := $.Spec.O11y.Spec.Env }}
             - name: {{ $key }}
               value: {{ $val }}
           {{- end }}
-          image: {{ $.Spec.Signoz.Spec.Image }}
+          image: {{ $.Spec.O11y.Spec.Image }}
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:

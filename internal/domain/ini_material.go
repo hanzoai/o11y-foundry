@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/signoz/foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 	"gopkg.in/ini.v1"
 )
 

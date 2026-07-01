@@ -6,10 +6,10 @@ import (
 	"os"
 	"sort"
 
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	installationcasting "github.com/hanzoai/o11y-foundry/internal/casting/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	"github.com/olekukonko/tablewriter"
-	"github.com/signoz/foundry/api/v1alpha1"
-	installationcasting "github.com/signoz/foundry/internal/casting/installation"
-	"github.com/signoz/foundry/internal/domain"
 	"github.com/spf13/cobra"
 )
 

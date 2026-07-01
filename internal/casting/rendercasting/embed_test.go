@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/hanzoai/o11y-foundry/internal/types"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	"github.com/stretchr/testify/assert"
 )
 

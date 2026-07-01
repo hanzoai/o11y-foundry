@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	rootcasting "github.com/signoz/foundry/internal/casting"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	rootcasting "github.com/hanzoai/o11y-foundry/internal/casting"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
 
 var _ rootcasting.Casting = (*ecsCasting)(nil)
@@ -127,7 +127,7 @@ func (c *ecsCasting) Forge(ctx context.Context, config installation.Casting, pou
 	}
 
 	// Signoz
-	if config.Spec.Signoz.Spec.IsEnabled() {
+	if config.Spec.O11y.Spec.IsEnabled() {
 		m, err := moduleSignozTF.Render(config, filepath.Join(moduleDir, "signoz.tf.json"))
 		if err != nil {
 			return nil, err

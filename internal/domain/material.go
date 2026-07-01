@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/signoz/foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 	"github.com/tidwall/gjson"
 )
 

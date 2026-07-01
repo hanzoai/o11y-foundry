@@ -3,9 +3,9 @@ package collectormolding
 import (
 	"log/slog"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/api/v1alpha1/collectionagent"
-	collectionagentmolding "github.com/signoz/foundry/internal/molding/collectionagent"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/collectionagent"
+	collectionagentmolding "github.com/hanzoai/o11y-foundry/internal/molding/collectionagent"
 
 	"context"
 )

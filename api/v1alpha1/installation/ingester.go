@@ -1,6 +1,6 @@
 package installation
 
-import "github.com/hanzoai/o11y-foundry/internal/types"
+import "github.com/hanzoai/o11y-foundry/api/v1alpha1"
 
 type Ingester struct {
 	// Specification for the ingester.

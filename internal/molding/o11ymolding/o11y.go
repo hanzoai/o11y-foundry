@@ -7,8 +7,9 @@ import (
 	"strings"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	"github.com/hanzoai/o11y-foundry/internal/molding"
-	"github.com/hanzoai/o11y-foundry/internal/types"
 )
 
 var _ molding.Molding = (*o11y)(nil)
@@ -27,7 +28,7 @@ func (molding *o11y) Kind() v1alpha1.MoldingKind {
 	return v1alpha1.MoldingKindO11y
 }
 
-func (molding *o11y) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting) error {
+func (molding *o11y) MoldV1Alpha1(ctx context.Context, config *installation.Casting) error {
 	if config.Spec.O11y.Status.Env == nil {
 		config.Spec.O11y.Status.Env = make(map[string]string)
 	}
@@ -53,7 +54,7 @@ func (molding *o11y) MoldV1Alpha1(ctx context.Context, config *v1alpha1.Casting)
 			molding.logger.WarnContext(ctx, "HANZO_SQLSTORE_POSTGRES_DSN is going to be overridden", slog.String("value", val))
 		}
 		// construct postgres dsn with user, password, host, port, and db
-		addrs, err := types.NewAddresses(config.Spec.MetaStore.Status.Addresses.DSN)
+		addrs, err := domain.ParseAddresses(config.Spec.MetaStore.Status.Addresses.DSN)
 		if err != nil {
 			return fmt.Errorf("failed to parse addresses: %w", err)
 		}

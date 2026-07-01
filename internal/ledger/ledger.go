@@ -4,7 +4,7 @@ package ledger
 import (
 	"context"
 
-	"github.com/signoz/foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 )
 
 // Ledger is the interface for tracking CLI usage events.

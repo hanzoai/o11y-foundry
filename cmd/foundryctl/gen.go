@@ -10,15 +10,17 @@ import (
 	"strings"
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/collectionagent"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	installationcasting "github.com/hanzoai/o11y-foundry/internal/casting/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
 	foundryerrors "github.com/hanzoai/o11y-foundry/internal/errors"
-	"github.com/hanzoai/o11y-foundry/internal/foundry"
 	"github.com/hanzoai/o11y-foundry/internal/instrumentation"
-	"github.com/hanzoai/o11y-foundry/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/swaggest/jsonschema-go"
 )
 
-const moduleAPIPrefix = "github.com/signoz/foundry/api/v1alpha1/"
+const moduleAPIPrefix = "github.com/hanzoai/o11y-foundry/api/v1alpha1/"
 
 type schemaTarget struct {
 	kind v1alpha1.Kind
@@ -70,11 +72,7 @@ func registerGenSchemas(rootCmd *cobra.Command) {
 }
 
 func runGenExamples(ctx context.Context, logger *slog.Logger) error {
-	foundry, err := foundry.New(logger)
-	if err != nil {
-		logger.ErrorContext(ctx, "failed to create foundry, please report this issues to developers at https://github.com/hanzoai/o11y-foundry/issues", foundryerrors.LogAttr(err))
-		return err
-	}
+	registry := installationcasting.NewRegistry(logger)
 
 	for deployment := range registry.CastingItems() {
 		logger.InfoContext(ctx, "generating example files for deployment", slog.Any("deployment", deployment))

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/api/v1alpha1/installation"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/molding"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/molding"
 )
 
 var _ molding.MoldingEnricher = (*helmMoldingEnricher)(nil)
@@ -28,7 +28,7 @@ func (e *helmMoldingEnricher) EnrichStatus(ctx context.Context, kind v1alpha1.Mo
 		return e.enrichTelemetryKeeper(config)
 	case v1alpha1.MoldingKindMetaStore:
 		return e.enrichMetaStore(config)
-	case v1alpha1.MoldingKindSignoz:
+	case v1alpha1.MoldingKindO11y:
 		return e.enrichSignoz(config)
 	case v1alpha1.MoldingKindIngester:
 		return e.enrichIngester(config)
@@ -74,7 +74,7 @@ func (e *helmMoldingEnricher) enrichMetaStore(config *installation.Casting) erro
 func (e *helmMoldingEnricher) enrichSignoz(config *installation.Casting) error {
 	// Chart uses signoz.fullname which resolves to fullnameOverride directly.
 	name := config.Metadata.Name
-	config.Spec.Signoz.Status.Addresses.Opamp = []string{domain.MustNewAddress("tcp", name, 4320).String()}
+	config.Spec.O11y.Status.Addresses.Opamp = []string{domain.MustNewAddress("tcp", name, 4320).String()}
 	return nil
 }
 

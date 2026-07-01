@@ -4,7 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/google/jsonschema-go/jsonschema"
-	"github.com/signoz/foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
 )
 
 //go:embed casting.schema.json

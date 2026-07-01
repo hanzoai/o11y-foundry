@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"reflect"
 
-	"github.com/signoz/foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 )
 

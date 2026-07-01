@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 
 	jsonpatchv5 "github.com/evanphx/json-patch/v5"
-	"github.com/signoz/foundry/api/v1alpha1"
-	"github.com/signoz/foundry/internal/domain"
-	"github.com/signoz/foundry/internal/errors"
-	"github.com/signoz/foundry/internal/patch"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	"github.com/hanzoai/o11y-foundry/internal/errors"
+	"github.com/hanzoai/o11y-foundry/internal/patch"
 )
 
 var _ patch.Patch = (*jsonPatch)(nil)

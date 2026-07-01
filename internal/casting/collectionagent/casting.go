@@ -3,9 +3,9 @@ package collectionagent
 import (
 	"context"
 
-	"github.com/signoz/foundry/api/v1alpha1/collectionagent"
-	"github.com/signoz/foundry/internal/domain"
-	collectionagentmolding "github.com/signoz/foundry/internal/molding/collectionagent"
+	"github.com/hanzoai/o11y-foundry/api/v1alpha1/collectionagent"
+	"github.com/hanzoai/o11y-foundry/internal/domain"
+	collectionagentmolding "github.com/hanzoai/o11y-foundry/internal/molding/collectionagent"
 )
 
 type Casting interface {
