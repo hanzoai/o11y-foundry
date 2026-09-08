@@ -1,0 +1,20 @@
+# Canonical CI/CD config for hanzoai/o11y-foundry — the one file both the
+# hanzoai/ci reusable (.hanzo/workflows/cicd.yml) and platform.hanzo.ai read.
+#
+# No `images:`: the only Dockerfile here is Dockerfile.multi-arch, which
+# packages the foundryctl binary for a release rather than a service this repo
+# deploys, and no push should mint one.
+#
+# The gate is the Go build and the suite. Note what is NOT used: the Makefile's
+# `test` target is `make forge && make docker` — it stands infrastructure up, it
+# does not assert anything, so it would go green over zero tests. `go test ./...`
+# runs the 21 suites that actually make claims, with `-count=1` so a pass is
+# this commit rather than the test cache, and `go vet` first for the class of
+# defect a compiler lets through.
+test:
+  - name: build
+    run: |
+      set -e
+      go build ./...
+      go vet ./...
+      go test -race -count=1 ./...
