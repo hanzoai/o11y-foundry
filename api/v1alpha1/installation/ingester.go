@@ -29,9 +29,9 @@ type IngesterStatusAddresses struct {
 func DefaultIngester() Ingester {
 	return Ingester{
 		Spec: v1alpha1.MoldingSpec{
-			Enabled: v1alpha1.BoolPtr(true),
+			Enabled: new(true),
 			Cluster: v1alpha1.TypeCluster{
-				Replicas: v1alpha1.IntPtr(1),
+				Replicas: new(1),
 			},
 			Version: "latest",
 			Image:   "ghcr.io/hanzoai/otel-collector:latest",

@@ -64,8 +64,7 @@ func ExitCode(err error) int {
 		return 0
 	}
 
-	var b *base
-	if goerrors.As(err, &b) {
+	if b, ok := goerrors.AsType[*base](err); ok {
 		return b.t.ExitCode()
 	}
 

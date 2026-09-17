@@ -40,9 +40,9 @@ func DefaultTelemetryKeeper() TelemetryKeeper {
 	return TelemetryKeeper{
 		Kind: TelemetryKeeperKindClickhouseKeeper,
 		Spec: v1alpha1.MoldingSpec{
-			Enabled: v1alpha1.BoolPtr(true),
+			Enabled: new(true),
 			Cluster: v1alpha1.TypeCluster{
-				Replicas: v1alpha1.IntPtr(1),
+				Replicas: new(1),
 			},
 			Version: "25.5.6",
 			Image:   "clickhouse/clickhouse-keeper:25.5.6",

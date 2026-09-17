@@ -8,7 +8,6 @@ import (
 
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1"
 	"github.com/hanzoai/o11y-foundry/api/v1alpha1/installation"
-	"github.com/hanzoai/o11y-foundry/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -298,7 +297,7 @@ func TestGetV1Alpha1Merge(t *testing.T) {
 				Spec: installation.Spec{
 					MetaStore: installation.MetaStore{
 						Spec: v1alpha1.MoldingSpec{
-							Enabled: domain.NewBoolPtr(false),
+							Enabled: new(false),
 						},
 					},
 				},

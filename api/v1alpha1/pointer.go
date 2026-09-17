@@ -1,9 +1,11 @@
 package v1alpha1
 
+//go:fix inline
 func BoolPtr(v bool) *bool {
-	return &v
+	return new(v)
 }
 
+//go:fix inline
 func IntPtr(v int) *int {
-	return &v
+	return new(v)
 }

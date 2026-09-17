@@ -25,9 +25,9 @@ type HanzoO11yStatusAddresses struct {
 func DefaultHanzoO11y() HanzoO11y {
 	return HanzoO11y{
 		Spec: MoldingSpec{
-			Enabled: BoolPtr(true),
+			Enabled: new(true),
 			Cluster: TypeCluster{
-				Replicas: IntPtr(1),
+				Replicas: new(1),
 			},
 			Version: "latest",
 			Image:   "ghcr.io/hanzoai/o11y:latest",
